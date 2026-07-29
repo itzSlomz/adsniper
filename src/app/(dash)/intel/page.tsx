@@ -53,6 +53,9 @@ export default async function IntelPage() {
         <Link href="/intel/brief" className="rounded-lg border bg-white px-4 py-3 text-sm font-medium hover:bg-gray-50">
           📝 Daily brief
         </Link>
+        <Link href="/intel/users" className="rounded-lg border bg-white px-4 py-3 text-sm font-medium hover:bg-gray-50">
+          👥 Users
+        </Link>
       </div>
 
       <section className="rounded-lg border bg-white p-4">
