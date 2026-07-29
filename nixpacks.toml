@@ -1,0 +1,5 @@
+# Chromium for the Puppeteer PDF route; PUPPETEER_SKIP_DOWNLOAD=1 and
+# PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium are set in service variables
+# so npm install doesn't fetch its own 170MB browser on every build.
+[phases.setup]
+aptPkgs = ["chromium", "fonts-noto-core", "fonts-noto-naskh-arabic", "fonts-noto-color-emoji"]
