@@ -22,6 +22,8 @@ export interface FetchedPost {
     views?: number;
     quotes?: number;
     bookmarks?: number;
+    comments?: number;
+    impressions?: number;
   };
   authorFollowers?: number;
 }
@@ -34,8 +36,8 @@ export interface ProviderResult<T> {
   estCostUsd: number;
 }
 
-// Provider-swappable adapter (brief Section 1.2): swapping vendors means
-// writing a new implementation of this interface, nothing else.
+// Provider-swappable adapters (brief Section 1.2): swapping vendors means
+// writing a new implementation of these interfaces, nothing else.
 export interface XProvider {
   name: string;
   fetchPosts(
@@ -43,4 +45,12 @@ export interface XProvider {
     opts: { since?: Date; maxItems?: number }
   ): Promise<ProviderResult<FetchedPost>>;
   fetchByIds(ids: string[]): Promise<ProviderResult<FetchedPost>>;
+}
+
+export interface LinkedInPostsProvider {
+  name: string;
+  fetchPosts(
+    pageUrl: string,
+    opts: { maxPosts?: number; postedAfter?: Date }
+  ): Promise<ProviderResult<FetchedPost>>;
 }

@@ -7,9 +7,35 @@ Postgres, single persistent Node service.
 
 ## Status
 
-**Phase 2 (X ingestion + media pipeline + cost guards) built and verified
-locally (2026-07-29).** Phase 1 remains undeployed pending Railway
-credentials; auth + lockdown verified locally.
+**Phase 3 (LinkedIn posts) built and verified locally (2026-07-29), except
+the XLS enrichment parser (blocked on a sample export file).** Phase 2
+verified locally. Phase 1 remains undeployed pending Railway credentials;
+auth + lockdown verified locally.
+
+### Phase 3 verification log
+
+- **LinkedIn entity resolution**: every seeded slug was probed through the
+  provider and verified against the entity it actually resolves to —
+  necessary because `al-rajhi-bank` is Al Rajhi **Jordan** and `anb-bank`
+  is a **Colorado** community bank. Verified KSA slugs now seeded:
+  `bankalbilad`, `alrajhibank`, `snbalahli`, `riyad-bank`, `alinma`,
+  `alawwalsab` (old `sabb` slug redirects there), `arab-national-bank`,
+  `d360bank`, `stcbank`.
+- **Backfill**: 30-day pull for all 9 brands — 358 posts (SAB 166, Riyad
+  29, Alinma 27, ANB 25, BAB 19, Al Rajhi 10, SNB 10, STC 3, D360 3),
+  zero errors; every post with media has full-size + webp thumb cached.
+  SAB posts so heavily the initial 100-post cap truncated the window;
+  backfill cap now 200.
+- **Daily pull** (`linkedin-poll`, cron 05:15): 3-day overlap; re-returned
+  recent posts get a fresh MetricSnapshot (max one per ~day, no extra
+  provider cost) so LinkedIn engagement builds a trajectory.
+- **Engagement rate**: (reactions + comments + reposts) / impressions;
+  null until the own-page XLS enrichment supplies impressions — public
+  LinkedIn data has none. **XLS parser not yet built: waiting on a real
+  sample export file (Phase 0 item e).**
+- **Quick-add form**: `/intel/quick-add-post` (admin-only) — brand, URL,
+  summary, optional metrics + screenshot (stored via the same media
+  pipeline; upserts by post URL so re-submits don't duplicate).
 
 ### Phase 2 verification log
 
