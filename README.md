@@ -36,7 +36,8 @@ Investment Corporation").
 
 | Item | Status |
 |---|---|
-| X handles / LinkedIn URLs | Placeholders seeded (`prisma/seed.ts`), flagged for confirmation. **Two live warnings**: `from:Bank_albilad` returned zero tweets (handle needs confirming), and the LinkedIn slug `al-rajhi-bank` is actually **Al Rajhi Jordan**, not KSA — every slug must be verified before ingestion goes live. |
+| X handles | **Confirmed and live-validated (2026-07-29).** Operator supplied website/profile-verified handles; all 9 were then validated through the X provider in one call (real tweets + follower counts for every brand): `BankAlbilad`, `alrajhibank`, `snbalahli`, `riyadbank`, `alinma`, `alawwalsab`, `anb_bank`, `D360bank`, `stcbank_ksa`. Seeded in `prisma/seed.ts`. Secondary accounts noted but not tracked (v1 tracks one primary handle per brand): Al Rajhi `alrajhibank_en`/`alrajhibankBus`, Riyad `AskRiyadbank` (support), SAB `alawwalsabcare` (support) / `SABInvest`. Out-of-scope institutions the operator also verified, available if the brand list is ever extended in Settings: BSF `banque_fransi`, Bank Aljazira `BankAlJazira`, SAIB `saiblive` (not `saib_bank` — Egyptian), GIB (none found), Vision Bank `visionbank_sa`, Saudi Banks Media Committee `SaudiBanks`, Saudi EXIM `saudiexim`. |
+| LinkedIn URLs | Still unverified placeholders. **Live warning stands**: the `al-rajhi-bank` slug is **Al Rajhi Jordan**, not KSA — every slug must be operator-verified before LinkedIn ingestion goes live. |
 | meta_page_ids / google_advertiser_ids | Empty arrays until resolved; both ad actors return the IDs, so resolution can be scripted in Phase 4. |
 | LinkedIn XLS sample | Not yet provided; enrichment parser (Phase 3) waits on it. |
 | BAB brand hex + logo | Placeholder accent `#C8102E` in `tailwind.config.ts`. |
