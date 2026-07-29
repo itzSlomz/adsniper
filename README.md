@@ -7,11 +7,23 @@ Postgres, single persistent Node service.
 
 ## Status
 
-**Phases 0–7 built; Phases 2–7 verified locally against live data
-(2026-07-29).** Remaining before handover: Railway/R2/Resend deploy
-(Phase 1 verification), live AI-brief generation (needs
-ANTHROPIC_API_KEY), and the LinkedIn XLS enrichment parser (needs a
-sample export file).
+**DEPLOYED to Railway (2026-07-29):**
+https://watchtower-production-6a02.up.railway.app — Postgres + app
+service with media volume, R2 (`watchtower-media`) as primary media
+storage (1,854 files migrated from the volume; new media writes straight
+to R2 with a local-disk read fallback), all cron jobs live in
+Asia/Riyadh. Auth is allowlisted email + passcode until a Resend key
+lands (then magic links switch on via env). Remaining: ANTHROPIC_API_KEY
+for live AI-brief generation, Resend key + sending domain, LinkedIn XLS
+sample for the enrichment parser, PDF verification on production
+(postponed by operator).
+
+Deploy learnings recorded for the runbook: Railway's CLI can't use
+workspace tokens (drive the GraphQL API + /up tarball endpoint instead);
+Ubuntu noble's `chromium` apt package is a snap stub (Puppeteer downloads
+its own browser; nixpacks installs only shared libs + Noto fonts);
+Railway's Node 22.11 requires puppeteer ≤24; redeploys restart the
+container and kill running jobs — never deploy mid-backfill.
 
 ### Phase 6–7 verification log
 
