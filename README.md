@@ -7,8 +7,37 @@ Postgres, single persistent Node service.
 
 ## Status
 
-**Phase 1 (skeleton) in progress.** App scaffold, Prisma schema (brief
-Section 6), seeded brands, allowlist auth. Not yet deployed.
+**Phase 2 (X ingestion + media pipeline + cost guards) built and verified
+locally (2026-07-29).** Phase 1 remains undeployed pending Railway
+credentials; auth + lockdown verified locally.
+
+### Phase 2 verification log
+
+- **Backfill**: live 30-day backfill ran for all 9 brands via the real
+  provider — 1,023 posts (BAB 139, Al Rajhi 178, SAB 216, Alinma 132,
+  Riyad 104, SNB 80, ANB 78, STC Bank 53, D360 43), each with an ingest
+  MetricSnapshot; daily FollowerSnapshot per brand. Total est. provider
+  spend logged: ~$0.49.
+- **Reply-heavy accounts**: BAB's actor run initially timed out because the
+  account is support-reply-heavy; fixed by excluding replies at the query
+  level (`-filter:replies`), which also cuts billed items.
+- **Media pipeline**: functionally verified (download → full-size store →
+  800px webp thumb → graceful nulls + logged failure on broken URL).
+  Live caching of `pbs.twimg.com` media is blocked by this dev sandbox's
+  egress allowlist (all failures logged gracefully, posts kept) — it will
+  work on Railway, or allow `pbs.twimg.com` in the sandbox to verify
+  earlier. Storage uses R2 when `R2_*` env vars are set, local disk
+  (`.data/media`) otherwise; media is served only via the auth-gated
+  `/media/[...key]` proxy.
+- **Cost guard**: with the ceiling set below spend, `x-poll` aborts with
+  status `stopped_budget` and makes zero provider calls.
+- **Jobs**: `x-poll` (cron `0 */4 * * *`) and `x-metrics-refresh`
+  (hourly at :30; 24h + 72h snapshot passes, then stop). In-process
+  node-cron starts via Next instrumentation (`DISABLE_CRON=1` to disable);
+  admin-only "Run now" at `POST /api/jobs/{name}`; CLI:
+  `npx tsx scripts/run-job.ts <name>`.
+- **Dev-sandbox quirk** (not needed on Railway): Node's fetch ignores
+  `HTTPS_PROXY`, so job scripts here need `NODE_USE_ENV_PROXY=1`.
 
 ### Phase 0 log
 
