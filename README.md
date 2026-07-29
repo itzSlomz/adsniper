@@ -7,6 +7,23 @@ Postgres, single persistent Node service.
 
 ## Status
 
+**Phases 0–7 built; Phases 2–7 verified locally against live data
+(2026-07-29).** Remaining before handover: Railway/R2/Resend deploy
+(Phase 1 verification), live AI-brief generation (needs
+ANTHROPIC_API_KEY), and the LinkedIn XLS enrichment parser (needs a
+sample export file).
+
+### Phase 6–7 verification log
+
+- Brief pipeline verified with a seeded bilingual draft: auto-publish job
+  publishes untouched drafts; Daily view card renders AR/EN toggle with
+  correct RTL; admin edit/publish page works. Live generation untested
+  (no ANTHROPIC_API_KEY yet).
+- PDF export verified: Puppeteer printed a real A4 page from live data —
+  Arabic shaped and RTL-aligned correctly, KPI strip, top BAB + market
+  posts with thumbnails, new-ads creative row, bilingual brief. Route is
+  auth-gated (anonymous → redirect).
+
 **Phase 5 (dashboard) built and verified locally (2026-07-29).**
 
 ### Phase 5 verification log
@@ -168,6 +185,78 @@ npm run dev
 Users sign in only if their email exists in the `User` table (allowlist —
 no self-registration). With `RESEND_API_KEY` unset, sign-in is email +
 `AUTH_PASSCODE`.
+
+## Runbook
+
+### Deploy (Railway)
+
+1. Create a Railway project with the Postgres plugin; set every var from
+   `.env.example` (service settings → Variables). `TZ=Asia/Riyadh` is
+   required — cron times assume it.
+2. Build command `npm run build`, start `npm start`. Prisma migrations:
+   `npx prisma migrate deploy` runs via `npm run db:migrate` (add as
+   pre-deploy command), then `npm run db:seed` once
+   (`SEED_ADMIN_EMAIL=<first admin>`).
+3. Puppeteer downloads its own Chromium at `npm install`. If the platform
+   image blocks that, set `PUPPETEER_EXECUTABLE_PATH` to a system
+   Chromium.
+4. Verify after deploy: login on a phone, `robots.txt` public,
+   `/media/...` anonymous → redirect, `/api/export/daily/<today>` → PDF
+   with correct Arabic.
+
+### Cron schedule (in-process, TZ-local)
+
+| Job | Cron | What |
+|---|---|---|
+| x-poll | `0 */4 * * *` | X posts per brand, media caching, follower snapshot |
+| x-metrics-refresh | `30 * * * *` | 24h + 72h engagement snapshots, then stop |
+| linkedin-poll | `15 5 * * *` | LinkedIn posts per brand |
+| ads-poll | `0 6 * * *` | Meta/Google/LinkedIn ad libraries + status logic |
+| daily-brief | `30 6 * * *` | AI brief draft (EN+AR) |
+| brief-auto-publish | `0 8 * * *` | Publishes untouched drafts |
+
+All triggerable from Intel → "Run now", or
+`npx tsx scripts/run-job.ts <job>`.
+
+### Provider swap procedure
+
+1. Write a new adapter implementing the relevant interface in
+   `src/lib/providers/types.ts` (see `x/apifyKaito.ts` as the template):
+   map the vendor's fields, filter junk, return `units`/`estCostUsd`.
+2. Register it in that provider family's `index.ts` switch.
+3. Set the selection env var (`X_PROVIDER`, `LINKEDIN_POSTS_PROVIDER`)
+   and the new key; redeploy. Ingestion logic and schema stay untouched.
+
+### Advertiser ID maintenance
+
+`meta_page_ids` / `google_advertiser_ids` live on the Brand record
+(JSON arrays; multiple entities per brand are expected — Al Rajhi has 3
+Google entities). Re-run `npx tsx scripts/resolve-ad-identities.ts` when a
+bank rebrands or launches a new entity; review its printed table before
+trusting it (alias matching in `src/lib/brandMatch.ts` narrows candidates
+but does not replace human review).
+
+### Backups
+
+- **Postgres**: Railway's plugin backups; additionally
+  `pg_dump "$DATABASE_URL" | gzip > watchtower-$(date +%F).sql.gz`
+  on whatever cadence the team wants (weekly is fine at this volume).
+- **R2**: media is re-downloadable only while CDN URLs live, so treat the
+  bucket as primary. Enable R2 object versioning or a monthly
+  `rclone sync` to a second bucket. ~160 MB/month growth for X media at
+  current volumes; LinkedIn/ads add a similar order.
+
+### Cost-ceiling tuning
+
+Ceilings are monthly USD per group: `MONTHLY_COST_CEILING_X_USD`,
+`_LINKEDIN_`, `_ADS_`. When a ceiling is hit, that group's jobs abort with
+status `stopped_budget` and Intel shows a red banner; nothing restarts
+until the month rolls over or the ceiling is raised. Observed baseline
+(July 2026 verification): full 30-day X backfill ≈ $0.50; a normal month
+of 4-hourly X polling ≈ $3–6; daily LinkedIn ≈ $2–4; daily three-library
+ads pull ≈ $60–120/month at 100-ad caps — tune `MAX_ADS_PER_*` constants
+in the adapters or the ads ceiling to taste. Estimates are conservative;
+reconcile against the Apify console monthly.
 
 ## Security posture
 

@@ -60,6 +60,12 @@ export default async function DailyCommandView({
           <Link href={`/?date=${prev}`} className="rounded border px-2 py-1">←</Link>
           <span className="font-medium">{date}</span>
           <Link href={`/?date=${next}`} className="rounded border px-2 py-1">→</Link>
+          <a
+            href={`/api/export/daily/${date}`}
+            className="rounded bg-gray-900 px-3 py-1 text-white hover:bg-gray-700"
+          >
+            Export PDF
+          </a>
         </div>
       </div>
 
