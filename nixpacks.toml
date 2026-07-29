@@ -1,5 +1,12 @@
-# Chromium for the Puppeteer PDF route; PUPPETEER_SKIP_DOWNLOAD=1 and
-# PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium are set in service variables
-# so npm install doesn't fetch its own 170MB browser on every build.
+# Shared libraries + fonts for Puppeteer's bundled Chromium (PDF export).
+# Ubuntu noble names (t64 transition). Arabic shaping comes from
+# fonts-noto-core (includes Noto Naskh/Sans Arabic). Puppeteer downloads
+# its browser into PUPPETEER_CACHE_DIR=/app/.puppeteer during npm install.
 [phases.setup]
-aptPkgs = ["chromium", "fonts-noto-core", "fonts-noto-naskh-arabic", "fonts-noto-color-emoji"]
+aptPkgs = [
+  "libnss3", "libnspr4", "libatk1.0-0t64", "libatk-bridge2.0-0t64",
+  "libcups2t64", "libdrm2", "libxkbcommon0", "libxcomposite1",
+  "libxdamage1", "libxfixes3", "libxrandr2", "libgbm1", "libasound2t64",
+  "libpango-1.0-0", "libcairo2",
+  "fonts-noto-core", "fonts-noto-color-emoji",
+]
