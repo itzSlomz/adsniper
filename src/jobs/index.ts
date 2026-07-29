@@ -2,6 +2,7 @@ import { runJob } from "@/jobs/runner";
 import { runXPoll } from "@/jobs/xPoll";
 import { runXMetricsRefresh } from "@/jobs/xMetricsRefresh";
 import { runLinkedInPoll } from "@/jobs/linkedinPoll";
+import { runAdsPoll } from "@/jobs/adsPoll";
 import type { JobContext } from "@/jobs/runner";
 
 export interface JobDef {
@@ -15,6 +16,7 @@ export const jobs: Record<string, JobDef> = {
   "x-poll": { cron: "0 */4 * * *", run: runXPoll },
   "x-metrics-refresh": { cron: "30 * * * *", run: runXMetricsRefresh },
   "linkedin-poll": { cron: "15 5 * * *", run: runLinkedInPoll },
+  "ads-poll": { cron: "0 6 * * *", run: runAdsPoll },
 };
 
 export async function triggerJob(name: string) {

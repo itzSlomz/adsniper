@@ -54,3 +54,30 @@ export interface LinkedInPostsProvider {
     opts: { maxPosts?: number; postedAfter?: Date }
   ): Promise<ProviderResult<FetchedPost>>;
 }
+
+// --- Ad libraries (brief Section 5.3) ---
+
+export interface FetchedAd {
+  libraryId: string;
+  libraryUrl?: string;
+  adText?: string;
+  cta?: string;
+  landingUrl?: string;
+  format: import("@prisma/client").AdFormat;
+  subPlatforms: string[];
+  startDate?: Date;
+  creative?: FetchedMediaItem | null;
+}
+
+export interface AdsBrandQuery {
+  nameEn: string;
+  nameAr: string;
+  metaPageIds: string[];
+  googleAdvertiserIds: string[];
+}
+
+export interface AdsProvider {
+  name: string;
+  platform: "meta" | "google" | "linkedin";
+  fetchAds(brand: AdsBrandQuery): Promise<ProviderResult<FetchedAd>>;
+}

@@ -7,10 +7,40 @@ Postgres, single persistent Node service.
 
 ## Status
 
-**Phase 3 (LinkedIn posts) built and verified locally (2026-07-29), except
-the XLS enrichment parser (blocked on a sample export file).** Phase 2
-verified locally. Phase 1 remains undeployed pending Railway credentials;
-auth + lockdown verified locally.
+**Phase 4 (ads ingestion) built and verified locally (2026-07-29).**
+Phase 3 verified except the XLS enrichment parser (blocked on a sample
+export file). Phase 2 verified. Phase 1 remains undeployed pending Railway
+credentials; auth + lockdown verified locally.
+
+### Phase 4 verification log
+
+- **Live pull**: 602 ads ingested across 8 brands and all three automated
+  libraries (Meta 175, Google 277, LinkedIn 150), zero errors, creatives
+  cached with thumbnails wherever the library exposes an image (Google
+  video/text creatives have none in the fast run — placeholder in UI).
+- **Advertiser identities** (`scripts/resolve-ad-identities.ts`): resolved
+  by querying the libraries by brand name (EN + parenthetical + AR),
+  matched via curated aliases (`src/lib/brandMatch.ts`), Google filtered
+  to `countryCode: SA`. Al Rajhi has 3 Google advertiser entities and
+  Alinma 4 — the multi-entity case the schema's ID arrays exist for.
+  Operator review notes: ANB has no Meta page ID (search only surfaced
+  "AnB Tahiti", pruned); SNB surfaced nothing in any library; Riyad/SAB/
+  STC have no Google advertiser IDs — likely genuinely absent, confirm in
+  Settings when convenient.
+- **Status logic**: verified — a provider ad with lastSeen aged past 7
+  days went `inactive`, a manual ad unconfirmed 15 days went `stale`, via
+  the real job path at zero provider cost (keys unset; fetches fail
+  gracefully, the status pass still runs).
+- **Manual capture**: `/intel/log-ad` (admin, phone-friendly, screenshot
+  required); a manually logged Snapchat ad exists with creative + thumb
+  through the same media pipeline, ready for the Phase 5 gallery.
+- **Campaign burst** (`campaignBurstBrandIds`): 5+ new ads in 7 days;
+  verified against live data. Note: on first ingest LinkedIn ads have no
+  provider dates, so firstSeen = ingest time and most brands look like a
+  burst on day one; this settles after the first week.
+- **TikTok**: `TikTokTopAdsProvider` intentionally absent per the Phase 0
+  no-go (0 of 9 brands in Creative Center SA Top Ads).
+- Ads provider spend for the full verification: ~$3.80 logged.
 
 ### Phase 3 verification log
 
