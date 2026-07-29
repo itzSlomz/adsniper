@@ -18,11 +18,22 @@ export default function AdWatchGallery({ ads }: { ads: AdCardData[] }) {
   const [tab, setTab] = useState("all");
   const [open, setOpen] = useState<AdCardData | null>(null);
 
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const PER_BRAND = 12;
+
   const groups = useMemo(() => {
     const filtered = ads.filter((a) => tab === "all" || a.platform === tab);
     const byBrand = new Map<string, AdCardData[]>();
     for (const a of filtered) {
       byBrand.set(a.brandName, [...(byBrand.get(a.brandName) ?? []), a]);
+    }
+    // Creative-led gallery: ads with creatives first, newest first within.
+    for (const list of Array.from(byBrand.values())) {
+      list.sort(
+        (a, b) =>
+          Number(!!b.thumbPath) - Number(!!a.thumbPath) ||
+          +new Date(b.firstSeen) - +new Date(a.firstSeen)
+      );
     }
     return Array.from(byBrand.entries()).sort((a, b) => b[1].length - a[1].length);
   }, [ads, tab]);
@@ -67,7 +78,7 @@ export default function AdWatchGallery({ ads }: { ads: AdCardData[] }) {
               {brandAds[0]?.majorPush && <Badge tone="red">Major push</Badge>}
             </h3>
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
-              {brandAds.map((a) => (
+              {(expanded[brandName] ? brandAds : brandAds.slice(0, PER_BRAND)).map((a) => (
                 <button key={a.id} onClick={() => setOpen(a)} className="group relative overflow-hidden rounded-lg border bg-white text-left shadow-sm">
                   {a.thumbPath ? (
                     /* eslint-disable-next-line @next/next/no-img-element */
@@ -87,6 +98,16 @@ export default function AdWatchGallery({ ads }: { ads: AdCardData[] }) {
                 </button>
               ))}
             </div>
+            {brandAds.length > PER_BRAND && (
+              <button
+                onClick={() => setExpanded((e) => ({ ...e, [brandName]: !e[brandName] }))}
+                className="mt-1 text-xs text-blue-600 underline"
+              >
+                {expanded[brandName]
+                  ? "Show fewer"
+                  : `Show all ${brandAds.length} (+${brandAds.length - PER_BRAND} more)`}
+              </button>
+            )}
           </div>
         ))
       )}
