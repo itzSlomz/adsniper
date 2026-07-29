@@ -62,7 +62,9 @@ function r2Storage(): Storage {
         const body = Buffer.from(await res.Body!.transformToByteArray());
         return { body, contentType: res.ContentType ?? contentTypeFromKey(key) };
       } catch {
-        return null;
+        // Migration aid: media cached to local disk before R2 was configured
+        // stays readable until the media-migrate job moves it over.
+        return localStorage.get(key);
       }
     },
   };
