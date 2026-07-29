@@ -272,7 +272,13 @@ reconcile against the Apify console monthly.
 
 ## Security posture
 
-- Auth middleware on every route (`src/middleware.ts`); login page is
-  neutral, no bank branding pre-auth.
+- **Operator decision (2026-07-29): viewer surfaces are public** — the
+  dashboard, brand pages, compare, media proxy, and PDF export need no
+  login. This supersedes the brief's every-route lockdown for read-only
+  pages. Auth remains on all admin surfaces (`/intel/*` pages and the
+  job-trigger API), so outsiders cannot mutate data, manage users, or
+  spend provider budget. Re-enabling full lockdown = restoring the
+  previous `src/middleware.ts` matcher.
+- Login page is neutral, no bank branding pre-auth.
 - `noindex` header + metadata everywhere; `robots.txt` disallows all.
 - Secrets in env only.

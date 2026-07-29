@@ -16,17 +16,23 @@ export default async function DashLayout({ children }: { children: React.ReactNo
           {isAdmin && (
             <Link href="/intel" className="text-gray-600 hover:text-gray-900">Intel</Link>
           )}
-          <form
-            className="ms-auto"
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login" });
-            }}
-          >
-            <button className="text-xs text-gray-400 hover:text-gray-700">
-              {session?.user?.email} · Sign out
-            </button>
-          </form>
+          {session?.user ? (
+            <form
+              className="ms-auto"
+              action={async () => {
+                "use server";
+                await signOut({ redirectTo: "/" });
+              }}
+            >
+              <button className="text-xs text-gray-400 hover:text-gray-700">
+                {session.user.email} · Sign out
+              </button>
+            </form>
+          ) : (
+            <Link href="/login" className="ms-auto text-xs text-gray-300 hover:text-gray-600">
+              Admin
+            </Link>
+          )}
         </nav>
       </header>
       <div className="mx-auto max-w-6xl px-4 py-5">{children}</div>

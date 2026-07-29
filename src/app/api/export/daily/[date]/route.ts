@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { auth } from "@/auth";
 import puppeteer from "puppeteer";
 
 export const runtime = "nodejs";
@@ -14,10 +13,6 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { date: string } }
 ) {
-  const session = await auth();
-  if (!session?.user) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(params.date)) {
     return NextResponse.json({ error: "bad date" }, { status: 400 });
   }

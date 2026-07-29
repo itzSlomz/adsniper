@@ -1,20 +1,15 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { getStorage } from "@/lib/storage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Auth-gated media proxy (brief Section 10): the bucket is never public;
-// all cached media is served through here, session required.
+// Media proxy: the bucket itself is never public — everything serves
+// through here. Public read access per operator decision (2026-07-29).
 export async function GET(
   _req: Request,
   { params }: { params: { key: string[] } }
 ) {
-  const session = await auth();
-  if (!session?.user) {
-    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  }
   const key = params.key.join("/");
   if (key.includes("..")) {
     return NextResponse.json({ error: "bad key" }, { status: 400 });
