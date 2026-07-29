@@ -16,10 +16,13 @@ export default function LoginPage({
   async function login(formData: FormData) {
     "use server";
     try {
+      // redirectTo must ride in the options (formData) — the third signIn
+      // argument is OAuth authorizationParams and silently ignores it.
+      formData.set("redirectTo", "/");
       if (process.env.RESEND_API_KEY) {
-        await signIn("resend", formData, { redirectTo: "/" });
+        await signIn("resend", formData);
       } else {
-        await signIn("credentials", formData, { redirectTo: "/" });
+        await signIn("credentials", formData);
       }
     } catch (err) {
       if (err instanceof AuthError) redirect("/login?error=1");

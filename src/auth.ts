@@ -29,9 +29,11 @@ if (process.env.AUTH_PASSCODE) {
         passcode: { label: "Passcode", type: "password" },
       },
       async authorize(credentials) {
+        // Trim both fields — copy-pasted credentials often carry stray
+        // whitespace, and an exact-match passcode must not fail on it.
         const email = String(credentials?.email ?? "").toLowerCase().trim();
-        const passcode = String(credentials?.passcode ?? "");
-        if (!email || passcode !== process.env.AUTH_PASSCODE) return null;
+        const passcode = String(credentials?.passcode ?? "").trim();
+        if (!email || passcode !== process.env.AUTH_PASSCODE?.trim()) return null;
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user) return null;
         await prisma.user.update({
