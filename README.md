@@ -21,14 +21,14 @@ credentials; auth + lockdown verified locally.
 - **Reply-heavy accounts**: BAB's actor run initially timed out because the
   account is support-reply-heavy; fixed by excluding replies at the query
   level (`-filter:replies`), which also cuts billed items.
-- **Media pipeline**: functionally verified (download → full-size store →
-  800px webp thumb → graceful nulls + logged failure on broken URL).
-  Live caching of `pbs.twimg.com` media is blocked by this dev sandbox's
-  egress allowlist (all failures logged gracefully, posts kept) — it will
-  work on Railway, or allow `pbs.twimg.com` in the sandbox to verify
-  earlier. Storage uses R2 when `R2_*` env vars are set, local disk
-  (`.data/media`) otherwise; media is served only via the auth-gated
-  `/media/[...key]` proxy.
+- **Media pipeline**: fully verified live (2026-07-29, after sandbox egress
+  allowed `pbs.twimg.com`): all 549 posts with media have full-size +
+  800px webp thumbnails cached (1,122 files, ~158 MB), zero failures;
+  `scripts/recache-media.ts` retries failed downloads after outages.
+  Storage uses R2 when `R2_*` env vars are set, local disk (`.data/media`)
+  otherwise; media is served only via the auth-gated `/media/[...key]`
+  proxy. Note for R2 sizing: ~160 MB/month of X media at current posting
+  volumes.
 - **Cost guard**: with the ceiling set below spend, `x-poll` aborts with
   status `stopped_budget` and makes zero provider calls.
 - **Jobs**: `x-poll` (cron `0 */4 * * *`) and `x-metrics-refresh`
