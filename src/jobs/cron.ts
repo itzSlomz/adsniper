@@ -7,6 +7,7 @@ export function startCron(): void {
   if (globalFlags.__cronStarted) return;
   globalFlags.__cronStarted = true;
   for (const [name, def] of Object.entries(jobs)) {
+    if (!def.cron) continue;
     cron.schedule(def.cron, () => {
       triggerJob(name).catch((err) =>
         console.error(`[cron] job ${name} crashed:`, err)
