@@ -7,6 +7,32 @@ Postgres, single persistent Node service.
 
 ## Status
 
+**Phase 5 (dashboard) built and verified locally (2026-07-29).**
+
+### Phase 5 verification log
+
+- Daily Command View renders a real day from live data: KPI strip (posts,
+  engagement, follower deltas, share of voice labeled "X only", live
+  competitor ads), BAB + market post grids with filters, Ad Watch with
+  platform tabs and coverage disclosure, ad pressure chart, brand chips.
+- **SoV math spot-checked by hand**: SQL over latest snapshots gave 9.9%
+  vs 10% rendered (rounding) — formula is BAB's share of the day's total
+  X engagement (likes+reposts+replies+comments), documented in
+  `src/lib/dashboard.ts`.
+- **Badges verified on real cases**: High performer (top decile of brand's
+  trailing-30d engagement) and Possible campaign (new hashtag or 3+ posts
+  sharing a hashtag in 48h) both render; video play badge and carousel
+  stack indicator confirmed in grids.
+- Brand deep dive: 90d engagement trend, top posts, cadence heatmap
+  (day×hour), follower growth, full post grid, ad history table.
+- Compare: SoV trend, avg engagement/post, follower race, posting volume,
+  media-type mix, ad pressure over time (weekly overlap of ad lifespans).
+- Intel: ingestion health panel (per-job last run/status/items/errors),
+  provider spend vs ceiling with red banner when hit, "Run now" per job.
+- Media only ever served through the auth-gated `/media` proxy (verified:
+  200 with session, 307 redirect anonymous). Mobile responsiveness via
+  responsive grid classes; verify on a real phone after deploy.
+
 **Phase 4 (ads ingestion) built and verified locally (2026-07-29).**
 Phase 3 verified except the XLS enrichment parser (blocked on a sample
 export file). Phase 2 verified. Phase 1 remains undeployed pending Railway
