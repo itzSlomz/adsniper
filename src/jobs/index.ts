@@ -3,6 +3,7 @@ import { runXPoll } from "@/jobs/xPoll";
 import { runXMetricsRefresh } from "@/jobs/xMetricsRefresh";
 import { runLinkedInPoll } from "@/jobs/linkedinPoll";
 import { runAdsPoll } from "@/jobs/adsPoll";
+import { runDailyBrief, runBriefAutoPublish } from "@/jobs/dailyBrief";
 import type { JobContext } from "@/jobs/runner";
 
 export interface JobDef {
@@ -17,6 +18,9 @@ export const jobs: Record<string, JobDef> = {
   "x-metrics-refresh": { cron: "30 * * * *", run: runXMetricsRefresh },
   "linkedin-poll": { cron: "15 5 * * *", run: runLinkedInPoll },
   "ads-poll": { cron: "0 6 * * *", run: runAdsPoll },
+  // Server TZ is Asia/Riyadh (env TZ), so these are 06:30 / 08:00 local.
+  "daily-brief": { cron: "30 6 * * *", run: runDailyBrief },
+  "brief-auto-publish": { cron: "0 8 * * *", run: runBriefAutoPublish },
 };
 
 export async function triggerJob(name: string) {

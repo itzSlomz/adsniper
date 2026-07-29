@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { adPressure, adWatch, kpisForDay, postsForDay } from "@/lib/dashboard";
 import PostGrid from "@/components/PostGrid";
 import AdWatchGallery from "@/components/AdWatchGallery";
+import BriefCard from "@/components/BriefCard";
 import { AdPressureChart } from "@/components/charts";
 
 export const dynamic = "force-dynamic";
@@ -27,13 +29,18 @@ export default async function DailyCommandView({
       ? searchParams.date
       : new Date().toISOString().slice(0, 10);
 
-  const [posts, kpis, ads, pressure, brands] = await Promise.all([
+  const session = await auth();
+  const isAdmin = (session?.user as { role?: string } | undefined)?.role === "admin";
+  const [posts, kpis, ads, pressure, brands, brief] = await Promise.all([
     postsForDay(date),
     kpisForDay(date),
     adWatch(),
     adPressure(),
     prisma.brand.findMany({ where: { active: true } }),
+    prisma.dailyBrief.findUnique({ where: { date: new Date(`${date}T00:00:00Z`) } }),
   ]);
+  // Viewers see published briefs only; admins also see drafts (Section 8).
+  const visibleBrief = brief && (brief.status === "published" || isAdmin) ? brief : null;
   const self = brands.find((b) => b.type === "self");
   const ours = posts.filter((p) => p.brandId === self?.id);
   const market = posts.filter((p) => p.brandId !== self?.id);
@@ -72,6 +79,17 @@ export default async function DailyCommandView({
         />
         <Kpi label="Competitor ads live" value={String(kpis.activeCompetitorAds)} />
       </section>
+
+      {visibleBrief && (
+        <section>
+          <BriefCard
+            en={visibleBrief.contentEn}
+            ar={visibleBrief.contentAr}
+            status={visibleBrief.status}
+            date={date}
+          />
+        </section>
+      )}
 
       <section>
         <h2 className="mb-2 text-base font-semibold">Our activity</h2>

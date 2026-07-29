@@ -50,6 +50,9 @@ export default async function IntelPage() {
         <Link href="/intel/quick-add-post" className="rounded-lg border bg-white px-4 py-3 text-sm font-medium hover:bg-gray-50">
           ➕ Quick add LinkedIn post
         </Link>
+        <Link href="/intel/brief" className="rounded-lg border bg-white px-4 py-3 text-sm font-medium hover:bg-gray-50">
+          📝 Daily brief
+        </Link>
       </div>
 
       <section className="rounded-lg border bg-white p-4">
