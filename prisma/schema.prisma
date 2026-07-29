@@ -1,0 +1,260 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BrandType {
+  self
+  competitor
+}
+
+enum PostPlatform {
+  x
+  linkedin
+}
+
+enum MediaType {
+  image
+  video
+  carousel
+  text
+}
+
+enum RecordSource {
+  provider
+  import
+  manual
+}
+
+enum AdPlatform {
+  meta
+  google
+  linkedin
+  x
+  snapchat
+  tiktok
+  other
+}
+
+enum AdFormat {
+  text
+  image
+  video
+  carousel
+}
+
+enum AdStatus {
+  active
+  inactive
+  stale
+}
+
+enum Coverage {
+  full
+  partial
+}
+
+enum BriefStatus {
+  draft
+  published
+}
+
+enum Role {
+  viewer
+  admin
+}
+
+model Brand {
+  id                  String   @id @default(cuid())
+  nameEn              String
+  nameAr              String
+  type                BrandType
+  xHandle             String?
+  linkedinPageUrl     String?
+  // Several Saudi banks run ads under multiple verified entities, so these
+  // hold arrays of IDs; ad-library pulls merge results across all of them.
+  metaPageIds         Json     @default("[]")
+  googleAdvertiserIds Json     @default("[]")
+  logoPath            String?
+  brandColor          String?
+  active              Boolean  @default(true)
+  createdAt           DateTime @default(now())
+
+  posts             Post[]
+  followerSnapshots FollowerSnapshot[]
+  ads               Ad[]
+}
+
+model Post {
+  id         String       @id @default(cuid())
+  brandId    String
+  platform   PostPlatform
+  externalId String
+  url        String
+  postedAt   DateTime
+  text       String       @default("")
+  mediaType  MediaType    @default(text)
+  // [{ originalUrl, cachedPath, thumbPath }]
+  mediaItems Json         @default("[]")
+  source     RecordSource @default(provider)
+  createdAt  DateTime     @default(now())
+
+  brand     Brand            @relation(fields: [brandId], references: [id])
+  snapshots MetricSnapshot[]
+
+  @@unique([platform, externalId])
+  @@index([brandId, postedAt])
+}
+
+model MetricSnapshot {
+  id             String   @id @default(cuid())
+  postId         String
+  capturedAt     DateTime @default(now())
+  likes          Int?
+  reposts        Int?
+  replies        Int?
+  views          Int?
+  impressions    Int?
+  comments       Int?
+  clicks         Int?
+  engagementRate Float?
+
+  post Post @relation(fields: [postId], references: [id])
+
+  @@index([postId, capturedAt])
+}
+
+model FollowerSnapshot {
+  id        String       @id @default(cuid())
+  brandId   String
+  platform  PostPlatform
+  date      DateTime     @db.Date
+  followers Int
+
+  brand Brand @relation(fields: [brandId], references: [id])
+
+  @@unique([brandId, platform, date])
+}
+
+model Ad {
+  id                String       @id @default(cuid())
+  brandId           String
+  platform          AdPlatform
+  subPlatforms      Json         @default("[]")
+  libraryId         String?
+  libraryUrl        String?
+  creativePath      String?
+  creativeThumbPath String?
+  adText            String?
+  cta               String?
+  landingUrl        String?
+  messageSummary    String?
+  offerType         String?
+  format            AdFormat     @default(image)
+  firstSeen         DateTime
+  lastSeen          DateTime
+  status            AdStatus     @default(active)
+  source            RecordSource @default(provider)
+  coverage          Coverage     @default(full)
+  notes             String?
+  loggedBy          String?
+  createdAt         DateTime     @default(now())
+
+  brand Brand @relation(fields: [brandId], references: [id])
+
+  @@unique([platform, libraryId])
+  @@index([brandId, status])
+}
+
+model DailyBrief {
+  id             String      @id @default(cuid())
+  date           DateTime    @unique @db.Date
+  contentEn      String      @default("")
+  contentAr      String      @default("")
+  highlightsJson Json        @default("{}")
+  status         BriefStatus @default(draft)
+  generatedAt    DateTime    @default(now())
+  editedAt       DateTime?
+}
+
+model ProviderCallLog {
+  id         String   @id @default(cuid())
+  provider   String
+  calledAt   DateTime @default(now())
+  units      Int      @default(1)
+  estCostUsd Float    @default(0)
+  jobRunId   String?
+
+  jobRun JobRun? @relation(fields: [jobRunId], references: [id])
+
+  @@index([provider, calledAt])
+}
+
+model JobRun {
+  id            String    @id @default(cuid())
+  job           String
+  startedAt     DateTime  @default(now())
+  finishedAt    DateTime?
+  status        String    @default("running")
+  itemsIngested Int       @default(0)
+  errorsJson    Json      @default("[]")
+
+  providerCalls ProviderCallLog[]
+
+  @@index([job, startedAt])
+}
+
+// --- Auth.js models (magic-link verification requires the adapter) ---
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  role          Role      @default(viewer)
+  lastLoginAt   DateTime?
+
+  accounts Account[]
+  sessions Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}

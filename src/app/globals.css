@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* IBM Plex Sans Arabic ships self-hosted in Phase 5 (avoids a build-time
+   fetch); until then a system stack that shapes Arabic correctly. */
+body {
+  font-family: "IBM Plex Sans Arabic", "Segoe UI", "Helvetica Neue", Arial,
+    "Noto Sans Arabic", sans-serif;
+}
