@@ -11,6 +11,22 @@ import type { JobContext } from "@/jobs/runner";
 // by brand name (EN + parenthetical + AR), keeping only country=SA,
 // alias-matched advertisers. Results land in JobRun errors as (info)
 // lines for operator review.
+// Operator-verified official Facebook pages (from each bank's own site
+// footer, compiled 2026-07-30). Exact pages beat keyword search: numeric
+// IDs are used directly; vanity URLs are looked up in the ad library and
+// every pageID they return is trusted (it IS the brand's page).
+const KNOWN_META: Record<string, { pageUrl?: string; pageId?: string }> = {
+  "Bank Albilad": { pageUrl: "https://www.facebook.com/bankalbilad" },
+  "Al Rajhi Bank": { pageUrl: "https://www.facebook.com/alrajhibank" },
+  "SNB (Saudi National Bank)": { pageUrl: "https://www.facebook.com/SNBAlAhli" },
+  "Riyad Bank": { pageUrl: "https://www.facebook.com/RiyadBank" },
+  "Alinma Bank": { pageUrl: "https://www.facebook.com/AlinmaBankSA" },
+  SAB: { pageUrl: "https://www.facebook.com/alawwalsab" },
+  "ANB (Arab National Bank)": { pageUrl: "https://www.facebook.com/anbksa" },
+  "D360 Bank": { pageId: "100064630305788" },
+  "STC Bank": { pageId: "100067406401787" },
+};
+
 export async function runResolveIdentities(ctx: JobContext): Promise<void> {
   const key =
     process.env.META_ADS_PROVIDER_API_KEY ?? process.env.GOOGLE_ADS_PROVIDER_API_KEY;
@@ -24,6 +40,27 @@ export async function runResolveIdentities(ctx: JobContext): Promise<void> {
     const queries = [outer, ...(inner ? [inner] : []), brand.nameAr];
 
     const metaPages = new Map<string, string>();
+    const known = KNOWN_META[brand.nameEn];
+    if (known?.pageId) metaPages.set(known.pageId, "operator-verified page id");
+    // Precise pass: the brand's own page URL — every pageID it returns is
+    // the brand's, no name-matching needed.
+    if (known?.pageUrl) {
+      try {
+        const pageRaw = await runApifyActorSync<{ pageID?: string; pageName?: string }>(
+          "apify~facebook-ads-scraper",
+          { startUrls: [{ url: known.pageUrl }], resultsLimit: 3 },
+          key
+        );
+        await logProviderCall("ads:apify-meta", pageRaw.length, pageRaw.length * 0.003, ctx.jobRunId);
+        for (const ad of pageRaw) {
+          if (ad.pageID) metaPages.set(ad.pageID, ad.pageName ?? "via official page URL");
+        }
+      } catch (e) {
+        ctx.errors.push(`${brand.nameEn}/meta page lookup: ${(e as Error).message.slice(0, 120)}`);
+      }
+    }
+    // Fallback pass: keyword search, alias-gated — catches extra verified
+    // entities the official page doesn't cover.
     try {
       const metaRaw = await runApifyActorSync<{
         pageID?: string;
