@@ -71,7 +71,7 @@ export async function runAdsPoll(ctx: JobContext): Promise<void> {
               lastSeen: new Date(),
               status: "active",
               source: "provider",
-              coverage: "full",
+              coverage: ad.coverage ?? "full",
             },
           });
           ctx.itemsIngested++;

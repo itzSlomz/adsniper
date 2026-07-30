@@ -66,6 +66,7 @@ export interface FetchedAd {
   format: import("@prisma/client").AdFormat;
   subPlatforms: string[];
   startDate?: Date;
+  coverage?: "full" | "partial";
   creative?: FetchedMediaItem | null;
 }
 
@@ -78,6 +79,6 @@ export interface AdsBrandQuery {
 
 export interface AdsProvider {
   name: string;
-  platform: "meta" | "google" | "linkedin";
+  platform: "meta" | "google" | "linkedin" | "tiktok";
   fetchAds(brand: AdsBrandQuery): Promise<ProviderResult<FetchedAd>>;
 }

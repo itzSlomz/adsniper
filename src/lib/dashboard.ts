@@ -151,6 +151,7 @@ export interface AdCardData {
   lastSeen: string;
   status: string;
   source: string;
+  coverage: string;
   isNew: boolean;
   majorPush: boolean;
 }
@@ -181,6 +182,7 @@ export async function adWatch(): Promise<AdCardData[]> {
     lastSeen: a.lastSeen.toISOString(),
     status: a.status,
     source: a.source,
+    coverage: a.coverage,
     isNew: Date.now() - a.firstSeen.getTime() < 7 * DAY,
     majorPush: burst.has(a.brandId),
   }));

@@ -57,6 +57,11 @@ function AdCard({ ad, onOpen }: { ad: AdCardData; onOpen: () => void }) {
           </p>
         )}
         {ad.isNew && <span className="callout">Newly detected</span>}
+        {ad.coverage === "partial" && (
+          <span className="callout-neutral" title="TikTok Creative Center shows only curated Top Ads — this is not full coverage">
+            Top Ads only
+          </span>
+        )}
         {ad.status === "stale" && <span className="callout-neutral">Stale — needs recheck</span>}
         <div className="statrow mt-auto border-t pt-1.5" style={{ borderColor: "var(--color-divider)" }}>
           <span className="stat"><b>{ad.format}</b><span>Format</span></span>
@@ -101,8 +106,8 @@ export default function AdWatchGallery({ ads }: { ads: AdCardData[] }) {
       </div>
       {/* Coverage disclosure (brief Section 5.3): never imply exhaustive coverage. */}
       <p className="mb-3 text-xs text-muted">
-        Automated: Meta, Google, LinkedIn ad libraries. Manual: X, Snapchat, TikTok (no public
-        ad library covers KSA for these). Not exhaustive.
+        Automated: Meta and Google ad libraries, plus TikTok Top Ads (curated chart — partial
+        coverage). Manual: X, Snapchat, TikTok. LinkedIn ads currently disabled. Not exhaustive.
       </p>
       <div className="seg mb-4">
         {TABS.map((t) => (
