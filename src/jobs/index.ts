@@ -5,6 +5,7 @@ import { runLinkedInPoll } from "@/jobs/linkedinPoll";
 import { runAdsPoll } from "@/jobs/adsPoll";
 import { runDailyBrief, runBriefAutoPublish } from "@/jobs/dailyBrief";
 import { runMediaMigrate } from "@/jobs/mediaMigrate";
+import { runResolveIdentities } from "@/jobs/resolveIdentities";
 import type { JobContext } from "@/jobs/runner";
 
 export interface JobDef {
@@ -25,6 +26,8 @@ export const jobs: Record<string, JobDef> = {
   "brief-auto-publish": { cron: "0 8 * * *", run: runBriefAutoPublish },
   // Manual-only: volume→R2 copy after R2 goes live.
   "media-migrate": { cron: null, run: runMediaMigrate },
+  // Manual-only: fill/refresh advertiser IDs (ad pulls depend on them).
+  "resolve-identities": { cron: null, run: runResolveIdentities },
 };
 
 export async function triggerJob(name: string) {
