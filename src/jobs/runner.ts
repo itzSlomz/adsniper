@@ -5,6 +5,9 @@ export interface JobContext {
   jobRunId: string;
   errors: string[];
   itemsIngested: number;
+  // true for "Run now" / CLI; scheduled cron ticks pass false so jobs can
+  // apply their configured pull intervals (manual runs always bypass).
+  manual: boolean;
 }
 
 // Wraps a job in a JobRun record for the ingestion-health panel. A cost
@@ -12,10 +15,11 @@ export interface JobContext {
 // the admin banner can distinguish it.
 export async function runJob(
   job: string,
-  fn: (ctx: JobContext) => Promise<void>
+  fn: (ctx: JobContext) => Promise<void>,
+  opts?: { manual?: boolean }
 ): Promise<{ status: string; itemsIngested: number; errors: string[] }> {
   const run = await prisma.jobRun.create({ data: { job } });
-  const ctx: JobContext = { jobRunId: run.id, errors: [], itemsIngested: 0 };
+  const ctx: JobContext = { jobRunId: run.id, errors: [], itemsIngested: 0, manual: opts?.manual ?? true };
   let status = "success";
   try {
     await fn(ctx);

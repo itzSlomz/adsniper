@@ -4,6 +4,7 @@ import { ensureBudget, logProviderCall } from "@/lib/costs";
 import { cacheMediaItems } from "@/lib/media";
 import type { FetchedPost } from "@/lib/providers/types";
 import type { JobContext } from "@/jobs/runner";
+import { getPullSettings, isDue, setStamp } from "@/lib/settings";
 
 const BACKFILL_DAYS = 30;
 const OVERLAP_MS = 3 * 24 * 60 * 60 * 1000;
@@ -18,6 +19,14 @@ function liEngagementRate(m: FetchedPost["metrics"]): number | null {
 }
 
 export async function runLinkedInPoll(ctx: JobContext): Promise<void> {
+  if (!ctx.manual) {
+    const { linkedinHours } = await getPullSettings();
+    if (!(await isDue("linkedin", linkedinHours))) {
+      ctx.errors.push(`(info) not due (every ${linkedinHours || "∞"}h) — skipped`);
+      return;
+    }
+  }
+  await setStamp("linkedin");
   const provider = getLinkedInPostsProvider();
   const brands = await prisma.brand.findMany({
     where: { active: true, linkedinPageUrl: { not: null } },

@@ -56,6 +56,9 @@ export default async function IntelPage() {
         <Link href="/intel/users" className="btn btn-secondary">
           👥 Users
         </Link>
+        <Link href="/intel/settings" className="btn btn-secondary">
+          ⏱ Data pulling
+        </Link>
       </div>
 
       <section className="card elev-sm">

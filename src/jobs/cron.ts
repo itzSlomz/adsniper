@@ -9,7 +9,7 @@ export function startCron(): void {
   for (const [name, def] of Object.entries(jobs)) {
     if (!def.cron) continue;
     cron.schedule(def.cron, () => {
-      triggerJob(name).catch((err) =>
+      triggerJob(name, { manual: false }).catch((err) =>
         console.error(`[cron] job ${name} crashed:`, err)
       );
     });

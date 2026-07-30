@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/db";
-import { getAdsProviders } from "@/lib/providers/ads";
+import { ADS_PROVIDERS_ALL } from "@/lib/providers/ads";
 import { ensureBudget, logProviderCall } from "@/lib/costs";
 import { cacheMediaItems } from "@/lib/media";
 import type { JobContext } from "@/jobs/runner";
+import { getPullSettings, isDue, setStamp } from "@/lib/settings";
 
 const DAY = 24 * 60 * 60 * 1000;
 // Status logic (brief Section 5.3): a provider ad not returned for 7
@@ -13,7 +14,28 @@ const MANUAL_STALE_AFTER_DAYS = 14;
 
 export async function runAdsPoll(ctx: JobContext): Promise<void> {
   const brands = await prisma.brand.findMany({ where: { active: true } });
-  const providers = getAdsProviders();
+  // Per-platform enablement + interval from admin Settings. Scheduled ticks
+  // pull only platforms that are due; manual runs pull every enabled one.
+  const cfg = await getPullSettings();
+  const hoursFor: Record<string, number> = {
+    meta: cfg.metaHours,
+    google: cfg.googleHours,
+    linkedin: cfg.linkedinAdsHours,
+    tiktok: cfg.tiktokHours,
+  };
+  const providers = [];
+  for (const p of ADS_PROVIDERS_ALL) {
+    const h = hoursFor[p.platform] ?? 0;
+    if (h <= 0) continue;
+    if (!ctx.manual && !(await isDue(`ads_${p.platform}`, h))) continue;
+    await setStamp(`ads_${p.platform}`);
+    providers.push(p);
+  }
+  if (providers.length === 0) {
+    ctx.errors.push("(info) no ad platform due — skipped");
+    return;
+  }
+  ctx.errors.push(`(info) pulling: ${providers.map((p) => p.platform).join(", ")}`);
 
   for (const brand of brands) {
     const query = {

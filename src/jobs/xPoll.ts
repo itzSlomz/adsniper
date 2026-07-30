@@ -4,6 +4,7 @@ import { ensureBudget, logProviderCall } from "@/lib/costs";
 import { cacheMediaItems } from "@/lib/media";
 import type { FetchedPost } from "@/lib/providers/types";
 import type { JobContext } from "@/jobs/runner";
+import { getPullSettings, isDue, setStamp } from "@/lib/settings";
 
 const BACKFILL_DAYS = 30;
 // Polls overlap the last stored post by a day so nothing falls between runs.
@@ -19,6 +20,14 @@ export function xEngagementRate(m: FetchedPost["metrics"]): number | null {
 }
 
 export async function runXPoll(ctx: JobContext): Promise<void> {
+  if (!ctx.manual) {
+    const { xHours } = await getPullSettings();
+    if (!(await isDue("x", xHours))) {
+      ctx.errors.push(`(info) not due (every ${xHours || "∞"}h) — skipped`);
+      return;
+    }
+  }
+  await setStamp("x");
   const provider = getXProvider();
   const brands = await prisma.brand.findMany({
     where: { active: true, xHandle: { not: null } },

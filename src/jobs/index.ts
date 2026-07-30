@@ -16,11 +16,13 @@ export interface JobDef {
 
 // Job registry: cron schedules (in TZ, Asia/Riyadh on the server) plus
 // "Run now" targets for the admin panel / API.
+// Pull sources tick hourly; each checks its admin-configured interval
+// (Intel → Settings) and skips when not due. Manual runs always execute.
 export const jobs: Record<string, JobDef> = {
-  "x-poll": { cron: "0 */4 * * *", run: runXPoll },
+  "x-poll": { cron: "10 * * * *", run: runXPoll },
   "x-metrics-refresh": { cron: "30 * * * *", run: runXMetricsRefresh },
-  "linkedin-poll": { cron: "15 5 * * *", run: runLinkedInPoll },
-  "ads-poll": { cron: "0 6 * * *", run: runAdsPoll },
+  "linkedin-poll": { cron: "20 * * * *", run: runLinkedInPoll },
+  "ads-poll": { cron: "40 * * * *", run: runAdsPoll },
   // Server TZ is Asia/Riyadh (env TZ), so these are 06:30 / 08:00 local.
   "daily-brief": { cron: "30 6 * * *", run: runDailyBrief },
   "brief-auto-publish": { cron: "0 8 * * *", run: runBriefAutoPublish },
@@ -30,8 +32,8 @@ export const jobs: Record<string, JobDef> = {
   "resolve-identities": { cron: null, run: runResolveIdentities },
 };
 
-export async function triggerJob(name: string) {
+export async function triggerJob(name: string, opts?: { manual?: boolean }) {
   const def = jobs[name];
   if (!def) throw new Error(`Unknown job "${name}"`);
-  return runJob(name, def.run);
+  return runJob(name, def.run, opts);
 }

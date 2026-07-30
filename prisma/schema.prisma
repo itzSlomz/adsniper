@@ -208,6 +208,12 @@ model JobRun {
   @@index([job, startedAt])
 }
 
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
 // --- Auth.js models (magic-link verification requires the adapter) ---
 
 model User {
