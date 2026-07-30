@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./modernist.css";
 
 export const metadata: Metadata = {
   title: "Watchtower",
@@ -13,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-gray-50 text-gray-900">{children}</body>
+      <body className="min-h-screen">{children}</body>
     </html>
   );
 }

@@ -2,9 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
-/* IBM Plex Sans Arabic ships self-hosted in Phase 5 (avoids a build-time
-   fetch); until then a system stack that shapes Arabic correctly. */
-body {
-  font-family: "IBM Plex Sans Arabic", "Segoe UI", "Helvetica Neue", Arial,
-    "Noto Sans Arabic", sans-serif;
+/* Look and feel comes from the Modernist design system (modernist.css):
+   tokens (colors, Archivo + IBM Plex Sans Arabic, 0 radius, 2px rules)
+   and component classes. Tailwind is used for layout utilities only. */
+
+/* App-specific pieces built from the system's tokens. */
+
+/* Post/ad media area: platform badge + overlay strip. Creatives are
+   exempt from the system's .grayscale rule (operator decision) — seeing
+   competitors' actual colors is the point of the tool. */
+.media-frame { position: relative; background: var(--color-neutral-300); }
+.media-frame img { width: 100%; height: 100%; object-fit: cover; }
+
+.plat-badge {
+  position: absolute; top: 0; left: 0; z-index: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; font-size: 12px; font-weight: 800;
+  font-family: var(--font-heading);
+  background: var(--color-text); color: var(--color-bg);
 }
+
+.media-strip {
+  position: absolute; inset-inline: 0; bottom: 0; display: flex;
+  align-items: center; justify-content: space-between;
+  padding: 4px 8px; font-size: 10px; letter-spacing: 0.08em;
+  text-transform: uppercase; font-weight: 800;
+  font-family: var(--font-heading);
+  background: color-mix(in srgb, var(--color-text) 82%, transparent);
+  color: var(--color-bg);
+}
+
+/* Red-left-border callout, per the mock ("Above average engagement" etc.) */
+.callout {
+  border-left: 3px solid var(--color-accent);
+  background: var(--color-accent-100); color: var(--color-accent-800);
+  padding: 3px 8px; font-size: 11px; font-weight: 600;
+}
+.callout-neutral {
+  border-left: 3px solid var(--color-neutral-500);
+  background: var(--color-neutral-100); color: var(--color-neutral-800);
+  padding: 3px 8px; font-size: 11px; font-weight: 600;
+}
+
+/* Labeled stat columns (LIKES / COMMENTS / …) in card footers. */
+.statrow { display: flex; gap: var(--space-3); }
+.statrow .stat { display: flex; flex-direction: column; }
+.statrow .stat b { font-size: 13px; font-family: var(--font-heading); font-weight: 800; }
+.statrow .stat span {
+  font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 55%, transparent);
+}
+
+/* KPI chip in the page header. */
+.kpi-chip {
+  border: 1px solid var(--color-divider); padding: 6px 12px; min-width: 96px;
+  background: var(--color-surface);
+}
+.kpi-chip b { display: block; font-size: 20px; line-height: 1.1; font-family: var(--font-heading); font-weight: 800; }
+.kpi-chip span {
+  font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: color-mix(in srgb, var(--color-text) 60%, transparent);
+}
+
+/* Brand initials square. */
+.brand-sq {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; flex: none; font-size: 10px; font-weight: 800;
+  font-family: var(--font-heading);
+  background: var(--color-text); color: var(--color-bg);
+}
+.brand-sq.self { background: var(--color-accent); }
+
+/* Section header: kicker tag + flush-left title over a 2px rule. */
+.section-head {
+  display: flex; align-items: baseline; gap: var(--space-3);
+  padding-bottom: var(--space-2); border-bottom: 2px solid var(--color-divider);
+  margin-bottom: var(--space-4);
+}
+.section-kicker {
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  font-weight: 800; font-family: var(--font-heading);
+  background: var(--color-accent); color: var(--color-bg); padding: 3px 8px;
+}
+.section-kicker.neutral { background: var(--color-text); }

@@ -80,9 +80,9 @@ export default async function QuickAddPostPage() {
 
   return (
     <main className="mx-auto max-w-md p-6">
-      <h1 className="mb-4 text-lg font-semibold">Quick add LinkedIn post</h1>
+      <h1 style={{ fontSize: 24 }}>Quick add LinkedIn post</h1>
       <form action={addPost} className="space-y-3">
-        <select name="brandId" required className="w-full rounded border px-3 py-2">
+        <select name="brandId" required className="w-full input">
           <option value="">Brand…</option>
           {brands.map((b) => (
             <option key={b.id} value={b.id}>
@@ -90,15 +90,15 @@ export default async function QuickAddPostPage() {
             </option>
           ))}
         </select>
-        <input name="url" type="url" required placeholder="Post URL" className="w-full rounded border px-3 py-2" />
-        <textarea name="summary" rows={3} placeholder="Summary / text" className="w-full rounded border px-3 py-2" />
+        <input name="url" type="url" required placeholder="Post URL" className="w-full input" />
+        <textarea name="summary" rows={3} placeholder="Summary / text" className="w-full input" />
         <div className="grid grid-cols-3 gap-2">
-          <input name="reactions" type="number" min="0" placeholder="Reactions" className="rounded border px-3 py-2" />
-          <input name="comments" type="number" min="0" placeholder="Comments" className="rounded border px-3 py-2" />
-          <input name="reposts" type="number" min="0" placeholder="Reposts" className="rounded border px-3 py-2" />
+          <input name="reactions" type="number" min="0" placeholder="Reactions" className="input" />
+          <input name="comments" type="number" min="0" placeholder="Comments" className="input" />
+          <input name="reposts" type="number" min="0" placeholder="Reposts" className="input" />
         </div>
         <input name="screenshot" type="file" accept="image/*" className="w-full text-sm" />
-        <button className="w-full rounded bg-gray-900 px-3 py-2 text-white hover:bg-gray-700">
+        <button className="w-full btn btn-primary btn-block">
           Add post
         </button>
       </form>

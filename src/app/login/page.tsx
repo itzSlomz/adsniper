@@ -32,10 +32,10 @@ export default function LoginPage({
 
   return (
     <main className="flex min-h-screen items-center justify-center p-6">
-      <form action={login} className="w-full max-w-xs space-y-4">
-        <h1 className="text-center text-lg font-medium">Sign in</h1>
+      <form action={login} className="card elev-md w-full max-w-xs space-y-3" style={{ padding: "var(--space-6)" }}>
+        <h1 style={{ fontSize: 22, margin: 0 }}>Sign in</h1>
         {searchParams.error && (
-          <p className="rounded bg-red-50 p-2 text-center text-sm text-red-700">
+          <p className="callout text-sm">
             Sign-in failed. Check your details.
           </p>
         )}
@@ -44,7 +44,7 @@ export default function LoginPage({
           type="email"
           required
           placeholder="Email"
-          className="w-full rounded border px-3 py-2"
+          className="input"
         />
         {!magicLinks && (
           <input
@@ -53,10 +53,10 @@ export default function LoginPage({
             required
             inputMode="numeric"
             placeholder="Passcode"
-            className="w-full rounded border px-3 py-2"
+            className="input"
           />
         )}
-        <button className="w-full rounded bg-gray-900 px-3 py-2 text-white hover:bg-gray-700">
+        <button className="btn btn-primary btn-block">
           {magicLinks ? "Send sign-in link" : "Sign in"}
         </button>
       </form>

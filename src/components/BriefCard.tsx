@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 
-// Minimal markdown rendering for brief bullets: bold + bullets + numbered
-// section headers. Anything fancier belongs in the prompt, not here.
+// Markdown-lite: bold + bullets + headers, nothing more.
 function renderLine(line: string, i: number) {
   const html = line
     .replace(/&/g, "&amp;")
@@ -16,11 +15,11 @@ function renderLine(line: string, i: number) {
   }
   if (/^\s*#{1,4}\s+/.test(line)) {
     return (
-      <p key={i} className="mt-2 font-semibold" dangerouslySetInnerHTML={{ __html: html.replace(/^\s*#{1,4}\s+/, "") }} />
+      <p key={i} className="mt-2 font-bold" style={{ fontFamily: "var(--font-heading)" }} dangerouslySetInnerHTML={{ __html: html.replace(/^\s*#{1,4}\s+/, "") }} />
     );
   }
   if (line.trim() === "") return null;
-  return <p key={i} dangerouslySetInnerHTML={{ __html: html }} />;
+  return <p key={i} style={{ margin: 0 }} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 export default function BriefCard({
@@ -37,29 +36,25 @@ export default function BriefCard({
   const [lang, setLang] = useState<"en" | "ar">("ar");
   const content = lang === "ar" ? ar : en;
   return (
-    <div className="rounded-lg border bg-white p-4">
-      <div className="mb-2 flex items-center gap-2">
-        <h2 className="text-base font-semibold">Daily brief</h2>
-        <span className="text-xs text-gray-400">{date}</span>
-        {status === "draft" && (
-          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
-            Draft
-          </span>
-        )}
-        <div className="ms-auto flex overflow-hidden rounded border text-xs">
-          <button
-            onClick={() => setLang("ar")}
-            className={`px-2 py-1 ${lang === "ar" ? "bg-gray-900 text-white" : "bg-white"}`}
-          >
-            عربي
-          </button>
-          <button
-            onClick={() => setLang("en")}
-            className={`px-2 py-1 ${lang === "en" ? "bg-gray-900 text-white" : "bg-white"}`}
-          >
-            EN
-          </button>
+    <div className="card elev-sm" style={{ borderTop: "3px solid var(--color-accent)" }}>
+      <div className="flex items-center gap-2">
+        <div>
+          <span className="card-kicker">Daily brief — market moves</span>
+          <div className="card-title">
+            {date}
+            {status === "draft" && <span className="tag tag-accent ms-2">Draft</span>}
+          </div>
         </div>
+        <span className="seg ms-auto">
+          <label className="seg-opt">
+            <input type="radio" checked={lang === "ar"} onChange={() => setLang("ar")} />
+            عربي
+          </label>
+          <label className="seg-opt">
+            <input type="radio" checked={lang === "en"} onChange={() => setLang("en")} />
+            EN
+          </label>
+        </span>
       </div>
       <div
         dir={lang === "ar" ? "rtl" : "ltr"}

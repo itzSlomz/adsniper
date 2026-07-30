@@ -78,10 +78,10 @@ export default async function LogAdPage() {
 
   return (
     <main className="mx-auto max-w-md p-4">
-      <h1 className="mb-4 text-lg font-semibold">Log ad</h1>
+      <h1 style={{ fontSize: 24 }}>Log ad</h1>
       <form action={logAd} className="space-y-3">
         <div className="grid grid-cols-2 gap-2">
-          <select name="brandId" required className="rounded border px-3 py-3">
+          <select name="brandId" required className="input">
             <option value="">Brand…</option>
             {brands.map((b) => (
               <option key={b.id} value={b.id}>
@@ -89,7 +89,7 @@ export default async function LogAdPage() {
               </option>
             ))}
           </select>
-          <select name="platform" required className="rounded border px-3 py-3">
+          <select name="platform" required className="input">
             <option value="">Platform…</option>
             <option value="x">X</option>
             <option value="snapchat">Snapchat</option>
@@ -101,10 +101,10 @@ export default async function LogAdPage() {
           Screenshot (required)
           <input name="screenshot" type="file" accept="image/*" required className="mt-2 w-full text-sm" />
         </label>
-        <input name="landingUrl" type="url" placeholder="Landing URL" className="w-full rounded border px-3 py-3" />
-        <input name="messageSummary" placeholder="Message summary" className="w-full rounded border px-3 py-3" />
+        <input name="landingUrl" type="url" placeholder="Landing URL" className="w-full input" />
+        <input name="messageSummary" placeholder="Message summary" className="w-full input" />
         <div className="grid grid-cols-2 gap-2">
-          <select name="offerType" className="rounded border px-3 py-3">
+          <select name="offerType" className="input">
             <option value="">Offer type…</option>
             <option value="personal finance">Personal finance</option>
             <option value="credit card">Credit card</option>
@@ -112,16 +112,16 @@ export default async function LogAdPage() {
             <option value="brand">Brand</option>
             <option value="other">Other</option>
           </select>
-          <select name="format" className="rounded border px-3 py-3">
+          <select name="format" className="input">
             <option value="image">Image</option>
             <option value="video">Video</option>
             <option value="carousel">Carousel</option>
             <option value="text">Text</option>
           </select>
         </div>
-        <input name="firstSeen" type="date" className="w-full rounded border px-3 py-3" />
-        <textarea name="notes" rows={2} placeholder="Notes" className="w-full rounded border px-3 py-3" />
-        <button className="w-full rounded bg-gray-900 px-3 py-3 text-white hover:bg-gray-700">
+        <input name="firstSeen" type="date" className="w-full input" />
+        <textarea name="notes" rows={2} placeholder="Notes" className="w-full input" />
+        <button className="w-full btn btn-primary btn-block">
           Log ad
         </button>
       </form>

@@ -44,9 +44,9 @@ export default async function BriefAdminPage() {
   return (
     <main className="space-y-4">
       <div className="flex items-center gap-3">
-        <h1 className="text-lg font-semibold">Daily brief</h1>
+        <h1 style={{ fontSize: 24, margin: 0 }}>Daily brief</h1>
         <form action={regenerate}>
-          <button className="rounded border px-3 py-1 text-sm hover:bg-gray-50">Regenerate</button>
+          <button className="btn btn-secondary">Regenerate</button>
         </form>
       </div>
 
@@ -76,10 +76,10 @@ export default async function BriefAdminPage() {
             </label>
           </div>
           <div className="flex gap-2">
-            <button name="publish" value="0" className="rounded border px-4 py-2 text-sm hover:bg-gray-50">
+            <button name="publish" value="0" className="btn btn-secondary">
               Save draft
             </button>
-            <button name="publish" value="1" className="rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700">
+            <button name="publish" value="1" className="btn btn-primary">
               Save & publish
             </button>
           </div>

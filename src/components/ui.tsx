@@ -1,6 +1,6 @@
 "use client";
 
-// Small shared UI pieces for the media-first grids.
+// Shared atoms for the Modernist-styled grids.
 
 export function relTime(iso: string): string {
   const mins = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
@@ -16,44 +16,38 @@ export function num(n: number | null | undefined): string {
   return String(n);
 }
 
-export function PlatformIcon({ platform }: { platform: string }) {
-  const label: Record<string, string> = {
-    x: "𝕏",
-    linkedin: "in",
-    meta: "f",
-    google: "G",
-    snapchat: "👻",
-    tiktok: "♪",
-    other: "•",
-  };
-  return (
-    <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-gray-900/80 text-[11px] font-bold text-white">
-      {label[platform] ?? "•"}
-    </span>
-  );
+export const PLATFORM_GLYPH: Record<string, string> = {
+  x: "𝕏",
+  linkedin: "in",
+  meta: "f",
+  google: "G",
+  snapchat: "👻",
+  tiktok: "♪",
+  other: "•",
+};
+
+export function PlatformBadge({ platform }: { platform: string }) {
+  return <span className="plat-badge">{PLATFORM_GLYPH[platform] ?? "•"}</span>;
 }
 
-export function Badge({ children, tone = "gray" }: { children: React.ReactNode; tone?: string }) {
-  const tones: Record<string, string> = {
-    gray: "bg-gray-100 text-gray-700",
-    red: "bg-red-100 text-red-700",
-    green: "bg-emerald-100 text-emerald-700",
-    amber: "bg-amber-100 text-amber-800",
-    blue: "bg-blue-100 text-blue-700",
-  };
-  return (
-    <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${tones[tone]}`}>{children}</span>
-  );
+export function BrandSquare({ name, self = false }: { name: string; self?: boolean }) {
+  const initials = name
+    .replace(/\(.*\)/, "")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase();
+  return <span className={`brand-sq${self ? " self" : ""}`}>{initials}</span>;
 }
 
-export function Lightbox({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
+export function Dialog({ onClose, children }: { onClose: () => void; children: React.ReactNode }) {
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
-      onClick={onClose}
-    >
+    <div className="dialog-backdrop z-50" onClick={onClose}>
       <div
-        className="max-h-full w-full max-w-lg overflow-y-auto rounded-lg bg-white p-4"
+        className="dialog max-h-full overflow-y-auto"
+        style={{ width: "min(560px, 100%)" }}
         onClick={(e) => e.stopPropagation()}
       >
         {children}

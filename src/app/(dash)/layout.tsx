@@ -6,36 +6,31 @@ export default async function DashLayout({ children }: { children: React.ReactNo
   const isAdmin = (session?.user as { role?: string } | undefined)?.role === "admin";
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur">
-        <nav className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 text-sm">
-          <Link href="/" className="font-semibold">
-            Watchtower<span className="text-accent">.</span>
+      <header className="nav sticky top-0 z-40" style={{ background: "var(--color-bg)" }}>
+        <span className="nav-brand">
+          WATCHTOWER<span style={{ color: "var(--color-accent)" }}>.</span>
+        </span>
+        <Link href="/">Daily</Link>
+        <Link href="/compare">Analytics</Link>
+        {isAdmin && <Link href="/intel">Intel</Link>}
+        {session?.user ? (
+          <form
+            action={async () => {
+              "use server";
+              await signOut({ redirectTo: "/" });
+            }}
+          >
+            <button className="btn btn-ghost" style={{ fontSize: 12 }}>
+              {session.user.email} · Sign out
+            </button>
+          </form>
+        ) : (
+          <Link href="/login" className="text-muted" style={{ fontSize: 12 }}>
+            Admin
           </Link>
-          <Link href="/" className="text-gray-600 hover:text-gray-900">Daily</Link>
-          <Link href="/compare" className="text-gray-600 hover:text-gray-900">Compare</Link>
-          {isAdmin && (
-            <Link href="/intel" className="text-gray-600 hover:text-gray-900">Intel</Link>
-          )}
-          {session?.user ? (
-            <form
-              className="ms-auto"
-              action={async () => {
-                "use server";
-                await signOut({ redirectTo: "/" });
-              }}
-            >
-              <button className="text-xs text-gray-400 hover:text-gray-700">
-                {session.user.email} · Sign out
-              </button>
-            </form>
-          ) : (
-            <Link href="/login" className="ms-auto text-xs text-gray-300 hover:text-gray-600">
-              Admin
-            </Link>
-          )}
-        </nav>
+        )}
       </header>
-      <div className="mx-auto max-w-6xl px-4 py-5">{children}</div>
+      <div className="mx-auto max-w-6xl px-4 py-6">{children}</div>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { AdCardData } from "@/lib/dashboard";
-import { Badge, Lightbox, PlatformIcon, relTime } from "@/components/ui";
+import { BrandSquare, Dialog, PlatformBadge, relTime } from "@/components/ui";
 
 const TABS = [
   { key: "all", label: "All" },
@@ -14,20 +14,72 @@ const TABS = [
   { key: "tiktok", label: "TikTok" },
 ];
 
+const DAY = 86400000;
+
+function daysActive(a: AdCardData): number {
+  return Math.max(1, Math.round((+new Date(a.lastSeen) - +new Date(a.firstSeen)) / DAY));
+}
+
+function domainOf(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return null;
+  }
+}
+
+function AdCard({ ad, onOpen }: { ad: AdCardData; onOpen: () => void }) {
+  const title = (ad.adText ?? "").split("\n")[0].slice(0, 60);
+  return (
+    <div className="flex cursor-pointer flex-col border bg-white" style={{ borderColor: "var(--color-divider)" }} onClick={onOpen}>
+      <div className="media-frame aspect-square">
+        <PlatformBadge platform={ad.platform} />
+        {ad.thumbPath ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img src={`/media/${ad.thumbPath}`} alt="" loading="lazy" />
+        ) : (
+          <div className="flex h-full items-center justify-center p-2" style={{ background: "var(--color-surface)" }}>
+            <span dir="auto" className="line-clamp-4 text-center text-[11px] font-semibold">
+              {ad.adText ?? ad.format.toUpperCase()}
+            </span>
+          </div>
+        )}
+        <div className="media-strip">
+          <span>Sponsored</span>
+          <span>{daysActive(ad)}d active</span>
+        </div>
+      </div>
+      <div className="flex flex-1 flex-col gap-1.5 p-2.5">
+        {title && (
+          <p dir="auto" className="line-clamp-1 text-xs font-bold" style={{ fontFamily: "var(--font-heading)", margin: 0 }}>
+            {title}
+          </p>
+        )}
+        {ad.isNew && <span className="callout">Newly detected</span>}
+        {ad.status === "stale" && <span className="callout-neutral">Stale — needs recheck</span>}
+        <div className="statrow mt-auto border-t pt-1.5" style={{ borderColor: "var(--color-divider)" }}>
+          <span className="stat"><b>{ad.format}</b><span>Format</span></span>
+          <span className="stat"><b>{relTime(ad.firstSeen)}</b><span>First seen</span></span>
+          {ad.subPlatforms.length > 0 && (
+            <span className="stat"><b>{ad.subPlatforms.length}</b><span>Placements</span></span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function AdWatchGallery({ ads }: { ads: AdCardData[] }) {
   const [tab, setTab] = useState("all");
   const [open, setOpen] = useState<AdCardData | null>(null);
-
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
-  const PER_BRAND = 12;
+  const PER_BRAND = 8;
 
   const groups = useMemo(() => {
     const filtered = ads.filter((a) => tab === "all" || a.platform === tab);
     const byBrand = new Map<string, AdCardData[]>();
-    for (const a of filtered) {
-      byBrand.set(a.brandName, [...(byBrand.get(a.brandName) ?? []), a]);
-    }
-    // Creative-led gallery: ads with creatives first, newest first within.
+    for (const a of filtered) byBrand.set(a.brandName, [...(byBrand.get(a.brandName) ?? []), a]);
     for (const list of Array.from(byBrand.values())) {
       list.sort(
         (a, b) =>
@@ -40,72 +92,50 @@ export default function AdWatchGallery({ ads }: { ads: AdCardData[] }) {
 
   return (
     <div>
-      <div className="mb-1 flex items-baseline gap-2">
-        <h2 className="text-base font-semibold">
-          Detected ads <span className="text-gray-400">·</span>{" "}
+      <div className="section-head">
+        <span className="section-kicker">Paid media</span>
+        <h2 style={{ margin: 0 }}>
+          Detected ads <span className="text-muted" style={{ fontWeight: 400 }}>·</span>{" "}
           <span dir="rtl">الإعلانات المرصودة</span>
         </h2>
       </div>
       {/* Coverage disclosure (brief Section 5.3): never imply exhaustive coverage. */}
-      <p className="mb-3 text-xs text-gray-500">
-        Automated: Meta, Google, LinkedIn ad libraries. Manual: X, Snapchat, TikTok (no
-        public ad library covers KSA for these). Not exhaustive.
+      <p className="mb-3 text-xs text-muted">
+        Automated: Meta, Google, LinkedIn ad libraries. Manual: X, Snapchat, TikTok (no public
+        ad library covers KSA for these). Not exhaustive.
       </p>
-      <div className="mb-3 flex flex-wrap gap-1">
+      <div className="seg mb-4">
         {TABS.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`rounded-full border px-3 py-1 text-xs ${
-              tab === t.key ? "border-gray-900 bg-gray-900 text-white" : "bg-white"
-            }`}
-          >
+          <label className="seg-opt" key={t.key}>
+            <input type="radio" checked={tab === t.key} onChange={() => setTab(t.key)} />
             {t.label}
-          </button>
+          </label>
         ))}
       </div>
 
       {groups.length === 0 ? (
-        <p className="rounded border border-dashed p-6 text-center text-sm text-gray-500">
-          No detected ads on this platform.
-        </p>
+        <p className="card text-sm text-muted">No detected ads on this platform.</p>
       ) : (
         groups.map(([brandName, brandAds]) => (
-          <div key={brandName} className="mb-5">
-            <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold">
-              {brandName}
-              <span className="text-xs font-normal text-gray-400">{brandAds.length} active</span>
-              {brandAds[0]?.majorPush && <Badge tone="red">Major push</Badge>}
-            </h3>
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+          <div key={brandName} className="mb-6">
+            <div className="mb-2 flex items-center gap-2 border-b pb-1.5" style={{ borderColor: "var(--color-divider)" }}>
+              <BrandSquare name={brandName} />
+              <h3 style={{ fontSize: 16, margin: 0 }}>{brandName}</h3>
+              <span className="text-xs text-muted">{brandAds.length} active</span>
+              {brandAds[0]?.majorPush && <span className="section-kicker">Major push</span>}
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {(expanded[brandName] ? brandAds : brandAds.slice(0, PER_BRAND)).map((a) => (
-                <button key={a.id} onClick={() => setOpen(a)} className="group relative overflow-hidden rounded-lg border bg-white text-left shadow-sm">
-                  {a.thumbPath ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={`/media/${a.thumbPath}`} alt="" loading="lazy" className="aspect-square w-full object-cover" />
-                  ) : (
-                    <div className="flex aspect-square w-full items-center justify-center bg-gray-100 p-2">
-                      <span dir="auto" className="line-clamp-4 text-[10px] text-gray-600">
-                        {a.adText ?? a.format}
-                      </span>
-                    </div>
-                  )}
-                  <span className="absolute left-1 top-1"><PlatformIcon platform={a.platform} /></span>
-                  <span className="absolute right-1 top-1 flex gap-1">
-                    {a.isNew && <Badge tone="green">New</Badge>}
-                    {a.status === "stale" && <Badge tone="amber">Stale</Badge>}
-                  </span>
-                </button>
+                <AdCard key={a.id} ad={a} onOpen={() => setOpen(a)} />
               ))}
             </div>
             {brandAds.length > PER_BRAND && (
               <button
+                className="btn btn-ghost mt-1"
+                style={{ fontSize: 12 }}
                 onClick={() => setExpanded((e) => ({ ...e, [brandName]: !e[brandName] }))}
-                className="mt-1 text-xs text-blue-600 underline"
               >
-                {expanded[brandName]
-                  ? "Show fewer"
-                  : `Show all ${brandAds.length} (+${brandAds.length - PER_BRAND} more)`}
+                {expanded[brandName] ? "Show fewer" : `Show all ${brandAds.length} →`}
               </button>
             )}
           </div>
@@ -113,37 +143,44 @@ export default function AdWatchGallery({ ads }: { ads: AdCardData[] }) {
       )}
 
       {open && (
-        <Lightbox onClose={() => setOpen(null)}>
+        <Dialog onClose={() => setOpen(null)}>
           {open.thumbPath && (
             /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={`/media/${open.thumbPath}`} alt="" className="mb-3 w-full rounded" />
+            <img src={`/media/${open.thumbPath}`} alt="" className="w-full" />
           )}
-          <div className="mb-2 flex items-center gap-2 text-sm font-medium">
-            <PlatformIcon platform={open.platform} /> {open.brandName}
-            {open.subPlatforms.length > 0 && (
-              <span className="text-xs font-normal text-gray-400">
-                {open.subPlatforms.join(" · ")}
-              </span>
-            )}
+          <div className="flex items-center gap-2">
+            <BrandSquare name={open.brandName} />
+            <span className="dialog-title" style={{ fontSize: 16 }}>{open.brandName}</span>
+            <span className="ms-auto"><PlatformBadge platform={open.platform} /></span>
           </div>
-          {open.adText && <p dir="auto" className="mb-2 whitespace-pre-wrap text-sm">{open.adText}</p>}
-          {open.cta && <p className="mb-2 text-sm"><span className="text-gray-500">CTA:</span> {open.cta}</p>}
-          {open.landingUrl && (
-            <p className="mb-2 truncate text-sm">
-              <span className="text-gray-500">Lands on:</span>{" "}
-              <a href={open.landingUrl} target="_blank" rel="noreferrer" className="text-blue-600 underline">{open.landingUrl}</a>
+          {open.adText && <p dir="auto" className="dialog-body whitespace-pre-wrap">{open.adText}</p>}
+          <div className="statrow">
+            <span className="stat"><b>{open.format}</b><span>Format</span></span>
+            <span className="stat"><b>{relTime(open.firstSeen)}</b><span>First seen</span></span>
+            <span className="stat"><b>{relTime(open.lastSeen)}</b><span>Last seen</span></span>
+            <span className="stat"><b>{open.source === "manual" ? "Manual" : "Library"}</b><span>Source</span></span>
+          </div>
+          {open.cta && <p className="dialog-body" style={{ margin: 0 }}><span className="text-muted">CTA:</span> {open.cta}</p>}
+          {open.subPlatforms.length > 0 && (
+            <p className="dialog-body" style={{ margin: 0 }}>
+              <span className="text-muted">Placements:</span> {open.subPlatforms.join(" · ")}
             </p>
           )}
-          <p className="mb-2 text-xs text-gray-500">
-            First seen {relTime(open.firstSeen)} ago · last seen {relTime(open.lastSeen)} ago ·{" "}
-            {open.source === "manual" ? "manually logged" : "from ad library"}
-          </p>
-          {open.libraryUrl && (
-            <a href={open.libraryUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-600 underline">
-              View in ad library ↗
-            </a>
+          {domainOf(open.landingUrl) && (
+            <p className="dialog-body" style={{ margin: 0 }}>
+              <span className="text-muted">Lands on:</span>{" "}
+              <a href={open.landingUrl!} target="_blank" rel="noreferrer">{domainOf(open.landingUrl)}</a>
+            </p>
           )}
-        </Lightbox>
+          <div className="dialog-actions">
+            <button className="btn btn-secondary" onClick={() => setOpen(null)}>Close</button>
+            {open.libraryUrl && (
+              <a className="btn btn-primary" href={open.libraryUrl} target="_blank" rel="noreferrer">
+                View ad ↗
+              </a>
+            )}
+          </div>
+        </Dialog>
       )}
     </div>
   );

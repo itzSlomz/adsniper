@@ -43,7 +43,7 @@ export default async function UsersPage() {
 
   return (
     <main className="mx-auto max-w-xl space-y-6">
-      <h1 className="text-lg font-semibold">Users</h1>
+      <h1 style={{ fontSize: 24, margin: 0 }}>Users</h1>
       <p className="text-sm text-gray-500">
         Only these emails can sign in. Viewers see the dashboard and published
         briefs; admins also get Intel capture and brief editing.
@@ -55,20 +55,20 @@ export default async function UsersPage() {
           type="email"
           required
           placeholder="name@bankalbilad.com"
-          className="flex-1 rounded border px-3 py-2 text-sm"
+          className="flex-1 input"
         />
-        <select name="role" className="rounded border px-2 py-2 text-sm">
+        <select name="role" className="input">
           <option value="viewer">Viewer</option>
           <option value="admin">Admin</option>
         </select>
-        <button className="rounded bg-gray-900 px-4 py-2 text-sm text-white hover:bg-gray-700">
+        <button className="btn btn-primary">
           Add
         </button>
       </form>
 
-      <div className="rounded-lg border bg-white">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-xs text-gray-500">
+      <div className="border" style={{ borderColor: "var(--color-divider)", background: "var(--color-surface)" }}>
+        <table className="table">
+          <thead>
             <tr>
               <th className="p-2 text-start">Email</th>
               <th className="p-2 text-start">Role</th>

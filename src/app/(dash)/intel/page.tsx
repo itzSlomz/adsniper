@@ -34,31 +34,31 @@ export default async function IntelPage() {
 
   return (
     <main className="space-y-6">
-      <h1 className="text-lg font-semibold">Intel capture</h1>
+      <div className="section-head"><span className="section-kicker">Admin</span><h1 style={{ margin: 0, fontSize: 28 }}>Intel capture</h1></div>
 
       {ceilingHit.length > 0 && (
-        <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-800">
+        <div className="callout text-sm">
           Monthly cost ceiling reached for: {ceilingHit.map((b) => b.group).join(", ")}.
           Those ingestion paths are stopped until the ceiling is raised or the month rolls over.
         </div>
       )}
 
       <div className="flex flex-wrap gap-2">
-        <Link href="/intel/log-ad" className="rounded-lg border bg-white px-4 py-3 text-sm font-medium hover:bg-gray-50">
+        <Link href="/intel/log-ad" className="btn btn-secondary">
           📸 Log ad
         </Link>
-        <Link href="/intel/quick-add-post" className="rounded-lg border bg-white px-4 py-3 text-sm font-medium hover:bg-gray-50">
+        <Link href="/intel/quick-add-post" className="btn btn-secondary">
           ➕ Quick add LinkedIn post
         </Link>
-        <Link href="/intel/brief" className="rounded-lg border bg-white px-4 py-3 text-sm font-medium hover:bg-gray-50">
+        <Link href="/intel/brief" className="btn btn-secondary">
           📝 Daily brief
         </Link>
-        <Link href="/intel/users" className="rounded-lg border bg-white px-4 py-3 text-sm font-medium hover:bg-gray-50">
+        <Link href="/intel/users" className="btn btn-secondary">
           👥 Users
         </Link>
       </div>
 
-      <section className="rounded-lg border bg-white p-4">
+      <section className="card elev-sm">
         <h2 className="mb-2 text-base font-semibold">Provider spend (this month)</h2>
         <div className="grid grid-cols-3 gap-3 text-sm">
           {budget.map((b) => (
@@ -75,10 +75,10 @@ export default async function IntelPage() {
         </div>
       </section>
 
-      <section className="rounded-lg border bg-white p-4">
+      <section className="card elev-sm">
         <h2 className="mb-2 text-base font-semibold">Ingestion health</h2>
-        <table className="w-full text-sm">
-          <thead className="text-start text-xs text-gray-500">
+        <table className="table">
+          <thead>
             <tr>
               <th className="py-1 text-start">Job</th>
               <th className="py-1 text-start">Last run</th>
@@ -115,7 +115,7 @@ export default async function IntelPage() {
                   <td className="py-2 text-end">
                     <form action={runNow}>
                       <input type="hidden" name="job" value={job} />
-                      <button className="rounded border px-2 py-1 text-xs hover:bg-gray-50">Run now</button>
+                      <button className="btn btn-secondary" style={{ fontSize: 12, padding: "4px 10px" }}>Run now</button>
                     </form>
                   </td>
                 </tr>

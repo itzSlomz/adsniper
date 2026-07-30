@@ -90,13 +90,18 @@ export default async function BrandDeepDive({ params }: { params: { id: string }
 
   return (
     <main className="space-y-8">
-      <h1 className="text-lg font-semibold">
-        {brand.nameEn} <span dir="rtl" className="text-gray-400">{brand.nameAr}</span>
-      </h1>
+      <div className="section-head">
+        <span className={brand.type === "self" ? "section-kicker" : "section-kicker neutral"}>
+          {brand.type === "self" ? "Our brand" : "Competitor"}
+        </span>
+        <h1 style={{ margin: 0, fontSize: 28 }}>
+          {brand.nameEn} <span dir="rtl" className="text-muted" style={{ fontWeight: 400 }}>{brand.nameAr}</span>
+        </h1>
+      </div>
 
-      <section className="rounded-lg border bg-white p-4">
+      <section className="card elev-sm">
         <h2 className="mb-2 text-base font-semibold">Engagement trend (90d)</h2>
-        <SeriesLineChart data={Object.values(trend)} series={[{ key: "engagement", color: "#C8102E" }]} />
+        <SeriesLineChart data={Object.values(trend)} series={[{ key: "engagement", color: "#ec3013" }]} />
       </section>
 
       <section>
@@ -104,7 +109,7 @@ export default async function BrandDeepDive({ params }: { params: { id: string }
         <PostGrid posts={top} showFilters={false} />
       </section>
 
-      <section className="rounded-lg border bg-white p-4">
+      <section className="card elev-sm">
         <h2 className="mb-2 text-base font-semibold">Posting cadence (30d, UTC)</h2>
         <div className="overflow-x-auto">
           <div className="grid w-max grid-cols-[36px_repeat(24,14px)] gap-0.5 text-[9px] text-gray-500">
@@ -119,8 +124,8 @@ export default async function BrandDeepDive({ params }: { params: { id: string }
                   <span
                     key={`${d}-${h}`}
                     title={`${days[d]} ${h}:00 — ${v} posts`}
-                    className="h-[14px] w-[14px] rounded-sm"
-                    style={{ backgroundColor: v === 0 ? "#F3F4F6" : `rgba(200,16,46,${0.25 + 0.75 * (v / heatMax)})` }}
+                    className="h-[14px] w-[14px]"
+                    style={{ backgroundColor: v === 0 ? "var(--color-neutral-200)" : `rgba(236,48,19,${0.25 + 0.75 * (v / heatMax)})` }}
                   />
                 ))}
               </>
@@ -130,9 +135,9 @@ export default async function BrandDeepDive({ params }: { params: { id: string }
       </section>
 
       {followerSeries.length > 1 && (
-        <section className="rounded-lg border bg-white p-4">
+        <section className="card elev-sm">
           <h2 className="mb-2 text-base font-semibold">Follower growth</h2>
-          <SeriesLineChart data={followerSeries} series={[{ key: "x", color: "#111111" }, { key: "linkedin", color: "#0A66C2" }]} />
+          <SeriesLineChart data={followerSeries} series={[{ key: "x", color: "#201e1d" }, { key: "linkedin", color: "#ec3013" }]} />
         </section>
       )}
 
@@ -144,9 +149,9 @@ export default async function BrandDeepDive({ params }: { params: { id: string }
       <section>
         <AdWatchGallery ads={ads} />
         <h3 className="mb-2 mt-6 text-sm font-semibold">Ad history</h3>
-        <div className="overflow-x-auto rounded-lg border bg-white">
-          <table className="w-full text-xs">
-            <thead className="bg-gray-50 text-start text-gray-500">
+        <div className="overflow-x-auto border" style={{ borderColor: "var(--color-divider)", background: "var(--color-surface)" }}>
+          <table className="table" style={{ fontSize: 12 }}>
+            <thead>
               <tr>
                 <th className="p-2 text-start">Platform</th>
                 <th className="p-2 text-start">Ad</th>
@@ -157,7 +162,7 @@ export default async function BrandDeepDive({ params }: { params: { id: string }
             </thead>
             <tbody>
               {allAds.map((a) => (
-                <tr key={a.id} className="border-t">
+                <tr key={a.id}>
                   <td className="p-2">{a.platform}</td>
                   <td className="max-w-[280px] truncate p-2" dir="auto">
                     {a.adText ?? a.messageSummary ?? a.libraryId ?? "—"}

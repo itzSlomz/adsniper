@@ -13,14 +13,15 @@ import {
   YAxis,
 } from "recharts";
 
+// Modernist mono palette: accent ramp + neutral ramp only.
 const PLATFORM_COLORS: Record<string, string> = {
-  meta: "#1877F2",
-  google: "#34A853",
-  linkedin: "#0A66C2",
-  x: "#111111",
-  snapchat: "#E7C500",
-  tiktok: "#FE2C55",
-  other: "#9CA3AF",
+  meta: "#ec3013",
+  google: "#ff9783",
+  linkedin: "#ae1800",
+  x: "#201e1d",
+  snapchat: "#9b9797",
+  tiktok: "#4d170e",
+  other: "#d7d3d3",
 };
 
 export function AdPressureChart({
@@ -73,7 +74,7 @@ export function SeriesLineChart({
             key={s.key}
             type="monotone"
             dataKey={s.key}
-            stroke={s.color ?? ["#C8102E", "#1877F2", "#34A853", "#F59E0B", "#8B5CF6", "#0A66C2", "#111827", "#EC4899", "#14B8A6"][i % 9]}
+            stroke={s.color ?? ["#ec3013", "#201e1d", "#9b9797", "#ae1800", "#605d5d", "#ff9783", "#2d2b2b", "#c94b39", "#bab6b6"][i % 9]}
             dot={false}
             strokeWidth={2}
             connectNulls

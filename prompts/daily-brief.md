@@ -24,11 +24,14 @@ deltas.
 Write the brief twice: once in English, once in Arabic (Modern Standard
 Arabic, natural business register — not a literal translation).
 
-Structure, in this exact order:
-1. **What we did** — 2–3 bullets on BAB's own activity and how it performed.
-2. **What stood out in the market** — 2–3 bullets on notable competitor
-   posts or patterns.
-3. **Ad moves** — 1–2 bullets: new ads, major pushes, notable stops.
+The brief is competitor-first: its job is to tell BAB's leadership what
+the market is doing. Structure, in this exact order:
+1. **What competitors did** — 2–3 bullets on the most notable competitor
+   posts, patterns, or launches in the last 24h, with numbers.
+2. **Competitor ad moves** — 1–2 bullets: new ads, major pushes, notable
+   stops, per platform.
+3. **How we compare** — 1–2 bullets on BAB's own activity against that
+   backdrop.
 4. **One strategic observation** — a single sentence.
 5. **One suggested action** — a single sentence, concrete and small.
 

@@ -5,7 +5,7 @@ import { SeriesLineChart, StackedBars } from "@/components/charts";
 export const dynamic = "force-dynamic";
 
 const DAY = 86400000;
-const BRAND_COLORS = ["#C8102E", "#1877F2", "#34A853", "#F59E0B", "#8B5CF6", "#0A66C2", "#111827", "#EC4899", "#14B8A6"];
+const BRAND_COLORS = ["#ec3013", "#201e1d", "#9b9797", "#ae1800", "#605d5d", "#ff9783", "#2d2b2b", "#c94b39", "#bab6b6"];
 
 export default async function ComparePage() {
   const brands = await prisma.brand.findMany({ where: { active: true }, orderBy: { type: "asc" } });
@@ -84,48 +84,48 @@ export default async function ComparePage() {
 
   return (
     <main className="space-y-8">
-      <h1 className="text-lg font-semibold">Compare</h1>
+      <div className="section-head"><span className="section-kicker">Market analytics</span><h1 style={{ margin: 0, fontSize: 28 }}>Compare</h1></div>
 
-      <section className="rounded-lg border bg-white p-4">
+      <section className="card elev-sm">
         <h2 className="mb-1 text-base font-semibold">Share of voice trend</h2>
         <p className="mb-2 text-xs text-gray-500">
           X only — Bank Albilad&apos;s share of daily engagement across tracked brands.
         </p>
-        <SeriesLineChart data={sovSeries} series={[{ key: "sov", color: "#C8102E" }]} percent />
+        <SeriesLineChart data={sovSeries} series={[{ key: "sov", color: "#ec3013" }]} percent />
       </section>
 
-      <section className="rounded-lg border bg-white p-4">
+      <section className="card elev-sm">
         <h2 className="mb-2 text-base font-semibold">Average engagement per post (30d)</h2>
-        <StackedBars data={agg} xKey="brand" bars={[{ key: "avgEngagement", color: "#C8102E" }]} />
+        <StackedBars data={agg} xKey="brand" bars={[{ key: "avgEngagement", color: "#ec3013" }]} />
       </section>
 
       {raceSeries.length > 1 && (
-        <section className="rounded-lg border bg-white p-4">
+        <section className="card elev-sm">
           <h2 className="mb-2 text-base font-semibold">Follower growth race (X)</h2>
           <SeriesLineChart data={raceSeries} series={brandSeries} />
         </section>
       )}
 
-      <section className="rounded-lg border bg-white p-4">
+      <section className="card elev-sm">
         <h2 className="mb-2 text-base font-semibold">Posting volume (30d)</h2>
-        <StackedBars data={agg} xKey="brand" bars={[{ key: "posts", color: "#111827" }]} />
+        <StackedBars data={agg} xKey="brand" bars={[{ key: "posts", color: "#201e1d" }]} />
       </section>
 
-      <section className="rounded-lg border bg-white p-4">
+      <section className="card elev-sm">
         <h2 className="mb-2 text-base font-semibold">Media-type mix (30d)</h2>
         <StackedBars
           data={agg}
           xKey="brand"
           bars={[
-            { key: "image", color: "#1877F2" },
-            { key: "video", color: "#C8102E" },
-            { key: "carousel", color: "#F59E0B" },
-            { key: "text", color: "#9CA3AF" },
+            { key: "image", color: "#605d5d" },
+            { key: "video", color: "#ec3013" },
+            { key: "carousel", color: "#ff9783" },
+            { key: "text", color: "#d7d3d3" },
           ]}
         />
       </section>
 
-      <section className="rounded-lg border bg-white p-4">
+      <section className="card elev-sm">
         <h2 className="mb-1 text-base font-semibold">Ad pressure over time</h2>
         <p className="mb-2 text-xs text-gray-500">Ads live during each week, per brand (all platforms).</p>
         <SeriesLineChart data={pressureSeries} series={brandSeries} />

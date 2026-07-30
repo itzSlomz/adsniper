@@ -9,16 +9,6 @@ import { AdPressureChart } from "@/components/charts";
 
 export const dynamic = "force-dynamic";
 
-function Kpi({ label, value, note }: { label: string; value: string; note?: string }) {
-  return (
-    <div className="rounded-lg border bg-white p-3">
-      <p className="text-[11px] uppercase tracking-wide text-gray-500">{label}</p>
-      <p className="text-xl font-semibold">{value}</p>
-      {note && <p className="text-[10px] text-gray-400">{note}</p>}
-    </div>
-  );
-}
-
 export default async function DailyCommandView({
   searchParams,
 }: {
@@ -39,52 +29,49 @@ export default async function DailyCommandView({
     prisma.brand.findMany({ where: { active: true } }),
     prisma.dailyBrief.findUnique({ where: { date: new Date(`${date}T00:00:00Z`) } }),
   ]);
-  // Viewers see published briefs only; admins also see drafts (Section 8).
   const visibleBrief = brief && (brief.status === "published" || isAdmin) ? brief : null;
   const self = brands.find((b) => b.type === "self");
   const ours = posts.filter((p) => p.brandId === self?.id);
   const market = posts.filter((p) => p.brandId !== self?.id);
 
-  const prev = new Date(new Date(`${date}T00:00:00Z`).getTime() - 86400000)
-    .toISOString()
-    .slice(0, 10);
-  const next = new Date(new Date(`${date}T00:00:00Z`).getTime() + 86400000)
-    .toISOString()
-    .slice(0, 10);
+  const prev = new Date(new Date(`${date}T00:00:00Z`).getTime() - 86400000).toISOString().slice(0, 10);
+  const next = new Date(new Date(`${date}T00:00:00Z`).getTime() + 86400000).toISOString().slice(0, 10);
 
   return (
-    <main className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Daily Command View</h1>
-        <div className="flex items-center gap-2 text-sm">
-          <Link href={`/?date=${prev}`} className="rounded border px-2 py-1">←</Link>
-          <span className="font-medium">{date}</span>
-          <Link href={`/?date=${next}`} className="rounded border px-2 py-1">→</Link>
-          <a
-            href={`/api/export/daily/${date}`}
-            className="rounded bg-gray-900 px-3 py-1 text-white hover:bg-gray-700"
-          >
-            Export PDF
-          </a>
+    <main className="space-y-10">
+      <header>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 style={{ fontSize: 34, margin: 0 }}>Daily Social Media Overview</h1>
+            <p className="text-muted" style={{ margin: "4px 0 0", fontSize: 14 }}>
+              Today&apos;s organic content and active advertising across the market.
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link className="btn btn-secondary" href={`/?date=${prev}`}>←</Link>
+            <span className="font-bold" style={{ fontFamily: "var(--font-heading)" }}>{date}</span>
+            <Link className="btn btn-secondary" href={`/?date=${next}`}>→</Link>
+            <a href={`/api/export/daily/${date}`} className="btn btn-primary">Export PDF</a>
+          </div>
         </div>
-      </div>
-
-      <section className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-        <Kpi label="Our posts" value={String(kpis.babPosts)} />
-        <Kpi label="Our engagement" value={String(kpis.babEngagement)} />
-        <Kpi
-          label="Follower Δ"
-          value={kpis.followerDeltas
-            .map((d) => `${d.platform === "x" ? "𝕏" : "in"} ${d.delta == null ? "–" : (d.delta >= 0 ? "+" : "") + d.delta}`)
-            .join("  ")}
-        />
-        <Kpi
-          label="Share of voice"
-          value={kpis.shareOfVoice == null ? "–" : `${(kpis.shareOfVoice * 100).toFixed(0)}%`}
-          note="X only, engagement share"
-        />
-        <Kpi label="Competitor ads live" value={String(kpis.activeCompetitorAds)} />
-      </section>
+        <div className="mt-4 flex flex-wrap gap-2 border-b-2 pb-4" style={{ borderColor: "var(--color-divider)" }}>
+          <div className="kpi-chip"><b>{kpis.babPosts}</b><span>Our posts</span></div>
+          <div className="kpi-chip"><b>{kpis.babEngagement}</b><span>Our engagement</span></div>
+          <div className="kpi-chip">
+            <b>
+              {kpis.followerDeltas
+                .map((d) => (d.delta == null ? "–" : (d.delta >= 0 ? "+" : "") + d.delta))
+                .join(" / ")}
+            </b>
+            <span>Follower Δ (X / in)</span>
+          </div>
+          <div className="kpi-chip">
+            <b>{kpis.shareOfVoice == null ? "–" : `${(kpis.shareOfVoice * 100).toFixed(0)}%`}</b>
+            <span>SoV — X only</span>
+          </div>
+          <div className="kpi-chip"><b>{kpis.activeCompetitorAds}</b><span>Competitor ads live</span></div>
+        </div>
+      </header>
 
       {visibleBrief && (
         <section>
@@ -98,31 +85,51 @@ export default async function DailyCommandView({
       )}
 
       <section>
-        <h2 className="mb-2 text-base font-semibold">Our activity</h2>
-        <PostGrid posts={ours} showFilters={false} defaultSort="newest" />
+        <div className="section-head">
+          <span className="section-kicker">Our brand</span>
+          <h2 style={{ margin: 0 }}>Today&apos;s organic posts</h2>
+          <span className="ms-auto text-xs text-muted">{ours.length} posts</span>
+        </div>
+        {ours.length === 0 ? (
+          <p className="card text-sm text-muted">Nothing published today.</p>
+        ) : (
+          <PostGrid posts={ours} showFilters={false} defaultSort="newest" />
+        )}
       </section>
 
       <section>
-        <h2 className="mb-2 text-base font-semibold">Market activity</h2>
-        <PostGrid posts={market} />
+        <div className="section-head">
+          <span className="section-kicker neutral">Competitors</span>
+          <h2 style={{ margin: 0 }}>Today&apos;s organic posts</h2>
+          <span className="ms-auto text-xs text-muted">
+            {market.length} posts across {new Set(market.map((p) => p.brandName)).size} brands
+          </span>
+        </div>
+        {market.length === 0 ? (
+          <p className="card text-sm text-muted">Nothing published today.</p>
+        ) : (
+          <PostGrid posts={market} groupByBrand />
+        )}
       </section>
 
       <section>
         <AdWatchGallery ads={ads} />
       </section>
 
-      <section className="rounded-lg border bg-white p-4">
-        <h2 className="mb-1 text-base font-semibold">Ad pressure</h2>
-        <p className="mb-2 text-xs text-gray-500">Active ads per brand, by platform.</p>
+      <section className="card elev-sm">
+        <span className="card-kicker">Market analytics</span>
+        <div className="card-title">Ad pressure — active ads per brand, by platform</div>
         <AdPressureChart data={pressure} />
+        <div>
+          <Link href="/compare" className="btn btn-secondary">Show full market analytics →</Link>
+        </div>
       </section>
 
       <section>
-        <h2 className="mb-2 text-base font-semibold">Brands</h2>
         <div className="flex flex-wrap gap-2">
           {brands.map((b) => (
-            <Link key={b.id} href={`/brand/${b.id}`} className="rounded-full border bg-white px-3 py-1 text-sm hover:bg-gray-50">
-              {b.nameEn}
+            <Link key={b.id} href={`/brand/${b.id}`} className="btn btn-secondary">
+              {b.nameEn} →
             </Link>
           ))}
         </div>
