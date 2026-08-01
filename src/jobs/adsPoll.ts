@@ -128,13 +128,48 @@ export async function runAdsPoll(ctx: JobContext): Promise<void> {
   if (stale.count) ctx.errors.push(`(info) marked ${stale.count} manual ads stale`);
 }
 
-// Campaign burst (brief Section 7.1): a brand launching 5+ new ads within
-// 7 days gets the "Major push" badge. Used by the dashboard.
+// Campaign burst / "Major push" (brief Section 7.1). A flat "5+ new ads in
+// 7 days" fires for nearly every brand — heavy advertisers always clear it,
+// and a first ingest stamps everything with the same firstSeen. So the badge
+// now needs BOTH an absolute floor and a genuine spike against that brand's
+// own trailing 8-week weekly average (2x), which is what "unusual push"
+// actually means for a reader.
+const BURST_MIN_ADS = 5;
+const BURST_SPIKE_FACTOR = 2;
+const BURST_BASELINE_WEEKS = 8;
+// A brand needs a real advertising history before "unusual" means anything.
+// Below this weekly average we have too little signal — on a fresh ingest
+// every brand's history looks empty, which would flag the whole market.
+const BURST_MIN_BASELINE_PER_WEEK = 1;
+
 export async function campaignBurstBrandIds(): Promise<string[]> {
-  const rows = await prisma.ad.groupBy({
-    by: ["brandId"],
-    where: { firstSeen: { gte: new Date(Date.now() - 7 * DAY) } },
-    _count: { _all: true },
-  });
-  return rows.filter((r) => r._count._all >= 5).map((r) => r.brandId);
+  const now = Date.now();
+  const weekAgo = new Date(now - 7 * DAY);
+  const baselineFrom = new Date(now - (BURST_BASELINE_WEEKS + 1) * 7 * DAY);
+
+  const [recent, baseline] = await Promise.all([
+    prisma.ad.groupBy({
+      by: ["brandId"],
+      where: { firstSeen: { gte: weekAgo } },
+      _count: { _all: true },
+    }),
+    prisma.ad.groupBy({
+      by: ["brandId"],
+      where: { firstSeen: { gte: baselineFrom, lt: weekAgo } },
+      _count: { _all: true },
+    }),
+  ]);
+  const perWeek = new Map(
+    baseline.map((b) => [b.brandId, b._count._all / BURST_BASELINE_WEEKS])
+  );
+
+  return recent
+    .filter((r) => {
+      if (r._count._all < BURST_MIN_ADS) return false;
+      const avg = perWeek.get(r.brandId);
+      // No usable history (fresh ingest) → don't cry wolf.
+      if (avg == null || avg < BURST_MIN_BASELINE_PER_WEEK) return false;
+      return r._count._all >= avg * BURST_SPIKE_FACTOR;
+    })
+    .map((r) => r.brandId);
 }

@@ -2,9 +2,12 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { adPressure, adWatch, kpisForDay, postsForDay } from "@/lib/dashboard";
+import type { RangeDays } from "@/lib/dashboard";
 import PostGrid from "@/components/PostGrid";
 import AdWatchGallery from "@/components/AdWatchGallery";
 import BriefCard from "@/components/BriefCard";
+import KpiStrip from "@/components/KpiStrip";
+import HeadlineSummary from "@/components/HeadlineSummary";
 import { AdPressureChart } from "@/components/charts";
 
 export const dynamic = "force-dynamic";
@@ -12,18 +15,21 @@ export const dynamic = "force-dynamic";
 export default async function DailyCommandView({
   searchParams,
 }: {
-  searchParams: { date?: string };
+  searchParams: { date?: string; range?: string };
 }) {
   const date =
     searchParams.date && /^\d{4}-\d{2}-\d{2}$/.test(searchParams.date)
       ? searchParams.date
       : new Date().toISOString().slice(0, 10);
+  // Executives review weekly; the team monitors daily. Same page, one toggle.
+  const days: RangeDays = searchParams.range === "7" ? 7 : 1;
+  const qs = (d: string, r: RangeDays) => `/?date=${d}&range=${r}`;
 
   const session = await auth();
   const isAdmin = (session?.user as { role?: string } | undefined)?.role === "admin";
   const [posts, kpis, ads, pressure, brands, brief] = await Promise.all([
-    postsForDay(date),
-    kpisForDay(date),
+    postsForDay(date, days),
+    kpisForDay(date, days),
     adWatch(),
     adPressure(),
     prisma.brand.findMany({ where: { active: true } }),
@@ -34,44 +40,61 @@ export default async function DailyCommandView({
   const ours = posts.filter((p) => p.brandId === self?.id);
   const market = posts.filter((p) => p.brandId !== self?.id);
 
-  const prev = new Date(new Date(`${date}T00:00:00Z`).getTime() - 86400000).toISOString().slice(0, 10);
-  const next = new Date(new Date(`${date}T00:00:00Z`).getTime() + 86400000).toISOString().slice(0, 10);
+  const step = days * 86400000;
+  const prev = new Date(new Date(`${date}T00:00:00Z`).getTime() - step).toISOString().slice(0, 10);
+  const next = new Date(new Date(`${date}T00:00:00Z`).getTime() + step).toISOString().slice(0, 10);
+  const periodLabel =
+    days === 7
+      ? `${new Date(new Date(`${date}T00:00:00Z`).getTime() - 6 * 86400000).toISOString().slice(5, 10)} – ${date.slice(5)}`
+      : date;
 
   return (
     <main className="space-y-10">
       <header>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h1 style={{ fontSize: 34, margin: 0 }}>Daily Social Media Overview</h1>
+            <h1 style={{ fontSize: 34, margin: 0 }}>
+              {days === 7 ? "Weekly Market Review" : "Daily Social Media Overview"}
+            </h1>
             <p className="text-muted" style={{ margin: "4px 0 0", fontSize: 14 }}>
-              Today&apos;s organic content and active advertising across the market.
+              Organic content and active advertising across the Saudi banking market.
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Link className="btn btn-secondary" href={`/?date=${prev}`}>←</Link>
-            <span className="font-bold" style={{ fontFamily: "var(--font-heading)" }}>{date}</span>
-            <Link className="btn btn-secondary" href={`/?date=${next}`}>→</Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="seg">
+              <Link
+                href={qs(date, 1)}
+                className="seg-opt"
+                style={days === 1 ? { background: "var(--color-accent)", color: "var(--color-bg)" } : undefined}
+              >
+                Day
+              </Link>
+              <Link
+                href={qs(date, 7)}
+                className="seg-opt"
+                style={days === 7 ? { background: "var(--color-accent)", color: "var(--color-bg)" } : undefined}
+              >
+                Week
+              </Link>
+            </span>
+            <Link className="btn btn-secondary" href={qs(prev, days)}>←</Link>
+            <span className="font-bold" style={{ fontFamily: "var(--font-heading)" }}>{periodLabel}</span>
+            <Link className="btn btn-secondary" href={qs(next, days)}>→</Link>
             <a href={`/api/export/daily/${date}`} className="btn btn-primary">Export PDF</a>
           </div>
         </div>
-        <div className="mt-4 flex flex-wrap gap-2 border-b-2 pb-4" style={{ borderColor: "var(--color-divider)" }}>
-          <div className="kpi-chip"><b>{kpis.babPosts}</b><span>Our posts</span></div>
-          <div className="kpi-chip"><b>{kpis.babEngagement}</b><span>Our engagement</span></div>
-          <div className="kpi-chip">
-            <b>
-              {kpis.followerDeltas
-                .map((d) => (d.delta == null ? "–" : (d.delta >= 0 ? "+" : "") + d.delta))
-                .join(" / ")}
-            </b>
-            <span>Follower Δ (X / in)</span>
-          </div>
-          <div className="kpi-chip">
-            <b>{kpis.shareOfVoice == null ? "–" : `${(kpis.shareOfVoice * 100).toFixed(0)}%`}</b>
-            <span>SoV — X only</span>
-          </div>
-          <div className="kpi-chip"><b>{kpis.activeCompetitorAds}</b><span>Competitor ads live</span></div>
+        <div className="mt-4 border-b-2 pb-4" style={{ borderColor: "var(--color-divider)" }}>
+          <KpiStrip kpis={kpis} days={days} />
         </div>
       </header>
+
+      <HeadlineSummary
+        kpis={kpis}
+        posts={posts}
+        ads={ads}
+        selfBrandId={self?.id}
+        days={days}
+      />
 
       {visibleBrief && (
         <section>
@@ -87,11 +110,11 @@ export default async function DailyCommandView({
       <section>
         <div className="section-head">
           <span className="section-kicker">Our brand</span>
-          <h2 style={{ margin: 0 }}>Today&apos;s organic posts</h2>
+          <h2 style={{ margin: 0 }}>Bank Albilad posts</h2>
           <span className="ms-auto text-xs text-muted">{ours.length} posts</span>
         </div>
         {ours.length === 0 ? (
-          <p className="card text-sm text-muted">Nothing published today.</p>
+          <p className="card text-sm text-muted">Nothing published in this period.</p>
         ) : (
           <PostGrid posts={ours} showFilters={false} defaultSort="newest" />
         )}
@@ -100,13 +123,13 @@ export default async function DailyCommandView({
       <section>
         <div className="section-head">
           <span className="section-kicker neutral">Competitors</span>
-          <h2 style={{ margin: 0 }}>Today&apos;s organic posts</h2>
+          <h2 style={{ margin: 0 }}>Market posts</h2>
           <span className="ms-auto text-xs text-muted">
             {market.length} posts across {new Set(market.map((p) => p.brandName)).size} brands
           </span>
         </div>
         {market.length === 0 ? (
-          <p className="card text-sm text-muted">Nothing published today.</p>
+          <p className="card text-sm text-muted">Nothing published in this period.</p>
         ) : (
           <PostGrid posts={market} groupByBrand />
         )}

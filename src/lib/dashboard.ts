@@ -43,6 +43,15 @@ interface MediaItem {
 
 const DAY = 24 * 60 * 60 * 1000;
 
+// A "period" is 1 day (daily view) or 7 days (weekly view) ending on the
+// selected date, so the same page serves daily monitoring and weekly review.
+export type RangeDays = 1 | 7;
+
+function periodRange(date: string, days: RangeDays): { from: Date; to: Date } {
+  const to = new Date(new Date(`${date}T00:00:00Z`).getTime() + DAY);
+  return { from: new Date(to.getTime() - days * DAY), to };
+}
+
 function dayRange(date: string): { from: Date; to: Date } {
   const from = new Date(`${date}T00:00:00Z`);
   return { from, to: new Date(from.getTime() + DAY) };
@@ -50,8 +59,8 @@ function dayRange(date: string): { from: Date; to: Date } {
 
 const HASHTAG_RE = /#[\p{L}\p{N}_]+/gu;
 
-export async function postsForDay(date: string): Promise<PostCardData[]> {
-  const { from, to } = dayRange(date);
+export async function postsForDay(date: string, days: RangeDays = 1): Promise<PostCardData[]> {
+  const { from, to } = periodRange(date, days);
   const posts = await prisma.post.findMany({
     where: { postedAt: { gte: from, lt: to } },
     include: {
@@ -194,30 +203,44 @@ export interface KpiData {
   followerDeltas: { platform: string; delta: number | null }[];
   shareOfVoice: number | null; // X only, engagement share, 0..1
   activeCompetitorAds: number;
+  // Comparison against the trailing baseline so a number reads as good or
+  // bad without the viewer knowing the history. Percent change vs. the
+  // mean of the prior `baselineDays` periods; null when no baseline yet.
+  vsBaseline: {
+    posts: number | null;
+    engagement: number | null;
+    shareOfVoice: number | null;
+    competitorAds: number | null;
+  };
+  baselineDays: number;
 }
 
-export async function kpisForDay(date: string): Promise<KpiData> {
-  const { from, to } = dayRange(date);
+export async function kpisForDay(date: string, days: RangeDays = 1): Promise<KpiData> {
+  const { from, to } = periodRange(date, days);
   const bab = await prisma.brand.findFirst({ where: { type: "self" } });
-  const posts = await postsForDay(date);
+  const posts = await postsForDay(date, days);
   const babPosts = posts.filter((p) => p.brandId === bab?.id);
 
   // Share of voice (X only, labeled in UI): BAB's share of total engagement
-  // on X posts published that day across all tracked brands.
-  const xPosts = posts.filter((p) => p.platform === "x");
-  const totalX = xPosts.reduce((n, p) => n + p.engagement, 0);
-  const babX = xPosts.filter((p) => p.brandId === bab?.id).reduce((n, p) => n + p.engagement, 0);
+  // on X posts published in the period across all tracked brands.
+  const sov = (list: PostCardData[]): number | null => {
+    const xp = list.filter((p) => p.platform === "x");
+    const total = xp.reduce((n, p) => n + p.engagement, 0);
+    if (total <= 0) return null;
+    return xp.filter((p) => p.brandId === bab?.id).reduce((n, p) => n + p.engagement, 0) / total;
+  };
 
   const followerDeltas: KpiData["followerDeltas"] = [];
   for (const platform of ["x", "linkedin"] as const) {
     const snaps = await prisma.followerSnapshot.findMany({
       where: { brandId: bab?.id, platform, date: { lte: to } },
       orderBy: { date: "desc" },
-      take: 2,
+      take: days + 1,
     });
     followerDeltas.push({
       platform,
-      delta: snaps.length === 2 ? snaps[0].followers - snaps[1].followers : null,
+      delta:
+        snaps.length >= 2 ? snaps[0].followers - snaps[snaps.length - 1].followers : null,
     });
   }
 
@@ -225,12 +248,59 @@ export async function kpisForDay(date: string): Promise<KpiData> {
     where: { status: "active", brand: { type: "competitor" } },
   });
 
+  // Baseline: the mean of the four preceding periods of the same length,
+  // so "is this normal?" is answerable at a glance.
+  const BASELINE_PERIODS = 4;
+  const baselineDays = days * BASELINE_PERIODS;
+  const priorFrom = new Date(from.getTime() - baselineDays * DAY);
+  const priorPosts = await prisma.post.findMany({
+    where: { postedAt: { gte: priorFrom, lt: from } },
+    include: { snapshots: { orderBy: { capturedAt: "desc" }, take: 1 } },
+  });
+  const priorOurs = priorPosts.filter((p) => p.brandId === bab?.id);
+  const priorPostsPerPeriod = priorOurs.length / BASELINE_PERIODS;
+  const priorEngagementPerPeriod =
+    priorOurs.reduce((n, p) => n + (p.snapshots[0] ? engagementOf(p.snapshots[0]) : 0), 0) /
+    BASELINE_PERIODS;
+  const priorX = priorPosts.filter((p) => p.platform === "x");
+  const priorXTotal = priorX.reduce(
+    (n, p) => n + (p.snapshots[0] ? engagementOf(p.snapshots[0]) : 0),
+    0
+  );
+  const priorXBab = priorX
+    .filter((p) => p.brandId === bab?.id)
+    .reduce((n, p) => n + (p.snapshots[0] ? engagementOf(p.snapshots[0]) : 0), 0);
+  const priorSov = priorXTotal > 0 ? priorXBab / priorXTotal : null;
+
+  // Competitor ads live: compare against ads that were live one period ago.
+  const adsThen = await prisma.ad.count({
+    where: {
+      brand: { type: "competitor" },
+      firstSeen: { lt: from },
+      lastSeen: { gte: from },
+    },
+  });
+
+  const pct = (now: number, before: number | null): number | null =>
+    before == null || before <= 0 ? null : (now - before) / before;
+
+  const engagement = babPosts.reduce((n, p) => n + p.engagement, 0);
+  const shareOfVoice = sov(posts);
+
   return {
     babPosts: babPosts.length,
-    babEngagement: babPosts.reduce((n, p) => n + p.engagement, 0),
+    babEngagement: engagement,
     followerDeltas,
-    shareOfVoice: totalX > 0 ? babX / totalX : null,
+    shareOfVoice,
     activeCompetitorAds,
+    vsBaseline: {
+      posts: pct(babPosts.length, priorPostsPerPeriod),
+      engagement: pct(engagement, priorEngagementPerPeriod),
+      shareOfVoice:
+        shareOfVoice != null && priorSov != null ? shareOfVoice - priorSov : null,
+      competitorAds: pct(activeCompetitorAds, adsThen),
+    },
+    baselineDays,
   };
 }
 
