@@ -57,6 +57,14 @@ export interface LinkedInPostsProvider {
 
 // --- Ad libraries (brief Section 5.3) ---
 
+// One downloadable creative file belonging to an ad. Videos carry a poster
+// so the grid has something to show without loading the file.
+export interface FetchedAdAsset {
+  kind: "image" | "video";
+  url: string;
+  posterUrl?: string;
+}
+
 export interface FetchedAd {
   libraryId: string;
   libraryUrl?: string;
@@ -68,6 +76,10 @@ export interface FetchedAd {
   startDate?: Date;
   coverage?: "full" | "partial";
   creative?: FetchedMediaItem | null;
+  // Every creative file on the ad, archived in full (brief Section 4's
+  // "no video caching" rule is deliberately overridden for ads: the ad
+  // archive is the product, and platform CDN URLs expire).
+  assets?: FetchedAdAsset[];
 }
 
 export interface AdsBrandQuery {

@@ -30,6 +30,9 @@ function mapAd(a: GoogleAd): FetchedAd | null {
     subPlatforms: [],
     startDate: a.firstShown ? new Date(a.firstShown) : undefined,
     creative: a.imageUrl ? { originalUrl: a.imageUrl, downloadUrl: a.imageUrl } : null,
+    // Transparency Center serves video/text ads as an iframe preview, not a
+    // downloadable file — only image creatives can be archived.
+    assets: a.imageUrl ? [{ kind: "image" as const, url: a.imageUrl }] : [],
   };
 }
 

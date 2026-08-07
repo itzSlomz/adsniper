@@ -36,6 +36,9 @@ function mapAd(a: LinkedInAd): FetchedAd | null {
     format,
     subPlatforms: [],
     creative: image ? { originalUrl: image, downloadUrl: image } : null,
+    assets: Array.from(
+      new Set([...(a.imageUrls ?? []), ...carousel.map((c) => c.imageUrl!), ...(image ? [image] : [])])
+    ).map((url) => ({ kind: "image" as const, url })),
   };
 }
 

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/db";
 import { ADS_PROVIDERS_ALL } from "@/lib/providers/ads";
 import { ensureBudget, logProviderCall } from "@/lib/costs";
-import { cacheMediaItems } from "@/lib/media";
+import { cacheAdAssets, cacheMediaItems } from "@/lib/media";
 import type { JobContext } from "@/jobs/runner";
 import { getPullSettings, isDue, setStamp } from "@/lib/settings";
 
@@ -64,16 +64,22 @@ export async function runAdsPoll(ctx: JobContext): Promise<void> {
             continue;
           }
 
+          const prefix = `ads/${provider.platform}/${brand.id}/${ad.libraryId}`;
           let creativePath: string | null = null;
           let creativeThumbPath: string | null = null;
           if (ad.creative) {
-            const { stored, failures } = await cacheMediaItems(
-              `ads/${provider.platform}/${brand.id}/${ad.libraryId}`,
-              [ad.creative]
-            );
+            const { stored, failures } = await cacheMediaItems(prefix, [ad.creative]);
             failures.forEach((f) => ctx.errors.push(`creative ${ad.libraryId}: ${f}`));
             creativePath = stored[0]?.cachedPath ?? null;
             creativeThumbPath = stored[0]?.thumbPath ?? null;
+          }
+          // Full archive: every image and video file on the ad, downloaded
+          // to our storage so it outlives the platform's expiring CDN links.
+          let assets: object[] = [];
+          if (ad.assets?.length) {
+            const res = await cacheAdAssets(`${prefix}/assets`, ad.assets);
+            res.failures.forEach((f) => ctx.errors.push(`asset ${ad.libraryId}: ${f}`));
+            assets = res.stored as unknown as object[];
           }
 
           await prisma.ad.create({
@@ -89,6 +95,7 @@ export async function runAdsPoll(ctx: JobContext): Promise<void> {
               cta: ad.cta,
               landingUrl: ad.landingUrl,
               format: ad.format,
+              assets,
               firstSeen: ad.startDate ?? new Date(),
               lastSeen: new Date(),
               status: "active",

@@ -22,6 +22,9 @@ interface TikTokAd {
   cover_url?: string;
   detail_url?: string;
   ctr?: number;
+  video_url_720p?: string;
+  video_url_540p?: string;
+  video_url_360p?: string;
 }
 
 let cache: { at: number; raw: TikTokAd[]; charged: boolean } | null = null;
@@ -60,6 +63,10 @@ export const tiktokApifyAdsProvider: AdsProvider = {
         subPlatforms: [],
         coverage: "partial" as const,
         creative: a.cover_url ? { originalUrl: a.cover_url, downloadUrl: a.cover_url } : null,
+        assets: (() => {
+          const src = a.video_url_720p ?? a.video_url_540p ?? a.video_url_360p;
+          return src ? [{ kind: "video" as const, url: src, posterUrl: a.cover_url }] : [];
+        })(),
       }));
     return { items, units: charge, estCostUsd: charge * EST_COST_PER_AD_USD };
   },

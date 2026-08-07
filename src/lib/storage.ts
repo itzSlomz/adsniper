@@ -19,6 +19,10 @@ function contentTypeFromKey(key: string): string {
   if (key.endsWith(".webp")) return "image/webp";
   if (key.endsWith(".png")) return "image/png";
   if (key.endsWith(".gif")) return "image/gif";
+  // Video creatives must serve with a video type or <video> refuses to play.
+  if (key.endsWith(".mp4")) return "video/mp4";
+  if (key.endsWith(".webm")) return "video/webm";
+  if (key.endsWith(".mov")) return "video/quicktime";
   return "image/jpeg";
 }
 

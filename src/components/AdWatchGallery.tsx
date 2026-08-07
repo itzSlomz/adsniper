@@ -20,6 +20,11 @@ function daysActive(a: AdCardData): number {
   return Math.max(1, Math.round((+new Date(a.lastSeen) - +new Date(a.firstSeen)) / DAY));
 }
 
+function fmtBytes(n: number | null): string {
+  if (!n) return "";
+  return n >= 1e6 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.round(n / 1e3)} KB`;
+}
+
 function domainOf(url: string | null): string | null {
   if (!url) return null;
   try {
@@ -44,6 +49,16 @@ function AdCard({ ad, onOpen }: { ad: AdCardData; onOpen: () => void }) {
               {ad.adText ?? ad.format.toUpperCase()}
             </span>
           </div>
+        )}
+        {ad.assets.some((x) => x.kind === "video") && (
+          <span className="absolute inset-0 z-[1] flex items-center justify-center">
+            <span
+              className="flex h-9 w-9 items-center justify-center border-2 text-sm"
+              style={{ borderColor: "var(--color-bg)", color: "var(--color-bg)", background: "color-mix(in srgb, var(--color-text) 45%, transparent)" }}
+            >
+              ▶
+            </span>
+          </span>
         )}
         <div className="media-strip">
           <span>Sponsored</span>
@@ -103,6 +118,13 @@ export default function AdWatchGallery({ ads }: { ads: AdCardData[] }) {
           Detected ads <span className="text-muted" style={{ fontWeight: 400 }}>·</span>{" "}
           <span dir="rtl">الإعلانات المرصودة</span>
         </h2>
+        <a
+          className="btn btn-secondary ms-auto"
+          href={`/api/export/ads${tab === "all" ? "" : `?platform=${tab}`}`}
+          title="ZIP of every archived creative file plus a CSV manifest"
+        >
+          ↓ Export archive
+        </a>
       </div>
       {/* Coverage disclosure (brief Section 5.3): never imply exhaustive coverage. */}
       <p className="mb-3 text-xs text-muted">
@@ -149,10 +171,24 @@ export default function AdWatchGallery({ ads }: { ads: AdCardData[] }) {
 
       {open && (
         <Dialog onClose={() => setOpen(null)}>
-          {open.thumbPath && (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={`/media/${open.thumbPath}`} alt="" className="w-full" />
-          )}
+          {(() => {
+            const video = open.assets.find((x) => x.kind === "video" && x.cachedPath);
+            if (video) {
+              return (
+                <video
+                  controls
+                  playsInline
+                  poster={video.thumbPath ? `/media/${video.thumbPath}` : undefined}
+                  src={`/media/${video.cachedPath}`}
+                  className="w-full"
+                />
+              );
+            }
+            return open.thumbPath ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={`/media/${open.thumbPath}`} alt="" className="w-full" />
+            ) : null;
+          })()}
           <div className="flex items-center gap-2">
             <BrandSquare name={open.brandName} />
             <span className="dialog-title" style={{ fontSize: 16 }}>{open.brandName}</span>
@@ -176,6 +212,28 @@ export default function AdWatchGallery({ ads }: { ads: AdCardData[] }) {
               <span className="text-muted">Lands on:</span>{" "}
               <a href={open.landingUrl!} target="_blank" rel="noreferrer">{domainOf(open.landingUrl)}</a>
             </p>
+          )}
+          {open.assets.length > 0 && (
+            <div>
+              <p className="card-kicker" style={{ marginBottom: 4 }}>
+                Archived files ({open.assets.length})
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {open.assets.map((a, i) => (
+                  <a
+                    key={i}
+                    className="btn btn-secondary"
+                    style={{ fontSize: 12, padding: "4px 10px" }}
+                    href={`/media/${a.cachedPath}?download=1&name=${encodeURIComponent(
+                      `${open.brandName}-${open.platform}-${i + 1}`
+                    )}`}
+                  >
+                    ↓ {a.kind === "video" ? "Video" : "Image"} {i + 1}
+                    {a.bytes ? ` · ${fmtBytes(a.bytes)}` : ""}
+                  </a>
+                ))}
+              </div>
+            </div>
           )}
           <div className="dialog-actions">
             <button className="btn btn-secondary" onClick={() => setOpen(null)}>Close</button>

@@ -1,5 +1,5 @@
 import { runApifyActorSync } from "@/lib/apify";
-import type { AdsProvider, FetchedAd, ProviderResult } from "@/lib/providers/types";
+import type { AdsProvider, FetchedAd, FetchedAdAsset } from "@/lib/providers/types";
 import type { AdFormat } from "@prisma/client";
 
 const ACTOR = "apify~facebook-ads-scraper";
@@ -14,6 +14,8 @@ interface MetaCard {
   originalImageUrl?: string | null;
   resizedImageUrl?: string | null;
   videoPreviewImageUrl?: string | null;
+  videoHdUrl?: string | null;
+  videoSdUrl?: string | null;
 }
 
 interface MetaAd {
@@ -27,7 +29,11 @@ interface MetaAd {
     ctaType?: string | null;
     linkUrl?: string | null;
     images?: Array<{ originalImageUrl?: string | null; resizedImageUrl?: string | null }>;
-    videos?: Array<{ videoPreviewImageUrl?: string | null }>;
+    videos?: Array<{
+      videoPreviewImageUrl?: string | null;
+      videoHdUrl?: string | null;
+      videoSdUrl?: string | null;
+    }>;
     cards?: MetaCard[];
   };
 }
@@ -56,8 +62,31 @@ function mapAd(a: MetaAd): FetchedAd | null {
     cardImage?.resizedImageUrl ??
     null;
 
+  // Archive every creative file on the ad, not just the display thumbnail.
+  // HD video preferred, SD as fallback; each carries its poster.
+  const assets: FetchedAdAsset[] = [];
+  for (const v of videos) {
+    const src = v.videoHdUrl ?? v.videoSdUrl;
+    if (src) assets.push({ kind: "video", url: src, posterUrl: v.videoPreviewImageUrl ?? undefined });
+  }
+  for (const c of cards) {
+    const src = c.videoHdUrl ?? c.videoSdUrl;
+    if (src) assets.push({ kind: "video", url: src, posterUrl: c.videoPreviewImageUrl ?? undefined });
+  }
+  for (const im of images) {
+    const src = im.originalImageUrl ?? im.resizedImageUrl;
+    if (src) assets.push({ kind: "image", url: src });
+  }
+  for (const c of cards) {
+    const src = c.originalImageUrl ?? c.resizedImageUrl;
+    if (src) assets.push({ kind: "image", url: src });
+  }
+  const seen = new Set<string>();
+  const uniqueAssets = assets.filter((a) => !seen.has(a.url) && seen.add(a.url));
+
   const firstCard = cards[0];
   return {
+    assets: uniqueAssets,
     libraryId: a.adArchiveID,
     libraryUrl: `https://www.facebook.com/ads/library/?id=${a.adArchiveID}`,
     adText: s.body?.text ?? firstCard?.body ?? undefined,

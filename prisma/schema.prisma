@@ -155,6 +155,11 @@ model Ad {
   messageSummary    String?
   offerType         String?
   format            AdFormat     @default(image)
+  // Full creative archive: every image and video file belonging to this ad,
+  // cached to our storage. [{ kind, originalUrl, cachedPath, thumbPath,
+  // bytes, contentType }] — creativePath/creativeThumbPath stay as the
+  // primary display asset for existing views.
+  assets            Json         @default("[]")
   firstSeen         DateTime
   lastSeen          DateTime
   status            AdStatus     @default(active)

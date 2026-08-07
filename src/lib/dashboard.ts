@@ -163,6 +163,8 @@ export interface AdCardData {
   coverage: string;
   isNew: boolean;
   majorPush: boolean;
+  // Archived creative files available for download/playback.
+  assets: { kind: string; cachedPath: string | null; thumbPath: string | null; bytes: number | null }[];
 }
 
 export async function adWatch(): Promise<AdCardData[]> {
@@ -192,6 +194,8 @@ export async function adWatch(): Promise<AdCardData[]> {
     status: a.status,
     source: a.source,
     coverage: a.coverage,
+    assets: ((a.assets as unknown as { kind: string; cachedPath: string | null; thumbPath: string | null; bytes: number | null }[]) ?? [])
+      .filter((x) => x.cachedPath),
     isNew: Date.now() - a.firstSeen.getTime() < 7 * DAY,
     majorPush: burst.has(a.brandId),
   }));
