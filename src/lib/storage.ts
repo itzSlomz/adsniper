@@ -1,5 +1,5 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
-import { promises as fs } from "fs";
+import { promises as fs, createReadStream } from "fs";
 import path from "path";
 
 // Small storage module (brief Section 2): R2 when credentials are present,
@@ -7,9 +7,26 @@ import path from "path";
 // before infra arrives. The bucket is never public — media is served only
 // through the auth-gated /media proxy route.
 
+export interface StreamedObject {
+  stream: NodeJS.ReadableStream;
+  contentType: string;
+  // Size of the bytes being returned; total size of the object.
+  contentLength: number;
+  totalSize: number;
+  // Present when a Range request was satisfied.
+  contentRange?: string;
+}
+
 export interface Storage {
   put(key: string, body: Buffer, contentType: string): Promise<void>;
   get(key: string): Promise<{ body: Buffer; contentType: string } | null>;
+  // Streaming read with optional byte range — video creatives are far too
+  // large to buffer in the server's memory, and range support is what lets
+  // a browser seek within a video.
+  getStream(
+    key: string,
+    range?: { start: number; end?: number }
+  ): Promise<StreamedObject | null>;
   kind: "r2" | "local";
 }
 
@@ -37,6 +54,24 @@ const localStorage: Storage = {
     try {
       const body = await fs.readFile(path.join(LOCAL_ROOT, key));
       return { body, contentType: contentTypeFromKey(key) };
+    } catch {
+      return null;
+    }
+  },
+  async getStream(key, range) {
+    const file = path.join(LOCAL_ROOT, key);
+    try {
+      const stat = await fs.stat(file);
+      const start = range?.start ?? 0;
+      const end = Math.min(range?.end ?? stat.size - 1, stat.size - 1);
+      if (start >= stat.size) return null;
+      return {
+        stream: createReadStream(file, range ? { start, end } : undefined),
+        contentType: contentTypeFromKey(key),
+        contentLength: range ? end - start + 1 : stat.size,
+        totalSize: stat.size,
+        ...(range ? { contentRange: `bytes ${start}-${end}/${stat.size}` } : {}),
+      };
     } catch {
       return null;
     }
@@ -69,6 +104,31 @@ function r2Storage(): Storage {
         // Migration aid: media cached to local disk before R2 was configured
         // stays readable until the media-migrate job moves it over.
         return localStorage.get(key);
+      }
+    },
+    async getStream(key, range) {
+      try {
+        const res = await client.send(
+          new GetObjectCommand({
+            Bucket,
+            Key: key,
+            ...(range
+              ? { Range: `bytes=${range.start}-${range.end ?? ""}` }
+              : {}),
+          })
+        );
+        const total = res.ContentRange
+          ? Number(res.ContentRange.split("/")[1])
+          : (res.ContentLength ?? 0);
+        return {
+          stream: res.Body as unknown as NodeJS.ReadableStream,
+          contentType: res.ContentType ?? contentTypeFromKey(key),
+          contentLength: res.ContentLength ?? 0,
+          totalSize: total,
+          ...(res.ContentRange ? { contentRange: res.ContentRange } : {}),
+        };
+      } catch {
+        return localStorage.getStream(key, range);
       }
     },
   };

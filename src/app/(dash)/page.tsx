@@ -80,7 +80,12 @@ export default async function DailyCommandView({
             <Link className="btn btn-secondary" href={qs(prev, days)}>←</Link>
             <span className="font-bold" style={{ fontFamily: "var(--font-heading)" }}>{periodLabel}</span>
             <Link className="btn btn-secondary" href={qs(next, days)}>→</Link>
-            <a href={`/api/export/daily/${date}`} className="btn btn-primary">Export PDF</a>
+            <a
+              href={days === 7 ? `/api/export/weekly/${date}` : `/api/export/daily/${date}`}
+              className="btn btn-primary"
+            >
+              {days === 7 ? "Weekly ad report" : "Export PDF"}
+            </a>
           </div>
         </div>
         <div className="mt-4 border-b-2 pb-4" style={{ borderColor: "var(--color-divider)" }}>
