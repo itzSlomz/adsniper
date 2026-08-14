@@ -217,6 +217,35 @@ no self-registration). With `RESEND_API_KEY` unset, sign-in is email +
    `/media/...` anonymous → redirect, `/api/export/daily/<today>` → PDF
    with correct Arabic.
 
+### Staging copy
+
+`watchtower-staging` is a second Railway service in the same project, for
+trying changes without touching the live dashboard.
+
+- URL: `https://watchtower-staging-production.up.railway.app`
+- Source: the GitHub repo, branch `claude/markdown-review-6v7w0s` — it
+  redeploys on every push to that branch.
+- Isolation is by construction, not by discipline:
+  - `DATABASE_URL` points at `Postgres-Staging`, a separate database, so
+    nothing there can write to production data.
+  - `DISABLE_CRON=1`, so it never polls providers on a schedule.
+  - No `APIFY_TOKEN`, `ANTHROPIC_API_KEY` or `RESEND_API_KEY`, and all
+    three monthly cost ceilings are `0` — a stray manual job run stops at
+    the budget guard instead of spending.
+  - `MEDIA_DIR=/data/media` on its own volume, not the production R2
+    bucket.
+  - `WATCHTOWER_ENV=staging` puts a permanent black banner above the nav
+    so nobody mistakes test data for the market picture.
+- Staging starts with a seeded brand list and no posts or ads. To try a
+  change against realistic data, run a job manually from `/intel` — it
+  will need provider keys added to the staging service first, and those
+  calls do cost money.
+
+Note: Railway's tarball upload endpoint (`/up`) stalls at `SNAPSHOT_CODE`
+for this account — deploys must come from the connected GitHub repo.
+Production still deploys by upload and will need connecting to a branch
+before its next release.
+
 ### Cron schedule (in-process, TZ-local)
 
 | Job | Cron | What |
