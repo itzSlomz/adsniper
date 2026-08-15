@@ -45,6 +45,17 @@ export default async function CommandView({
     marketEstimates(),
   ]);
   const visibleBrief = brief && (brief.status === "published" || isAdmin) ? brief : null;
+  // The flagship weekly ad briefing, shown on the weekly view: the latest
+  // one covering (or preceding) the selected date.
+  const weeklyBrief =
+    days === 7
+      ? await prisma.weeklyBrief.findFirst({
+          where: { weekStart: { lte: new Date(`${date}T00:00:00Z`) } },
+          orderBy: { weekStart: "desc" },
+        })
+      : null;
+  const visibleWeekly =
+    weeklyBrief && (weeklyBrief.status === "published" || isAdmin) ? weeklyBrief : null;
   const self = brands.find((b) => b.type === "self");
   const ours = posts.filter((p) => p.brandId === self?.id);
   const market = posts.filter((p) => p.brandId !== self?.id);
@@ -114,6 +125,20 @@ export default async function CommandView({
             "Ask your admin to set up your brand and competitors."
           )}
         </div>
+      )}
+
+      {visibleWeekly && (
+        <BriefCard
+          en={visibleWeekly.contentEn}
+          ar={visibleWeekly.contentAr}
+          status={visibleWeekly.status}
+          date={`${visibleWeekly.weekStart.toISOString().slice(0, 10)} → ${new Date(
+            +visibleWeekly.weekStart + 6 * 86400000
+          )
+            .toISOString()
+            .slice(0, 10)}`}
+          kicker="Weekly ad briefing — the competition in paid media"
+        />
       )}
 
       <AdOverviewHero overview={overview} ads={ads} />

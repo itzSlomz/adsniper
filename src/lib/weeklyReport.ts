@@ -196,8 +196,8 @@ export async function buildWeeklyReport(endDate: string): Promise<WeeklyReport> 
   if (self) {
     headlines.push(
       self.activeAds > 0
-        ? `Bank Albilad ran ${self.activeAds} ads — ${totalAll > 0 ? Math.round((self.activeAds / totalAll) * 100) : 0}% of all tracked ad activity.`
-        : `Bank Albilad had no detected paid activity this week.`
+        ? `${self.brandName} ran ${self.activeAds} ads — ${totalAll > 0 ? Math.round((self.activeAds / totalAll) * 100) : 0}% of all tracked ad activity.`
+        : `${self.brandName} had no detected paid activity this week.`
     );
   }
   if (marketNew > 0) headlines.push(`${marketNew} new competitor creatives entered the market.`);

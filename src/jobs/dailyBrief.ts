@@ -79,7 +79,7 @@ async function gatherBriefData() {
   };
 }
 
-async function callAnthropic(prompt: string): Promise<{ en: string; ar: string }> {
+export async function callAnthropic(prompt: string): Promise<{ en: string; ar: string }> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not set");
   const model = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
@@ -125,7 +125,9 @@ export async function runDailyBrief(ctx: JobContext): Promise<void> {
     path.join(process.cwd(), "prompts", "daily-brief.md"),
     "utf8"
   );
+  const self = await prisma.brand.findFirst({ where: { type: "self", active: true } });
   const prompt = template
+    .replaceAll("{{CUSTOMER}}", self?.nameEn ?? "our company")
     .replace("{{DATE}}", date.toISOString().slice(0, 10))
     .replace("{{DATA_JSON}}", JSON.stringify(data, null, 1));
 
@@ -146,11 +148,16 @@ export async function runDailyBrief(ctx: JobContext): Promise<void> {
   ctx.itemsIngested = 1;
 }
 
-// 08:00 auto-publish: any draft untouched by an admin goes live.
+// 08:00 auto-publish: any draft untouched by an admin goes live — daily
+// and weekly alike.
 export async function runBriefAutoPublish(ctx: JobContext): Promise<void> {
   const res = await prisma.dailyBrief.updateMany({
     where: { status: "draft", editedAt: null },
     data: { status: "published" },
   });
-  ctx.itemsIngested = res.count;
+  const weekly = await prisma.weeklyBrief.updateMany({
+    where: { status: "draft", editedAt: null },
+    data: { status: "published" },
+  });
+  ctx.itemsIngested = res.count + weekly.count;
 }

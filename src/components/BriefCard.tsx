@@ -27,11 +27,13 @@ export default function BriefCard({
   ar,
   status,
   date,
+  kicker = "Daily brief — market moves",
 }: {
   en: string;
   ar: string;
   status: string;
   date: string;
+  kicker?: string;
 }) {
   const [lang, setLang] = useState<"en" | "ar">("ar");
   const content = lang === "ar" ? ar : en;
@@ -39,7 +41,7 @@ export default function BriefCard({
     <div className="card elev-sm" style={{ borderTop: "3px solid var(--color-accent)" }}>
       <div className="flex items-center gap-2">
         <div>
-          <span className="card-kicker">Daily brief — market moves</span>
+          <span className="card-kicker">{kicker}</span>
           <div className="card-title">
             {date}
             {status === "draft" && <span className="tag tag-accent ms-2">Draft</span>}

@@ -4,6 +4,7 @@ import { runXMetricsRefresh } from "@/jobs/xMetricsRefresh";
 import { runLinkedInPoll } from "@/jobs/linkedinPoll";
 import { runAdsPoll } from "@/jobs/adsPoll";
 import { runDailyBrief, runBriefAutoPublish } from "@/jobs/dailyBrief";
+import { runWeeklyBrief } from "@/jobs/weeklyBrief";
 import { runMediaMigrate } from "@/jobs/mediaMigrate";
 import { runResolveIdentities } from "@/jobs/resolveIdentities";
 import type { JobContext } from "@/jobs/runner";
@@ -23,8 +24,10 @@ export const jobs: Record<string, JobDef> = {
   "x-metrics-refresh": { cron: "30 * * * *", run: runXMetricsRefresh },
   "linkedin-poll": { cron: "20 * * * *", run: runLinkedInPoll },
   "ads-poll": { cron: "40 * * * *", run: runAdsPoll },
-  // Server TZ is Asia/Riyadh (env TZ), so these are 06:30 / 08:00 local.
+  // Server TZ is instance-local (env TZ), so these are 06:30 / 08:00 local.
   "daily-brief": { cron: "30 6 * * *", run: runDailyBrief },
+  // The flagship: Monday-morning briefing on last week's competitor ads.
+  "weekly-brief": { cron: "0 7 * * 1", run: runWeeklyBrief },
   "brief-auto-publish": { cron: "0 8 * * *", run: runBriefAutoPublish },
   // Manual-only: volume→R2 copy after R2 goes live.
   "media-migrate": { cron: null, run: runMediaMigrate },

@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/db";
 import { buildWeeklyReport } from "@/lib/weeklyReport";
 import type { BrandAdSummary } from "@/lib/weeklyReport";
 
@@ -137,6 +138,26 @@ export default async function WeeklyExportPage({
   const r = await buildWeeklyReport(date);
   const competitors = r.brands.filter((b) => !b.isSelf);
   const self = r.brands.find((b) => b.isSelf);
+  // Published narrative for this exact week, if the briefing job has run.
+  const briefing = await prisma.weeklyBrief.findFirst({
+    where: { weekStart: new Date(`${r.weekStart}T00:00:00Z`), status: "published" },
+  });
+  const briefLine = (line: string, i: number) => {
+    const parts = line.replace(/^\s*[-•*]\s+/, "").split(/\*\*(.+?)\*\*/);
+    const rendered = parts.map((p, j) => (j % 2 === 1 ? <strong key={j}>{p}</strong> : p));
+    if (line.trim() === "") return null;
+    if (/^\s*[-•*]\s+/.test(line))
+      return (
+        <p key={i} style={{ margin: "0 0 2px", paddingInlineStart: 8 }}>
+          • {rendered}
+        </p>
+      );
+    return (
+      <p key={i} style={{ margin: "3px 0 2px", fontWeight: 700 }}>
+        {rendered}
+      </p>
+    );
+  };
 
   return (
     <main
@@ -209,6 +230,28 @@ export default async function WeeklyExportPage({
           ))}
         </ul>
       </section>
+
+      {/* The published weekly briefing narrative, bilingual */}
+      {briefing && (
+        <section
+          style={{
+            border: "1px solid #d5d2d2",
+            padding: "7px 10px",
+            marginBottom: 11,
+            breakInside: "avoid",
+          }}
+        >
+          <div style={{ fontSize: 8, letterSpacing: "0.1em", color: "#6b6b6b", fontWeight: 800, marginBottom: 3 }}>
+            WEEKLY BRIEFING
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, fontSize: 9, lineHeight: 1.5 }}>
+            <div dir="rtl" style={{ textAlign: "right" }}>
+              {briefing.contentAr.split("\n").map(briefLine)}
+            </div>
+            <div>{briefing.contentEn.split("\n").map(briefLine)}</div>
+          </div>
+        </section>
+      )}
 
       {/* Our own paid presence */}
       {self && (

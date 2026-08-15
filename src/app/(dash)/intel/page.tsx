@@ -53,6 +53,9 @@ export default async function IntelPage() {
         <Link href="/intel/quick-add-post" className="btn btn-secondary">
           ➕ Quick add LinkedIn post
         </Link>
+        <Link href="/intel/weekly-brief" className="btn btn-secondary">
+          🗞 Weekly ad briefing
+        </Link>
         <Link href="/intel/brief" className="btn btn-secondary">
           📝 Daily brief
         </Link>
