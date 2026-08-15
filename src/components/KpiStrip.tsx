@@ -72,7 +72,7 @@ export default function KpiStrip({ kpis, days }: { kpis: KpiData; days: number }
     <div className="flex flex-wrap gap-2">
       <Kpi
         label="Our posts"
-        value={String(kpis.babPosts)}
+        value={String(kpis.ourPosts)}
         delta={pctLabel(kpis.vsBaseline.posts)}
         tone={toneOf(kpis.vsBaseline.posts, true)}
         raw={kpis.vsBaseline.posts}
@@ -80,7 +80,7 @@ export default function KpiStrip({ kpis, days }: { kpis: KpiData; days: number }
       />
       <Kpi
         label="Our engagement"
-        value={kpis.babEngagement.toLocaleString()}
+        value={kpis.ourEngagement.toLocaleString()}
         delta={pctLabel(kpis.vsBaseline.engagement)}
         tone={toneOf(kpis.vsBaseline.engagement, true)}
         raw={kpis.vsBaseline.engagement}

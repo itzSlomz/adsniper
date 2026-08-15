@@ -17,7 +17,7 @@ export default async function ComparePage() {
   const self = brands.find((b) => b.type === "self");
   const name = (id: string) => brands.find((b) => b.id === id)?.nameEn ?? id;
 
-  // Share of voice trend (X only): BAB share of daily X engagement.
+  // Share of voice trend (X only): our brand's share of daily X engagement.
   const sovByDay: Record<string, { bab: number; total: number }> = {};
   for (const p of posts) {
     if (p.platform !== "x") continue;
@@ -89,7 +89,7 @@ export default async function ComparePage() {
       <section className="card elev-sm">
         <h2 className="mb-1 text-base font-semibold">Share of voice trend</h2>
         <p className="mb-2 text-xs text-gray-500">
-          X only — Bank Albilad&apos;s share of daily engagement across tracked brands.
+          X only — your brand&apos;s share of daily engagement across tracked brands.
         </p>
         <SeriesLineChart data={sovSeries} series={[{ key: "sov", color: "#ec3013" }]} percent />
       </section>

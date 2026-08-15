@@ -34,7 +34,7 @@ export default function HeadlineSummary({
           ? "in line with our recent average"
           : `${Math.abs(d * 100).toFixed(0)}% ${d > 0 ? "above" : "below"} our recent average`;
     lines.push(
-      `We published ${ours.length} post${ours.length === 1 ? "" : "s"} ${period}, earning ${kpis.babEngagement.toLocaleString()} engagements — ${verdict}.`
+      `We published ${ours.length} post${ours.length === 1 ? "" : "s"} ${period}, earning ${kpis.ourEngagement.toLocaleString()} engagements — ${verdict}.`
     );
   }
 

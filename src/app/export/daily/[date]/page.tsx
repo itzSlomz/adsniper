@@ -59,8 +59,8 @@ export default async function DailyExportPage({
 
       <section className="mb-4 grid grid-cols-5 gap-2 text-center">
         {[
-          ["Our posts", String(kpis.babPosts)],
-          ["Engagement", String(kpis.babEngagement)],
+          ["Our posts", String(kpis.ourPosts)],
+          ["Engagement", String(kpis.ourEngagement)],
           [
             "Follower Δ",
             kpis.followerDeltas

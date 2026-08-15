@@ -202,8 +202,8 @@ export async function adWatch(): Promise<AdCardData[]> {
 }
 
 export interface KpiData {
-  babPosts: number;
-  babEngagement: number;
+  ourPosts: number;
+  ourEngagement: number;
   followerDeltas: { platform: string; delta: number | null }[];
   shareOfVoice: number | null; // X only, engagement share, 0..1
   activeCompetitorAds: number;
@@ -221,23 +221,23 @@ export interface KpiData {
 
 export async function kpisForDay(date: string, days: RangeDays = 1): Promise<KpiData> {
   const { from, to } = periodRange(date, days);
-  const bab = await prisma.brand.findFirst({ where: { type: "self" } });
+  const self = await prisma.brand.findFirst({ where: { type: "self" } });
   const posts = await postsForDay(date, days);
-  const babPosts = posts.filter((p) => p.brandId === bab?.id);
+  const ourPosts = posts.filter((p) => p.brandId === self?.id);
 
-  // Share of voice (X only, labeled in UI): BAB's share of total engagement
-  // on X posts published in the period across all tracked brands.
+  // Share of voice (X only, labeled in UI): our brand's share of total
+  // engagement on X posts published in the period across tracked brands.
   const sov = (list: PostCardData[]): number | null => {
     const xp = list.filter((p) => p.platform === "x");
     const total = xp.reduce((n, p) => n + p.engagement, 0);
     if (total <= 0) return null;
-    return xp.filter((p) => p.brandId === bab?.id).reduce((n, p) => n + p.engagement, 0) / total;
+    return xp.filter((p) => p.brandId === self?.id).reduce((n, p) => n + p.engagement, 0) / total;
   };
 
   const followerDeltas: KpiData["followerDeltas"] = [];
   for (const platform of ["x", "linkedin"] as const) {
     const snaps = await prisma.followerSnapshot.findMany({
-      where: { brandId: bab?.id, platform, date: { lte: to } },
+      where: { brandId: self?.id, platform, date: { lte: to } },
       orderBy: { date: "desc" },
       take: days + 1,
     });
@@ -261,7 +261,7 @@ export async function kpisForDay(date: string, days: RangeDays = 1): Promise<Kpi
     where: { postedAt: { gte: priorFrom, lt: from } },
     include: { snapshots: { orderBy: { capturedAt: "desc" }, take: 1 } },
   });
-  const priorOurs = priorPosts.filter((p) => p.brandId === bab?.id);
+  const priorOurs = priorPosts.filter((p) => p.brandId === self?.id);
   const priorPostsPerPeriod = priorOurs.length / BASELINE_PERIODS;
   const priorEngagementPerPeriod =
     priorOurs.reduce((n, p) => n + (p.snapshots[0] ? engagementOf(p.snapshots[0]) : 0), 0) /
@@ -271,10 +271,10 @@ export async function kpisForDay(date: string, days: RangeDays = 1): Promise<Kpi
     (n, p) => n + (p.snapshots[0] ? engagementOf(p.snapshots[0]) : 0),
     0
   );
-  const priorXBab = priorX
-    .filter((p) => p.brandId === bab?.id)
+  const priorXOurs = priorX
+    .filter((p) => p.brandId === self?.id)
     .reduce((n, p) => n + (p.snapshots[0] ? engagementOf(p.snapshots[0]) : 0), 0);
-  const priorSov = priorXTotal > 0 ? priorXBab / priorXTotal : null;
+  const priorSov = priorXTotal > 0 ? priorXOurs / priorXTotal : null;
 
   // Competitor ads live: compare against ads that were live one period ago.
   const adsThen = await prisma.ad.count({
@@ -288,23 +288,82 @@ export async function kpisForDay(date: string, days: RangeDays = 1): Promise<Kpi
   const pct = (now: number, before: number | null): number | null =>
     before == null || before <= 0 ? null : (now - before) / before;
 
-  const engagement = babPosts.reduce((n, p) => n + p.engagement, 0);
+  const engagement = ourPosts.reduce((n, p) => n + p.engagement, 0);
   const shareOfVoice = sov(posts);
 
   return {
-    babPosts: babPosts.length,
-    babEngagement: engagement,
+    ourPosts: ourPosts.length,
+    ourEngagement: engagement,
     followerDeltas,
     shareOfVoice,
     activeCompetitorAds,
     vsBaseline: {
-      posts: pct(babPosts.length, priorPostsPerPeriod),
+      posts: pct(ourPosts.length, priorPostsPerPeriod),
       engagement: pct(engagement, priorEngagementPerPeriod),
       shareOfVoice:
         shareOfVoice != null && priorSov != null ? shareOfVoice - priorSov : null,
       competitorAds: pct(activeCompetitorAds, adsThen),
     },
     baselineDays,
+  };
+}
+
+// The ads hero strip: current competitive ad posture at a glance. Counts
+// and durations only — observable facts from the libraries, never spend.
+export interface AdOverview {
+  marketActive: number;
+  ourActive: number;
+  // Competitor ads first seen in the trailing 7 days.
+  newThisWeek: number;
+  // Competitor ads that went quiet over the last week (mirrors the weekly
+  // report: last seen 7–14 days ago and no longer active).
+  stoppedThisWeek: number;
+  // Competitor brands currently running at least one ad.
+  activeBrands: number;
+  longestDays: number | null;
+  longestBrand: string | null;
+  // Brands in an unusual push (campaign-burst detection) with their count
+  // of new ads this week — the "looks like a new campaign" signal.
+  burstBrands: { name: string; newAds: number }[];
+}
+
+export async function adOverview(): Promise<AdOverview> {
+  const now = Date.now();
+  const weekAgo = new Date(now - 7 * DAY);
+  const twoWeeksAgo = new Date(now - 14 * DAY);
+  const [ads, burstIds] = await Promise.all([
+    prisma.ad.findMany({ include: { brand: true } }),
+    campaignBurstBrandIds(),
+  ]);
+  const competitors = ads.filter((a) => a.brand.type === "competitor");
+  const active = competitors.filter((a) => a.status === "active");
+  const stopped = competitors.filter(
+    (a) => a.status !== "active" && a.lastSeen >= twoWeeksAgo && a.lastSeen < weekAgo
+  );
+  const longest = active
+    .slice()
+    .sort((a, b) => +b.lastSeen - +b.firstSeen - (+a.lastSeen - +a.firstSeen))[0];
+
+  const burstSet = new Set(burstIds);
+  const burstCounts = new Map<string, { name: string; newAds: number }>();
+  for (const a of ads) {
+    if (!burstSet.has(a.brandId) || a.firstSeen < weekAgo) continue;
+    const cur = burstCounts.get(a.brandId) ?? { name: a.brand.nameEn, newAds: 0 };
+    cur.newAds++;
+    burstCounts.set(a.brandId, cur);
+  }
+
+  return {
+    marketActive: active.length,
+    ourActive: ads.filter((a) => a.brand.type === "self" && a.status === "active").length,
+    newThisWeek: competitors.filter((a) => a.firstSeen >= weekAgo).length,
+    stoppedThisWeek: stopped.length,
+    activeBrands: new Set(active.map((a) => a.brandId)).size,
+    longestDays: longest
+      ? Math.max(1, Math.round((+longest.lastSeen - +longest.firstSeen) / DAY))
+      : null,
+    longestBrand: longest?.brand.nameEn ?? null,
+    burstBrands: Array.from(burstCounts.values()).sort((a, b) => b.newAds - a.newAds),
   };
 }
 
