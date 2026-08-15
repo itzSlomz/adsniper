@@ -112,7 +112,7 @@ export const metaApifyAdsProvider: AdsProvider = {
   async fetchAds(brand) {
     if (brand.metaPageIds.length === 0) return { items: [], units: 0, estCostUsd: 0 };
     const startUrls = brand.metaPageIds.map((id) => ({
-      url: `https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=SA&view_all_page_id=${id}&search_type=page&media_type=all`,
+      url: `https://www.facebook.com/ads/library/?active_status=active&ad_type=all&country=${brand.region}&view_all_page_id=${id}&search_type=page&media_type=all`,
     }));
     const raw = await runApifyActorSync<MetaAd>(
       ACTOR,

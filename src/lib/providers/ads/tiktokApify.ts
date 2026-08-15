@@ -44,7 +44,7 @@ export const tiktokApifyAdsProvider: AdsProvider = {
     if (!cache || Date.now() - cache.at > CACHE_TTL_MS) {
       const raw = await runApifyActorSync<TikTokAd>(
         ACTOR,
-        { countryCode: "SA", period: "30", maxResults: MAX_RESULTS },
+        { countryCode: brand.region, period: "30", maxResults: MAX_RESULTS },
         apiKey()
       );
       cache = { at: Date.now(), raw: raw.filter((a) => a && a.ad_id != null), charged: false };

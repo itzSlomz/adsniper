@@ -1,8 +1,15 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
-import { getPullSettings, getStamp, savePullSettings } from "@/lib/settings";
+import {
+  getInstanceSettings,
+  getPullSettings,
+  getStamp,
+  saveInstanceSettings,
+  savePullSettings,
+} from "@/lib/settings";
 import type { PullSettings } from "@/lib/settings";
+import { getLicense } from "@/lib/license";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +35,23 @@ export default async function SettingsPage() {
 
   const cfg = await getPullSettings();
   const stamps = await Promise.all(SOURCES.map((s) => getStamp(s.stamp)));
+  const instance = await getInstanceSettings();
+  const license = getLicense();
+
+  async function saveInstance(formData: FormData) {
+    "use server";
+    const s = await auth();
+    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
+    await saveInstanceSettings({
+      customerNameEn: String(formData.get("customerNameEn") ?? "").trim(),
+      customerNameAr: String(formData.get("customerNameAr") ?? "").trim(),
+      marketRegion:
+        String(formData.get("marketRegion") ?? "SA").trim().toUpperCase().slice(0, 2) || "SA",
+      defaultLang: formData.get("defaultLang") === "ar" ? "ar" : "en",
+    });
+    revalidatePath("/intel/settings");
+    revalidatePath("/");
+  }
 
   async function save(formData: FormData) {
     "use server";
@@ -54,8 +78,45 @@ export default async function SettingsPage() {
     <main className="mx-auto max-w-2xl space-y-6">
       <div className="section-head">
         <span className="section-kicker">Admin</span>
-        <h1 style={{ margin: 0, fontSize: 28 }}>Data pulling</h1>
+        <h1 style={{ margin: 0, fontSize: 28 }}>Settings</h1>
       </div>
+
+      <form action={saveInstance} className="card elev-sm space-y-3">
+        <h2 style={{ margin: 0, fontSize: 16 }}>Workspace</h2>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <label className="text-xs text-muted">
+            Company name (English)
+            <input name="customerNameEn" defaultValue={instance.customerNameEn} className="input" />
+          </label>
+          <label className="text-xs text-muted">
+            Company name (Arabic)
+            <input name="customerNameAr" defaultValue={instance.customerNameAr} dir="rtl" className="input" />
+          </label>
+          <label className="text-xs text-muted">
+            Market (ISO country code — where your competitors&apos; ads are queried, e.g. SA, AE, EG)
+            <input name="marketRegion" defaultValue={instance.marketRegion} maxLength={2} className="input" style={{ width: 90, textTransform: "uppercase" }} />
+          </label>
+          <label className="text-xs text-muted">
+            Default report language
+            <select name="defaultLang" defaultValue={instance.defaultLang} className="input">
+              <option value="en">English</option>
+              <option value="ar">العربية</option>
+            </select>
+          </label>
+        </div>
+        <button className="btn btn-primary" style={{ fontSize: 13 }}>Save workspace</button>
+        <p className="text-xs text-muted" style={{ margin: 0 }}>
+          Subscription:{" "}
+          {license.state === "unconfigured"
+            ? "not configured (open access)"
+            : license.expiresAt
+              ? `${license.plan ? `${license.plan} — ` : ""}until ${license.expiresAt.toISOString().slice(0, 10)} (${license.daysLeft} days left)`
+              : "—"}
+          . Managed by your AdSniper account manager.
+        </p>
+      </form>
+
+      <h2 style={{ margin: 0, fontSize: 16 }}>Data pulling</h2>
       <p className="text-sm text-muted">
         Per-source schedule. Changes apply from the next hourly tick — no
         restart needed. &quot;Run now&quot; on the Intel page always pulls

@@ -1,13 +1,26 @@
 import NextAuth from "next-auth";
+import { NextResponse } from "next/server";
 import { authConfig } from "@/auth.config";
+import { getLicense } from "@/lib/license";
 
-// Operator decision (2026-07-29): viewer surfaces are public — no login to
-// see the dashboard. Auth remains ONLY on admin surfaces: Intel capture
-// (user management, brief editing, manual logging) and the job-trigger
-// API, so outsiders can't mutate data or spend provider budget. This
-// supersedes the brief's Section 1.6 lockdown for read-only pages.
-export default NextAuth(authConfig).auth;
+// AdSniper is a per-customer SaaS instance: every surface requires login
+// (auth.config's authorized callback), reversing Watchtower's
+// public-viewer posture. On top of auth, an expired license locks the
+// whole instance to /license-expired; in-process cron is gated separately
+// in the job runner, since it never passes through middleware.
+const LICENSE_EXEMPT = ["/login", "/license-expired", "/api/auth"];
+
+export default NextAuth(authConfig).auth((req) => {
+  const { pathname } = req.nextUrl;
+  if (
+    getLicense().state === "expired" &&
+    !LICENSE_EXEMPT.some((p) => pathname === p || pathname.startsWith(`${p}/`))
+  ) {
+    return NextResponse.redirect(new URL("/license-expired", req.nextUrl));
+  }
+  return NextResponse.next();
+});
 
 export const config = {
-  matcher: ["/intel/:path*", "/api/jobs/:path*"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt).*)"],
 };

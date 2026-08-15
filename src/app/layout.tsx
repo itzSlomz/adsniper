@@ -3,7 +3,7 @@ import "./globals.css";
 import "./modernist.css";
 
 export const metadata: Metadata = {
-  title: "Watchtower",
+  title: "AdSniper",
   robots: { index: false, follow: false },
 };
 

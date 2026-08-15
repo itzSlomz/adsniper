@@ -7,7 +7,8 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
-      if (pathname === "/login") return true;
+      // NextAuth's own routes must stay reachable or sign-in breaks.
+      if (pathname === "/login" || pathname.startsWith("/api/auth")) return true;
       return !!auth?.user;
     },
     jwt({ token, user }) {

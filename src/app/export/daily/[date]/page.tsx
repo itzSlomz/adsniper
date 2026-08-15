@@ -51,7 +51,7 @@ export default async function DailyExportPage({
     <main className="mx-auto max-w-[720px] bg-white p-6 text-[13px] leading-snug text-gray-900">
       <header className="mb-4 flex items-baseline justify-between border-b-4 border-[#C8102E] pb-2">
         <div>
-          <h1 className="text-xl font-bold">Bank Albilad · Watchtower</h1>
+          <h1 className="text-xl font-bold">{self?.nameEn ?? "AdSniper"} · AdSniper</h1>
           <p className="text-sm text-gray-500">Daily competitive brief</p>
         </div>
         <p className="text-lg font-semibold">{date}</p>

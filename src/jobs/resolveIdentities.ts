@@ -2,36 +2,27 @@ import { prisma } from "@/lib/db";
 import { runApifyActorSync } from "@/lib/apify";
 import { matchesBrand } from "@/lib/brandMatch";
 import { ensureBudget, logProviderCall } from "@/lib/costs";
+import { getInstanceSettings } from "@/lib/settings";
 import type { JobContext } from "@/jobs/runner";
 
-// Advertiser-identity resolution (Phase 0d / runbook maintenance), as a
-// manual-only job so it can run on the server via Intel → Run now — ad
-// pulls depend on these IDs, and a fresh database starts with them empty.
-// Fills Brand.metaPageIds / googleAdvertiserIds by querying the libraries
-// by brand name (EN + parenthetical + AR), keeping only country=SA,
-// alias-matched advertisers. Results land in JobRun errors as (info)
-// lines for operator review.
-// Operator-verified official Facebook pages (from each bank's own site
-// footer, compiled 2026-07-30). Exact pages beat keyword search: numeric
-// IDs are used directly; vanity URLs are looked up in the ad library and
-// every pageID they return is trusted (it IS the brand's page).
-const KNOWN_META: Record<string, { pageUrl?: string; pageId?: string }> = {
-  "Bank Albilad": { pageUrl: "https://www.facebook.com/bankalbilad" },
-  "Al Rajhi Bank": { pageUrl: "https://www.facebook.com/alrajhibank" },
-  "SNB (Saudi National Bank)": { pageUrl: "https://www.facebook.com/SNBAlAhli" },
-  "Riyad Bank": { pageUrl: "https://www.facebook.com/RiyadBank" },
-  "Alinma Bank": { pageUrl: "https://www.facebook.com/AlinmaBankSA" },
-  SAB: { pageUrl: "https://www.facebook.com/alawwalsab" },
-  "ANB (Arab National Bank)": { pageUrl: "https://www.facebook.com/anbksa" },
-  "D360 Bank": { pageId: "100064630305788" },
-  "STC Bank": { pageId: "100067406401787" },
-};
+// Advertiser-identity resolution, as a manual-only job so it can run on
+// the server via Intel → Run now — ad pulls depend on these IDs, and a
+// fresh instance starts with them empty. Fills Brand.metaPageIds /
+// googleAdvertiserIds by querying the libraries by brand name (EN +
+// parenthetical + AR), keeping only advertisers in the instance's market
+// region that alias-match the brand. Results land in JobRun errors as
+// (info) lines for admin review on the Brands page.
+//
+// Precision beats keyword search: when Brand.facebookPageUrl is set (the
+// brand's official page, entered by the admin), every pageID the ad
+// library returns for it is trusted — it IS the brand's page.
 
 export async function runResolveIdentities(ctx: JobContext): Promise<void> {
   const key =
     process.env.META_ADS_PROVIDER_API_KEY ?? process.env.GOOGLE_ADS_PROVIDER_API_KEY;
   if (!key) throw new Error("META/GOOGLE_ADS_PROVIDER_API_KEY not set");
   const brands = await prisma.brand.findMany({ where: { active: true } });
+  const { marketRegion } = await getInstanceSettings();
 
   for (const brand of brands) {
     await ensureBudget("ads");
@@ -40,15 +31,13 @@ export async function runResolveIdentities(ctx: JobContext): Promise<void> {
     const queries = [outer, ...(inner ? [inner] : []), brand.nameAr];
 
     const metaPages = new Map<string, string>();
-    const known = KNOWN_META[brand.nameEn];
-    if (known?.pageId) metaPages.set(known.pageId, "operator-verified page id");
     // Precise pass: the brand's own page URL — every pageID it returns is
     // the brand's, no name-matching needed.
-    if (known?.pageUrl) {
+    if (brand.facebookPageUrl) {
       try {
         const pageRaw = await runApifyActorSync<{ pageID?: string; pageName?: string }>(
           "apify~facebook-ads-scraper",
-          { startUrls: [{ url: known.pageUrl }], resultsLimit: 3 },
+          { startUrls: [{ url: brand.facebookPageUrl }], resultsLimit: 3 },
           key
         );
         await logProviderCall("ads:apify-meta", pageRaw.length, pageRaw.length * 0.003, ctx.jobRunId);
@@ -70,7 +59,7 @@ export async function runResolveIdentities(ctx: JobContext): Promise<void> {
         "apify~facebook-ads-scraper",
         {
           startUrls: queries.map((q) => ({
-            url: `https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=SA&q=${encodeURIComponent(`"${q}"`)}&search_type=keyword_unordered&media_type=all`,
+            url: `https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=${marketRegion}&q=${encodeURIComponent(`"${q}"`)}&search_type=keyword_unordered&media_type=all`,
           })),
           resultsLimit: 30,
         },
@@ -93,12 +82,12 @@ export async function runResolveIdentities(ctx: JobContext): Promise<void> {
         countryCode?: string;
       }>(
         "scrapesage~google-ads-transparency-scraper",
-        { queries, region: "SA", resultType: "advertisers", maxAdvertisersPerQuery: 8 },
+        { queries, region: marketRegion, resultType: "advertisers", maxAdvertisersPerQuery: 8 },
         key
       );
       await logProviderCall("ads:apify-google", gRaw.length, gRaw.length * 0.003, ctx.jobRunId);
       for (const a of gRaw) {
-        if (a.advertiserId && a.countryCode === "SA" && matchesBrand(a.name, brand)) {
+        if (a.advertiserId && a.countryCode === marketRegion && matchesBrand(a.name, brand)) {
           googleAdvertisers.set(a.advertiserId, a.name ?? "");
         }
       }

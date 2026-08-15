@@ -1,12 +1,17 @@
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import { getLicense } from "@/lib/license";
+import { getInstanceSettings } from "@/lib/settings";
 
 export default async function DashLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   const isAdmin = (session?.user as { role?: string } | undefined)?.role === "admin";
+  const license = getLicense();
+  const instance = await getInstanceSettings();
   // Staging copies carry a permanent banner — an executive should never
   // mistake test data for the live market picture.
-  const isStaging = process.env.WATCHTOWER_ENV === "staging";
+  const isStaging =
+    process.env.ADSNIPER_ENV === "staging" || process.env.WATCHTOWER_ENV === "staging";
   return (
     <div className="min-h-screen">
       {isStaging && (
@@ -25,28 +30,45 @@ export default async function DashLayout({ children }: { children: React.ReactNo
           STAGING — TEST COPY, NOT LIVE DATA
         </div>
       )}
+      {license.state === "expiring" && (
+        <div
+          style={{
+            background: "#8a5a00",
+            color: "#fff",
+            textAlign: "center",
+            fontSize: 12,
+            fontWeight: 700,
+            padding: "4px 8px",
+          }}
+        >
+          Subscription renews in {license.daysLeft} day{license.daysLeft === 1 ? "" : "s"}
+          {license.expiresAt ? ` (${license.expiresAt.toISOString().slice(0, 10)})` : ""}
+          {license.vendorContact ? ` — contact ${license.vendorContact} to renew` : ""}
+        </div>
+      )}
       <header className="nav sticky top-0 z-40" style={{ background: "var(--color-bg)" }}>
         <span className="nav-brand">
-          WATCHTOWER<span style={{ color: "var(--color-accent)" }}>.</span>
+          ADSNIPER<span style={{ color: "var(--color-accent)" }}>.</span>
         </span>
-        <Link href="/">Daily</Link>
+        {instance.customerNameEn && (
+          <span className="text-muted" style={{ fontSize: 12, marginInlineEnd: 8 }}>
+            {instance.customerNameEn}
+          </span>
+        )}
+        <Link href="/">Ads</Link>
         <Link href="/compare">Analytics</Link>
         {isAdmin && <Link href="/intel">Intel</Link>}
-        {session?.user ? (
+        {session?.user && (
           <form
             action={async () => {
               "use server";
-              await signOut({ redirectTo: "/" });
+              await signOut({ redirectTo: "/login" });
             }}
           >
             <button className="btn btn-ghost" style={{ fontSize: 12 }}>
               {session.user.email} · Sign out
             </button>
           </form>
-        ) : (
-          <Link href="/login" className="text-muted" style={{ fontSize: 12 }}>
-            Admin
-          </Link>
         )}
       </header>
       <div className="mx-auto max-w-6xl px-4 py-6">{children}</div>

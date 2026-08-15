@@ -15,6 +15,38 @@ export async function setSetting(key: string, value: unknown): Promise<void> {
   });
 }
 
+// Per-instance workspace identity: each AdSniper deployment serves one
+// customer. Their display name, the market their ad-library pulls target,
+// and the preferred report language are admin-editable, not hardcoded.
+export interface InstanceSettings {
+  customerNameEn: string;
+  customerNameAr: string;
+  // ISO 3166-1 alpha-2 country code used when querying ad libraries
+  // (Meta country=, Google region, TikTok countryCode).
+  marketRegion: string;
+  defaultLang: "en" | "ar";
+}
+
+export function defaultInstanceSettings(): InstanceSettings {
+  return {
+    customerNameEn: process.env.CUSTOMER_NAME ?? "",
+    customerNameAr: "",
+    marketRegion: process.env.MARKET_REGION ?? "SA",
+    defaultLang: "en",
+  };
+}
+
+export async function getInstanceSettings(): Promise<InstanceSettings> {
+  const stored = await getSetting<Partial<InstanceSettings>>("instance_settings", {});
+  const merged = { ...defaultInstanceSettings(), ...stored };
+  merged.marketRegion = (merged.marketRegion || "SA").toUpperCase().slice(0, 2);
+  return merged;
+}
+
+export async function saveInstanceSettings(s: InstanceSettings): Promise<void> {
+  await setSetting("instance_settings", s);
+}
+
 // Pull scheduling: hours between pulls per source; 0 = disabled. Cron
 // ticks hourly and each source runs only when due; "Run now" always
 // bypasses. Defaults preserve current behavior (env ADS_PROVIDERS seeds

@@ -85,8 +85,13 @@ export interface FetchedAd {
 export interface AdsBrandQuery {
   nameEn: string;
   nameAr: string;
+  // Distinctive matching substrings (Brand.aliases) for providers that
+  // filter shared result sets by advertiser name (e.g. TikTok Top Ads).
+  aliases: string[];
   metaPageIds: string[];
   googleAdvertiserIds: string[];
+  // ISO 3166-1 alpha-2 country the instance tracks (Intel → Settings).
+  region: string;
 }
 
 export interface AdsProvider {

@@ -3,7 +3,7 @@ import { ADS_PROVIDERS_ALL } from "@/lib/providers/ads";
 import { ensureBudget, logProviderCall } from "@/lib/costs";
 import { cacheAdAssets, cacheMediaItems } from "@/lib/media";
 import type { JobContext } from "@/jobs/runner";
-import { getPullSettings, isDue, setStamp } from "@/lib/settings";
+import { getInstanceSettings, getPullSettings, isDue, setStamp } from "@/lib/settings";
 
 const DAY = 24 * 60 * 60 * 1000;
 // Status logic (brief Section 5.3): a provider ad not returned for 7
@@ -37,12 +37,15 @@ export async function runAdsPoll(ctx: JobContext): Promise<void> {
   }
   ctx.errors.push(`(info) pulling: ${providers.map((p) => p.platform).join(", ")}`);
 
+  const { marketRegion } = await getInstanceSettings();
   for (const brand of brands) {
     const query = {
       nameEn: brand.nameEn,
       nameAr: brand.nameAr,
+      aliases: (brand.aliases as string[]) ?? [],
       metaPageIds: (brand.metaPageIds as string[]) ?? [],
       googleAdvertiserIds: (brand.googleAdvertiserIds as string[]) ?? [],
+      region: marketRegion,
     };
     for (const provider of providers) {
       await ensureBudget("ads");

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import puppeteer from "puppeteer";
+import { getInstanceSettings } from "@/lib/settings";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,6 +16,8 @@ export async function GET(
   }
   const origin = process.env.APP_URL ?? req.nextUrl.origin;
   const cookie = req.headers.get("cookie") ?? "";
+  const { customerNameEn } = await getInstanceSettings();
+  const footerOwner = customerNameEn ? `${customerNameEn} · AdSniper` : "AdSniper";
 
   const browser = await puppeteer.launch({
     headless: true,
@@ -34,13 +37,12 @@ export async function GET(
       margin: { top: "8mm", bottom: "8mm", left: "8mm", right: "8mm" },
       displayHeaderFooter: true,
       headerTemplate: "<div></div>",
-      footerTemplate:
-        '<div style="width:100%;font-size:7px;color:#8a8a8a;padding:0 10mm;display:flex;justify-content:space-between;font-family:Archivo,sans-serif;"><span>Bank Albilad · Watchtower · Confidential</span><span class="pageNumber"></span>/<span class="totalPages"></span></div>',
+      footerTemplate: `<div style="width:100%;font-size:7px;color:#8a8a8a;padding:0 10mm;display:flex;justify-content:space-between;font-family:Archivo,sans-serif;"><span>${footerOwner} · Confidential</span><span class="pageNumber"></span>/<span class="totalPages"></span></div>`,
     });
     return new NextResponse(new Uint8Array(pdf), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="watchtower-weekly-${params.date}.pdf"`,
+        "Content-Disposition": `attachment; filename="adsniper-weekly-${params.date}.pdf"`,
       },
     });
   } finally {

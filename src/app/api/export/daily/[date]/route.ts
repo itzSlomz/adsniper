@@ -40,7 +40,7 @@ export async function GET(
     return new NextResponse(new Uint8Array(pdf), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="watchtower-${params.date}.pdf"`,
+        "Content-Disposition": `attachment; filename="adsniper-daily-${params.date}.pdf"`,
       },
     });
   } finally {

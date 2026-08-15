@@ -44,6 +44,9 @@ export default async function IntelPage() {
       )}
 
       <div className="flex flex-wrap gap-2">
+        <Link href="/intel/brands" className="btn btn-secondary">
+          🎯 Brands
+        </Link>
         <Link href="/intel/log-ad" className="btn btn-secondary">
           📸 Log ad
         </Link>
@@ -106,6 +109,7 @@ export default async function IntelPage() {
                       r?.status === "success" ? "text-emerald-600" :
                       r?.status === "partial" ? "text-amber-600" :
                       r?.status === "stopped_budget" ? "text-red-600" :
+                      r?.status === "stopped_license" ? "text-red-600" :
                       r?.status === "failed" ? "text-red-600" : "text-gray-400"
                     }>
                       {r?.status ?? "—"}

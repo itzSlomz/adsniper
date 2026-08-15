@@ -75,10 +75,17 @@ model Brand {
   type                BrandType
   xHandle             String?
   linkedinPageUrl     String?
-  // Several Saudi banks run ads under multiple verified entities, so these
+  // The brand's official Facebook page URL — the precise source for Meta
+  // advertiser-identity resolution (every pageID the ad library returns
+  // for it belongs to the brand, no name-matching needed).
+  facebookPageUrl     String?
+  // Advertisers often run ads under multiple verified entities, so these
   // hold arrays of IDs; ad-library pulls merge results across all of them.
   metaPageIds         Json     @default("[]")
   googleAdvertiserIds Json     @default("[]")
+  // Distinctive name substrings used to match advertiser/page names in ad
+  // libraries (identity resolution). Empty = derive from nameEn/nameAr.
+  aliases             Json     @default("[]")
   logoPath            String?
   brandColor          String?
   active              Boolean  @default(true)
@@ -173,6 +180,21 @@ model Ad {
 
   @@unique([platform, libraryId])
   @@index([brandId, status])
+}
+
+// The flagship deliverable: one row per week summarising competitor ad
+// activity (new campaigns, stopped ads, pressure moves). factsJson holds
+// the sourced numbers the narrative was written from, so the text can
+// always be checked against them.
+model WeeklyBrief {
+  id          String      @id @default(cuid())
+  weekStart   DateTime    @unique @db.Date
+  contentEn   String      @default("")
+  contentAr   String      @default("")
+  factsJson   Json        @default("{}")
+  status      BriefStatus @default(draft)
+  generatedAt DateTime    @default(now())
+  editedAt    DateTime?
 }
 
 model DailyBrief {

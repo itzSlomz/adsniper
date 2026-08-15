@@ -54,7 +54,7 @@ export const googleApifyAdsProvider: AdsProvider = {
       ACTOR,
       {
         advertiserIds: brand.googleAdvertiserIds,
-        region: "SA",
+        region: brand.region,
         resultType: "ads",
         maxAdsPerSearch: MAX_ADS_PER_ADVERTISER,
       },
