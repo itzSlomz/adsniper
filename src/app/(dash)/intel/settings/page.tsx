@@ -3,9 +3,11 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import {
   getInstanceSettings,
+  getOfferCategories,
   getPullSettings,
   getStamp,
   saveInstanceSettings,
+  saveOfferCategories,
   savePullSettings,
 } from "@/lib/settings";
 import type { PullSettings } from "@/lib/settings";
@@ -37,6 +39,30 @@ export default async function SettingsPage() {
   const stamps = await Promise.all(SOURCES.map((s) => getStamp(s.stamp)));
   const instance = await getInstanceSettings();
   const license = getLicense();
+  const offerCategories = await getOfferCategories();
+
+  async function saveOffers(formData: FormData) {
+    "use server";
+    const s = await auth();
+    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
+    // One category per line: "Label: keyword, keyword, ...".
+    const cats = String(formData.get("categories") ?? "")
+      .split("\n")
+      .map((line) => {
+        const idx = line.indexOf(":");
+        if (idx < 0) return null;
+        const label = line.slice(0, idx).trim();
+        const keywords = line
+          .slice(idx + 1)
+          .split(",")
+          .map((k) => k.trim())
+          .filter(Boolean);
+        return label && keywords.length > 0 ? { label, keywords } : null;
+      })
+      .filter((c): c is { label: string; keywords: string[] } => c !== null);
+    await saveOfferCategories(cats);
+    revalidatePath("/intel/settings");
+  }
 
   async function saveInstance(formData: FormData) {
     "use server";
@@ -114,6 +140,26 @@ export default async function SettingsPage() {
               : "—"}
           . Managed by your AdSniper account manager.
         </p>
+      </form>
+
+      <form action={saveOffers} className="card elev-sm space-y-3">
+        <h2 style={{ margin: 0, fontSize: 16 }}>Offer categories</h2>
+        <p className="text-xs text-muted" style={{ margin: 0 }}>
+          Used to label what each competitor is pushing in the weekly report.
+          One category per line: <code>Label: keyword, keyword, …</code>
+          (keywords match ad text case-insensitively, Arabic or English).
+          First match wins — put specific categories first.
+        </p>
+        <textarea
+          name="categories"
+          rows={Math.max(6, offerCategories.length + 1)}
+          className="input"
+          style={{ fontFamily: "monospace", fontSize: 12, width: "100%" }}
+          defaultValue={offerCategories
+            .map((c) => `${c.label}: ${c.keywords.join(", ")}`)
+            .join("\n")}
+        />
+        <button className="btn btn-primary" style={{ fontSize: 13 }}>Save categories</button>
       </form>
 
       <h2 style={{ margin: 0, fontSize: 16 }}>Data pulling</h2>

@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/db";
 import { campaignBurstBrandIds } from "@/jobs/adsPoll";
+import { getOfferCategories } from "@/lib/settings";
+import type { OfferCategory } from "@/lib/settings";
 
 const DAY = 86400000;
 
@@ -45,20 +47,15 @@ export interface WeeklyReport {
   headlines: string[];
 }
 
-const OFFER_PATTERNS: [string, RegExp][] = [
-  ["Personal finance", /تمويل شخصي|personal finance|تمويل|financing|loan/i],
-  ["Credit cards", /بطاق|card|credit|cashback|كاش ?باك/i],
-  ["Deposits & savings", /ادخار|savings|deposit|وديعة|توفير/i],
-  ["Home finance", /عقاري|mortgage|home finance|سكني/i],
-  ["Auto finance", /سيارة|auto|car finance|مركبة/i],
-  ["Business banking", /أعمال|business|sme|شركات|corporate/i],
-  ["Digital app", /تطبيق|app|digital|رقمي|أونلاين|online/i],
-  ["Transfers", /تحويل|transfer|remittance|حوالة/i],
-];
-
-function classifyOffer(text: string | null): string | null {
+// Offer themes come from the instance's admin-editable categories
+// (Intel → Settings), so non-banking customers get sensible labels.
+// First matching category wins — order them most-specific first.
+function classifyOffer(text: string | null, categories: OfferCategory[]): string | null {
   if (!text) return null;
-  for (const [label, re] of OFFER_PATTERNS) if (re.test(text)) return label;
+  const lower = text.toLowerCase();
+  for (const c of categories) {
+    if (c.keywords.some((k) => lower.includes(k.toLowerCase()))) return c.label;
+  }
   return null;
 }
 
@@ -70,10 +67,11 @@ export async function buildWeeklyReport(endDate: string): Promise<WeeklyReport> 
   const from = new Date(to.getTime() - 7 * DAY);
   const prevFrom = new Date(from.getTime() - 7 * DAY);
 
-  const [brands, ads, burstIds] = await Promise.all([
+  const [brands, ads, burstIds, offerCategories] = await Promise.all([
     prisma.brand.findMany({ where: { active: true } }),
     prisma.ad.findMany({ include: { brand: true } }),
     campaignBurstBrandIds(),
+    getOfferCategories(),
   ]);
   const burst = new Set(burstIds);
 
@@ -98,7 +96,7 @@ export async function buildWeeklyReport(endDate: string): Promise<WeeklyReport> 
 
     const offerCount = new Map<string, number>();
     for (const a of active) {
-      const o = classifyOffer(a.adText ?? a.messageSummary);
+      const o = classifyOffer(a.adText ?? a.messageSummary, offerCategories);
       if (o) offerCount.set(o, (offerCount.get(o) ?? 0) + 1);
     }
 

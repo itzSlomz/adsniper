@@ -47,6 +47,40 @@ export async function saveInstanceSettings(s: InstanceSettings): Promise<void> {
   await setSetting("instance_settings", s);
 }
 
+// Offer classification: label + keywords (case-insensitive substring
+// match against ad text) used by the weekly report to say what a brand
+// is pushing. Admin-editable per instance so a telco or retailer gets
+// sensible labels; the default set fits banking, the first vertical.
+export interface OfferCategory {
+  label: string;
+  keywords: string[];
+}
+
+export function defaultOfferCategories(): OfferCategory[] {
+  return [
+    { label: "Personal finance", keywords: ["تمويل شخصي", "personal finance", "تمويل", "financing", "loan"] },
+    { label: "Credit cards", keywords: ["بطاق", "card", "credit", "cashback", "كاش باك", "كاشباك"] },
+    { label: "Deposits & savings", keywords: ["ادخار", "savings", "deposit", "وديعة", "توفير"] },
+    { label: "Home finance", keywords: ["عقاري", "mortgage", "home finance", "سكني"] },
+    { label: "Auto finance", keywords: ["سيارة", "auto", "car finance", "مركبة"] },
+    { label: "Business banking", keywords: ["أعمال", "business", "sme", "شركات", "corporate"] },
+    { label: "Digital app", keywords: ["تطبيق", "app", "digital", "رقمي", "أونلاين", "online"] },
+    { label: "Transfers", keywords: ["تحويل", "transfer", "remittance", "حوالة"] },
+  ];
+}
+
+export async function getOfferCategories(): Promise<OfferCategory[]> {
+  const stored = await getSetting<OfferCategory[]>("offer_categories", []);
+  const valid = stored.filter(
+    (c) => c && typeof c.label === "string" && Array.isArray(c.keywords) && c.keywords.length > 0
+  );
+  return valid.length > 0 ? valid : defaultOfferCategories();
+}
+
+export async function saveOfferCategories(cats: OfferCategory[]): Promise<void> {
+  await setSetting("offer_categories", cats);
+}
+
 // Pull scheduling: hours between pulls per source; 0 = disabled. Cron
 // ticks hourly and each source runs only when due; "Run now" always
 // bypasses. Defaults preserve current behavior (env ADS_PROVIDERS seeds
