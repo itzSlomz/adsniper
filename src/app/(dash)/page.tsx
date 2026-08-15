@@ -3,6 +3,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { adOverview, adPressure, adWatch, kpisForDay, postsForDay } from "@/lib/dashboard";
 import type { RangeDays } from "@/lib/dashboard";
+import { marketEstimates } from "@/lib/estimation";
+import SpendPressureBoard from "@/components/SpendPressureBoard";
 import PostGrid from "@/components/PostGrid";
 import AdWatchGallery from "@/components/AdWatchGallery";
 import AdOverviewHero from "@/components/AdOverviewHero";
@@ -32,7 +34,7 @@ export default async function CommandView({
 
   const session = await auth();
   const isAdmin = (session?.user as { role?: string } | undefined)?.role === "admin";
-  const [posts, kpis, ads, pressure, brands, brief, overview] = await Promise.all([
+  const [posts, kpis, ads, pressure, brands, brief, overview, estimates] = await Promise.all([
     postsForDay(date, days),
     kpisForDay(date, days),
     adWatch(),
@@ -40,6 +42,7 @@ export default async function CommandView({
     prisma.brand.findMany({ where: { active: true } }),
     prisma.dailyBrief.findUnique({ where: { date: new Date(`${date}T00:00:00Z`) } }),
     adOverview(),
+    marketEstimates(),
   ]);
   const visibleBrief = brief && (brief.status === "published" || isAdmin) ? brief : null;
   const self = brands.find((b) => b.type === "self");
@@ -118,6 +121,8 @@ export default async function CommandView({
       <section>
         <AdWatchGallery ads={ads} />
       </section>
+
+      <SpendPressureBoard estimates={estimates} />
 
       <section className="card elev-sm">
         <span className="card-kicker">Market analytics</span>
