@@ -103,8 +103,13 @@ One sale = one Railway project. ~30 minutes.
 
 **Renewal**: update `LICENSE_EXPIRES_AT`, redeploy — nothing else.
 **Lapse**: the instance locks itself and stops spending; data retained.
-**Demo instance**: provision as above, then `npx tsx scripts/seed-demo.ts`
-for the nine-Saudi-banks dataset with verified handles and aliases.
+**Demo / evaluation instance**: on an empty instance, Intel → "Load
+sample data" fills everything in one click — demo brands, watermarked
+synthetic creatives, sample briefs, a generated weekly briefing — and
+"Remove sample data" deletes exactly that before real use (loading is
+refused once real ads or posts exist). CLI twins:
+`npx tsx scripts/seed-demo.ts` (brands only) and
+`npx tsx scripts/sample-data.ts load|clear`.
 
 ## Cron schedule (in-process, instance-TZ)
 

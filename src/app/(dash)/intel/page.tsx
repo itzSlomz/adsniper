@@ -6,6 +6,7 @@ import { budgetStatus } from "@/lib/costs";
 import { jobs } from "@/jobs/index";
 import { triggerJob } from "@/jobs/index";
 import { revalidatePath } from "next/cache";
+import { clearSampleData, loadSampleData, sampleDataLoaded } from "@/lib/sampleData";
 
 export const dynamic = "force-dynamic";
 
@@ -16,9 +17,12 @@ export default async function IntelPage() {
   const session = await auth();
   if ((session?.user as { role?: string } | undefined)?.role !== "admin") redirect("/");
 
-  const [budget, runs] = await Promise.all([
+  const [budget, runs, adCount, postCount, sampleLoaded] = await Promise.all([
     budgetStatus(),
     prisma.jobRun.findMany({ orderBy: { startedAt: "desc" }, take: 30 }),
+    prisma.ad.count(),
+    prisma.post.count(),
+    sampleDataLoaded(),
   ]);
   const lastByJob = new Map<string, (typeof runs)[number]>();
   for (const r of runs) if (!lastByJob.has(r.job)) lastByJob.set(r.job, r);
@@ -30,6 +34,28 @@ export default async function IntelPage() {
     if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
     await triggerJob(String(formData.get("job")));
     revalidatePath("/intel");
+  }
+
+  async function loadSamples() {
+    "use server";
+    const s = await auth();
+    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
+    await loadSampleData();
+    // Complete the demo: generate and publish the weekly briefing from
+    // the sample dataset through the real job path.
+    await triggerJob("weekly-brief");
+    await triggerJob("brief-auto-publish");
+    revalidatePath("/intel");
+    revalidatePath("/");
+  }
+
+  async function clearSamples() {
+    "use server";
+    const s = await auth();
+    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
+    await clearSampleData();
+    revalidatePath("/intel");
+    revalidatePath("/");
   }
 
   return (
@@ -66,6 +92,36 @@ export default async function IntelPage() {
           ⏱ Data pulling
         </Link>
       </div>
+
+      {(sampleLoaded || (adCount === 0 && postCount === 0)) && (
+        <section className="card elev-sm space-y-2">
+          <h2 className="text-base font-semibold" style={{ margin: 0 }}>Sample data</h2>
+          {sampleLoaded ? (
+            <>
+              <p className="text-sm text-muted" style={{ margin: 0 }}>
+                This instance is showing the synthetic sample dataset — every
+                creative is watermarked, nothing here is real market data.
+                Remove it before connecting real providers.
+              </p>
+              <form action={clearSamples}>
+                <button className="btn btn-secondary">Remove sample data</button>
+              </form>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted" style={{ margin: 0 }}>
+                No ads or posts yet. For a demo or evaluation you can load a
+                synthetic sample dataset (watermarked creatives, sample
+                briefs) — one click, fully removable. Real instances skip
+                this and configure Brands + provider keys instead.
+              </p>
+              <form action={loadSamples}>
+                <button className="btn btn-primary">Load sample data</button>
+              </form>
+            </>
+          )}
+        </section>
+      )}
 
       <section className="card elev-sm">
         <h2 className="mb-2 text-base font-semibold">Provider spend (this month)</h2>
