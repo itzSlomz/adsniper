@@ -11,6 +11,12 @@
 PUPPETEER_CACHE_DIR = "/app/.puppeteer"
 
 [phases.setup]
+# Puppeteer's own download is NOT available at runtime on Railway (the
+# launcher reports "Could not find Chrome"), so ship a real browser:
+# Nix's chromium is a genuine build — unlike Ubuntu noble's apt package,
+# which is a snap stub — and carries its own libraries. "..." keeps
+# nixpacks' Node packages. The PDF route finds it by searching PATH.
+nixPkgs = ["...", "chromium"]
 aptPkgs = [
   "libnss3", "libnspr4", "libdrm2", "libxkbcommon0", "libxcomposite1",
   "libxdamage1", "libxfixes3", "libxrandr2", "libgbm1",
