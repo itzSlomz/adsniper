@@ -1,3 +1,4 @@
+import "@/lib/authUrl";
 import type { NextAuthConfig } from "next-auth";
 
 // Edge-safe config shared with middleware: no Prisma, no Node-only imports.
