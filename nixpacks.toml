@@ -1,12 +1,25 @@
 # Shared libraries + fonts for Puppeteer's bundled Chromium (PDF export).
-# Ubuntu noble names (t64 transition). Arabic shaping comes from
-# fonts-noto-core (includes Noto Naskh/Sans Arabic). Puppeteer downloads
-# its browser into PUPPETEER_CACHE_DIR=/app/.puppeteer during npm install.
+# The atk/cups/asound package names differ between Ubuntu jammy (22.04)
+# and noble (24.04, t64 transition) and Railway's builder image can be
+# either — those four install via the fallback command phase below.
+# Arabic shaping comes from fonts-noto-core (includes Noto Naskh/Sans
+# Arabic). Puppeteer downloads its browser into /app/.puppeteer during
+# npm install (PUPPETEER_CACHE_DIR) so the runtime finds it at the same
+# path — no per-service env var needed.
+
+[variables]
+PUPPETEER_CACHE_DIR = "/app/.puppeteer"
+
 [phases.setup]
 aptPkgs = [
-  "libnss3", "libnspr4", "libatk1.0-0t64", "libatk-bridge2.0-0t64",
-  "libcups2t64", "libdrm2", "libxkbcommon0", "libxcomposite1",
-  "libxdamage1", "libxfixes3", "libxrandr2", "libgbm1", "libasound2t64",
+  "libnss3", "libnspr4", "libdrm2", "libxkbcommon0", "libxcomposite1",
+  "libxdamage1", "libxfixes3", "libxrandr2", "libgbm1",
   "libpango-1.0-0", "libcairo2",
   "fonts-noto-core", "fonts-noto-color-emoji",
+]
+
+[phases.chromelibs]
+dependsOn = ["setup"]
+cmds = [
+  "apt-get update && { apt-get install -y libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libasound2t64 || apt-get install -y libatk1.0-0 libatk-bridge2.0-0 libcups2 libasound2; }",
 ]
