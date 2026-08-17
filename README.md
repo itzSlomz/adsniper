@@ -95,7 +95,14 @@ One sale = one Railway project. ~30 minutes.
      redeploy destroys the archived creatives, and they cannot be
      re-fetched: ad libraries expire their CDN links, which is the whole
      reason the archive exists. Intel shows a warning while an instance
-     is in that state.
+     is in that state, and its "Test storage" button proves the
+     credentials can actually write, read and delete.
+
+     Isolation is by construction, not by discipline: **one bucket per
+     customer, and an R2 API token scoped to that bucket only**. Then a
+     mistyped variable fails loudly instead of writing into another
+     customer's archive. Never reuse a token that carries account-wide
+     R2 permissions.
    - `TZ` = the customer's timezone (cron times are instance-local)
 3. **Seed**: `npm run db:seed` (creates the admin user only — no brands).
 4. **Customer onboarding** (them or you, in the app):

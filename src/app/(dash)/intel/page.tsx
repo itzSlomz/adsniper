@@ -7,14 +7,18 @@ import { jobs } from "@/jobs/index";
 import { triggerJob } from "@/jobs/index";
 import { revalidatePath } from "next/cache";
 import { clearSampleData, loadSampleData, sampleDataLoaded } from "@/lib/sampleData";
-import { getStorage } from "@/lib/storage";
+import { checkStorage, storageTarget } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 
 // Intel capture home (brief Section 7.4): capture links + ingestion health
 // panel (per-job last run, items, errors, provider spend vs ceiling) with
 // "Run now" per job.
-export default async function IntelPage() {
+export default async function IntelPage({
+  searchParams,
+}: {
+  searchParams: { storage?: string };
+}) {
   const session = await auth();
   if ((session?.user as { role?: string } | undefined)?.role !== "admin") redirect("/");
 
@@ -25,6 +29,7 @@ export default async function IntelPage() {
     prisma.post.count(),
     sampleDataLoaded(),
   ]);
+  const storage = storageTarget();
   const lastByJob = new Map<string, (typeof runs)[number]>();
   for (const r of runs) if (!lastByJob.has(r.job)) lastByJob.set(r.job, r);
   const ceilingHit = budget.filter((b) => Number.isFinite(b.ceilingUsd) && b.spentUsd >= b.ceilingUsd);
@@ -35,6 +40,18 @@ export default async function IntelPage() {
     if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
     await triggerJob(String(formData.get("job")));
     revalidatePath("/intel");
+  }
+
+  async function testStorage() {
+    "use server";
+    const s = await auth();
+    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
+    const res = await checkStorage();
+    redirect(
+      `/intel?storage=${encodeURIComponent(
+        `${res.ok ? "ok:" : "no:"}${res.kind === "r2" ? `R2 bucket ${res.target}` : res.target} — ${res.detail}`
+      )}`
+    );
   }
 
   async function loadSamples() {
@@ -94,14 +111,46 @@ export default async function IntelPage() {
         </Link>
       </div>
 
-      {getStorage().kind === "local" && (
-        <div className="callout text-sm">
-          <strong>Media storage is the container filesystem.</strong>{" "}
-          {process.env.MEDIA_DIR
-            ? `Archived creatives are written to ${process.env.MEDIA_DIR} — make sure that path is a persistent volume, or they are lost when the service restarts.`
-            : "Archived creatives will be lost on every redeploy. Configure R2 (R2_* variables) or mount a persistent volume and point MEDIA_DIR at it — the creative archive is the part of this product that cannot be re-fetched later, because ad libraries expire their CDN links."}
-        </div>
-      )}
+      <section className="card elev-sm space-y-2">
+        <h2 className="text-base font-semibold" style={{ margin: 0 }}>Media storage</h2>
+        <p className="text-sm" style={{ margin: 0 }}>
+          {storage.kind === "r2" ? (
+            <>
+              Cloudflare R2 bucket <strong>{storage.target}</strong>
+              {storage.account && (
+                <span className="text-muted"> (account {storage.account}…)</span>
+              )}
+              . Every instance must have its own bucket — check this name
+              matches the one provisioned for this customer.
+            </>
+          ) : (
+            <>
+              Container filesystem <strong>{storage.target}</strong>.
+            </>
+          )}
+        </p>
+        {storage.kind === "local" && (
+          <div className="callout text-sm">
+            {process.env.MEDIA_DIR
+              ? "Confirm this path is a mounted persistent volume — otherwise archived creatives are lost when the service restarts."
+              : "Archived creatives will be lost on every redeploy. Configure R2 (R2_* variables) or mount a persistent volume and point MEDIA_DIR at it — the creative archive is the part of this product that cannot be re-fetched later, because ad libraries expire their CDN links."}
+          </div>
+        )}
+        <form action={testStorage}>
+          <button className="btn btn-secondary" style={{ fontSize: 12, padding: "4px 10px" }}>
+            Test storage
+          </button>
+        </form>
+        {searchParams.storage && (
+          <p
+            className="text-sm"
+            style={{ margin: 0, color: searchParams.storage.startsWith("ok") ? "#1a7f37" : "var(--color-accent)" }}
+          >
+            {searchParams.storage.startsWith("ok") ? "✓ " : "✗ "}
+            {searchParams.storage.slice(3)}
+          </p>
+        )}
+      </section>
 
       {(sampleLoaded || (adCount === 0 && postCount === 0)) && (
         <section className="card elev-sm space-y-2">

@@ -94,7 +94,13 @@ const localStorage: Storage = {
 function r2Storage(): Storage {
   const client = new S3Client({
     region: "auto",
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    // R2's standard endpoint is derived from the account id; R2_ENDPOINT
+    // overrides it for jurisdiction-specific endpoints, another
+    // S3-compatible provider, or a local server in tests.
+    endpoint:
+      process.env.R2_ENDPOINT?.trim() ||
+      `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    forcePathStyle: !!process.env.R2_ENDPOINT?.trim(),
     credentials: {
       accessKeyId: process.env.R2_ACCESS_KEY_ID!,
       secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
@@ -176,4 +182,53 @@ export function getStorage(): Storage {
     instance = hasR2 ? r2Storage() : localStorage;
   }
   return instance;
+}
+
+// Where this instance's media actually lands. Shown to admins so the
+// bucket a deployment writes to is verifiable from inside the product —
+// each customer instance must have its own, and reading the name back is
+// the only way an operator can confirm they didn't paste another
+// deployment's credentials.
+export function storageTarget(): { kind: "r2" | "local"; target: string; account?: string } {
+  const s = getStorage();
+  if (s.kind === "r2") {
+    return {
+      kind: "r2",
+      target: process.env.R2_BUCKET ?? "(unset)",
+      account: process.env.R2_ACCOUNT_ID?.slice(0, 8),
+    };
+  }
+  return { kind: "local", target: LOCAL_ROOT };
+}
+
+export interface StorageCheck {
+  ok: boolean;
+  kind: "r2" | "local";
+  target: string;
+  detail: string;
+}
+
+// Write → read → delete round trip. Credentials that authenticate but
+// can't write, or a bucket that doesn't exist, otherwise stay invisible
+// until the first ad ingest silently fails to archive its creatives.
+export async function checkStorage(): Promise<StorageCheck> {
+  const { kind, target } = storageTarget();
+  const key = `_healthcheck/${Date.now()}.txt`;
+  const payload = Buffer.from(`adsniper storage check ${new Date().toISOString()}`);
+  try {
+    const s = getStorage();
+    await s.put(key, payload, "text/plain");
+    const back = await s.get(key);
+    if (!back) throw new Error("wrote the object but could not read it back");
+    if (!back.body.equals(payload)) throw new Error("read back different bytes than were written");
+    await s.removePrefix("_healthcheck/");
+    return { ok: true, kind, target, detail: "write, read and delete all succeeded" };
+  } catch (err) {
+    return {
+      ok: false,
+      kind,
+      target,
+      detail: err instanceof Error ? err.message.split("\n")[0].slice(0, 220) : String(err),
+    };
+  }
 }
