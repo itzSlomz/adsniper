@@ -76,6 +76,12 @@ One sale = one Railway project. ~30 minutes.
    from this GitHub repo, **release branch** (`main` or the designated
    release branch — the same branch for every customer). Build
    `npm run build`, start `npm start`, pre-deploy `npm run db:migrate`.
+   The app service needs `DATABASE_URL` pointing at that database —
+   on Railway, `${{Postgres.DATABASE_URL}}` (use the database service's
+   exact name). A startup preflight (`scripts/check-env.mjs`) refuses to
+   boot with one clear message if a required variable is missing, and
+   warns about ones that would leave the instance unusable (no sign-in
+   method, no admin user, no `AUTH_TRUST_HOST` behind a proxy).
 2. **Set env vars** from `.env.example`. Per customer:
    - `LICENSE_EXPIRES_AT` (contract end date), `LICENSE_PLAN`,
      `VENDOR_CONTACT_EMAIL`, `CUSTOMER_NAME`, `MARKET_REGION`

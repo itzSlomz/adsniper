@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "npx prisma migrate deploy && npm run db:seed && npm run start",
+    "startCommand": "node scripts/check-env.mjs && npx prisma migrate deploy && npm run db:seed && npm run start",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 5
   }
