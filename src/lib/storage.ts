@@ -1,4 +1,10 @@
-import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  ListObjectsV2Command,
+  DeleteObjectsCommand,
+} from "@aws-sdk/client-s3";
 import { promises as fs, createReadStream } from "fs";
 import path from "path";
 
@@ -27,6 +33,9 @@ export interface Storage {
     key: string,
     range?: { start: number; end?: number }
   ): Promise<StreamedObject | null>;
+  // Bulk delete under a key prefix. Only used to remove the sample dataset
+  // — real archived creatives are never deleted by the app.
+  removePrefix(prefix: string): Promise<void>;
   kind: "r2" | "local";
 }
 
@@ -36,6 +45,7 @@ function contentTypeFromKey(key: string): string {
   if (key.endsWith(".webp")) return "image/webp";
   if (key.endsWith(".png")) return "image/png";
   if (key.endsWith(".gif")) return "image/gif";
+  if (key.endsWith(".svg")) return "image/svg+xml";
   // Video creatives must serve with a video type or <video> refuses to play.
   if (key.endsWith(".mp4")) return "video/mp4";
   if (key.endsWith(".webm")) return "video/webm";
@@ -57,6 +67,9 @@ const localStorage: Storage = {
     } catch {
       return null;
     }
+  },
+  async removePrefix(prefix) {
+    await fs.rm(path.join(LOCAL_ROOT, prefix), { recursive: true, force: true }).catch(() => {});
   },
   async getStream(key, range) {
     const file = path.join(LOCAL_ROOT, key);
@@ -94,6 +107,23 @@ function r2Storage(): Storage {
       await client.send(
         new PutObjectCommand({ Bucket, Key: key, Body: body, ContentType: contentType })
       );
+    },
+    async removePrefix(prefix) {
+      let ContinuationToken: string | undefined;
+      do {
+        const listed = await client.send(
+          new ListObjectsV2Command({ Bucket, Prefix: prefix, ContinuationToken })
+        );
+        const keys = (listed.Contents ?? []).map((o) => ({ Key: o.Key! })).filter((o) => o.Key);
+        if (keys.length > 0) {
+          await client.send(
+            new DeleteObjectsCommand({ Bucket, Delete: { Objects: keys, Quiet: true } })
+          );
+        }
+        ContinuationToken = listed.IsTruncated ? listed.NextContinuationToken : undefined;
+      } while (ContinuationToken);
+      // Sample media written before R2 was configured lives on local disk.
+      await localStorage.removePrefix(prefix);
     },
     async get(key) {
       try {

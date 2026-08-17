@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { redirect } from "next/navigation";
 import { getStorage } from "@/lib/storage";
-import sharp from "sharp";
+import { makeThumbnail } from "@/lib/sharpOptional";
 import { revalidatePath } from "next/cache";
 
 export const dynamic = "force-dynamic";
@@ -43,12 +43,15 @@ export default async function QuickAddPostPage() {
       const key = `linkedin/manual/${Date.now()}`;
       const storage = getStorage();
       await storage.put(`${key}/0.jpg`, buf, shot.type || "image/jpeg");
-      const thumb = await sharp(buf)
-        .resize({ width: 800, withoutEnlargement: true })
-        .webp({ quality: 80 })
-        .toBuffer();
-      await storage.put(`${key}/0_thumb.webp`, thumb, "image/webp");
-      mediaItems = [{ originalUrl: url, cachedPath: `${key}/0.jpg`, thumbPath: `${key}/0_thumb.webp` }];
+      const thumb = await makeThumbnail(buf, 800);
+      if (thumb) await storage.put(`${key}/0_thumb.webp`, thumb, "image/webp");
+      mediaItems = [
+        {
+          originalUrl: url,
+          cachedPath: `${key}/0.jpg`,
+          thumbPath: thumb ? `${key}/0_thumb.webp` : null,
+        },
+      ];
       mediaType = "image";
     }
 

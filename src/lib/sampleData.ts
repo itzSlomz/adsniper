@@ -1,8 +1,11 @@
-import { promises as fs } from "fs";
-import path from "path";
-import sharp from "sharp";
 import { prisma } from "@/lib/db";
-import { getSetting, setSetting } from "@/lib/settings";
+import { getStorage } from "@/lib/storage";
+import {
+  getInstanceSettings,
+  getSetting,
+  saveInstanceSettings,
+  setSetting,
+} from "@/lib/settings";
 import { DEMO_BRANDS } from "@/lib/demoBrands";
 import type { AdPlatform, AdFormat, PostPlatform } from "@prisma/client";
 
@@ -15,9 +18,6 @@ import type { AdPlatform, AdFormat, PostPlatform } from "@prisma/client";
 
 const DAY = 86400000;
 const SAMPLE_FLAG = "sample_data_loaded";
-// Same default as storage.ts LOCAL_ROOT — sample media is written straight
-// to local disk (the media proxy's read fallback), R2 or not.
-const MEDIA_ROOT = process.env.MEDIA_DIR ?? path.join(process.cwd(), ".data", "media");
 
 const OFFERS: [string, string][] = [
   ["تمويل شخصي بدون تحويل راتب", "Personal finance, no salary transfer"],
@@ -30,20 +30,21 @@ const OFFERS: [string, string][] = [
   ["حلول مصرفية للشركات الصغيرة", "SME business banking"],
 ];
 
+// Creatives are written as SVG through the normal storage layer: no image
+// encoder involved, so sample data works on any host (and on R2 as well as
+// local disk), and the browser renders the file directly.
 async function makeCreative(key: string, color: string, brand: string, textAr: string): Promise<void> {
   const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   const svg = `<svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
     <rect width="600" height="600" fill="${color}"/>
     <rect x="0" y="430" width="600" height="170" fill="rgba(0,0,0,0.35)"/>
     <circle cx="90" cy="90" r="52" fill="rgba(255,255,255,0.92)"/>
-    <text x="90" y="108" font-family="DejaVu Sans, sans-serif" font-size="52" font-weight="bold" fill="${color}" text-anchor="middle">${esc(brand[0])}</text>
-    <text x="300" y="330" font-family="DejaVu Sans, sans-serif" font-size="44" font-weight="bold" fill="#ffffff" text-anchor="middle">${esc(brand.slice(0, 20))}</text>
-    <text x="300" y="510" font-family="DejaVu Sans, sans-serif" font-size="30" fill="#ffffff" text-anchor="middle" direction="rtl">${esc(textAr)}</text>
-    <text x="300" y="560" font-family="DejaVu Sans, sans-serif" font-size="22" fill="rgba(255,255,255,0.75)" text-anchor="middle">SAMPLE CREATIVE — NOT A REAL AD</text>
+    <text x="90" y="108" font-family="sans-serif" font-size="52" font-weight="bold" fill="${color}" text-anchor="middle">${esc(brand[0])}</text>
+    <text x="300" y="330" font-family="sans-serif" font-size="40" font-weight="bold" fill="#ffffff" text-anchor="middle">${esc(brand.slice(0, 22))}</text>
+    <text x="300" y="505" font-family="sans-serif" font-size="28" fill="#ffffff" text-anchor="middle" direction="rtl">${esc(textAr)}</text>
+    <text x="300" y="560" font-family="sans-serif" font-size="20" fill="rgba(255,255,255,0.8)" text-anchor="middle">SAMPLE CREATIVE — NOT A REAL AD</text>
   </svg>`;
-  const file = path.join(MEDIA_ROOT, key);
-  await fs.mkdir(path.dirname(file), { recursive: true });
-  await sharp(Buffer.from(svg)).webp({ quality: 82 }).toFile(file);
+  await getStorage().put(key, Buffer.from(svg), "image/svg+xml");
 }
 
 // Deterministic PRNG so repeated loads produce the same dataset.
@@ -70,6 +71,16 @@ export async function loadSampleData(): Promise<{ ads: number; posts: number }> 
       const { metaPageIds, ...rest } = b;
       await prisma.brand.create({ data: { ...rest, metaPageIds: metaPageIds ?? [] } });
     }
+    // Label the workspace as a demo — but never overwrite a name an admin
+    // has already set for a real customer.
+    const instance = await getInstanceSettings();
+    if (!instance.customerNameEn) {
+      await saveInstanceSettings({
+        ...instance,
+        customerNameEn: `${DEMO_BRANDS[0].nameEn} (demo)`,
+        customerNameAr: DEMO_BRANDS[0].nameAr,
+      });
+    }
   }
 
   const brands = await prisma.brand.findMany({ where: { active: true } });
@@ -95,7 +106,7 @@ export async function loadSampleData(): Promise<{ ads: number; posts: number }> 
       const lastSeen = stopped
         ? new Date(now - (8 + Math.floor(rand() * 5)) * DAY)
         : new Date(now - Math.floor(rand() * 2) * DAY);
-      const key = `sample/ads/${b.id}-${ads}.webp`;
+      const key = `sample/ads/${b.id}-${ads}.svg`;
       await makeCreative(key, color, b.nameEn, offer[0]);
       const platform = platforms[Math.floor(rand() * platforms.length)];
       await prisma.ad.create({
@@ -124,7 +135,7 @@ export async function loadSampleData(): Promise<{ ads: number; posts: number }> 
     const newCount = isSelf ? 1 : isBurst ? 8 : Math.floor(rand() * 3);
     for (let i = 0; i < newCount; i++) {
       const offer = isBurst ? OFFERS[1] : OFFERS[Math.floor(rand() * OFFERS.length)];
-      const key = `sample/ads/${b.id}-${ads}.webp`;
+      const key = `sample/ads/${b.id}-${ads}.svg`;
       await makeCreative(key, color, b.nameEn, offer[0]);
       const platform = platforms[Math.floor(rand() * 2)];
       await prisma.ad.create({
@@ -153,7 +164,7 @@ export async function loadSampleData(): Promise<{ ads: number; posts: number }> 
     const postCountFor = 3 + Math.floor(rand() * 4);
     for (let i = 0; i < postCountFor; i++) {
       const offer = OFFERS[Math.floor(rand() * OFFERS.length)];
-      const key = `sample/posts/${b.id}-${i}.webp`;
+      const key = `sample/posts/${b.id}-${i}.svg`;
       await makeCreative(key, color, b.nameEn, offer[0]);
       const platform: PostPlatform = rand() < 0.6 ? "x" : "linkedin";
       const post = await prisma.post.create({
@@ -262,6 +273,6 @@ export async function clearSampleData(): Promise<void> {
   await prisma.dailyBrief.deleteMany({
     where: { highlightsJson: { path: ["sample"], equals: true } },
   });
-  await fs.rm(path.join(MEDIA_ROOT, "sample"), { recursive: true, force: true }).catch(() => {});
+  await getStorage().removePrefix("sample/");
   await setSetting(SAMPLE_FLAG, false);
 }

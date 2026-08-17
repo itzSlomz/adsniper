@@ -1,11 +1,13 @@
-import sharp from "sharp";
 import { getStorage } from "@/lib/storage";
+import { makeThumbnail } from "@/lib/sharpOptional";
 import type { FetchedMediaItem } from "@/lib/providers/types";
 
 // Media pipeline (brief Section 4): download each image (or video poster)
 // to our storage, keep the original URL, and generate a ~800px webp display
 // thumbnail for grid performance. Failures degrade gracefully: the item is
 // kept with cachedPath/thumbPath null and the UI shows a placeholder.
+// Thumbnailing is best-effort — where sharp can't load, full-size media is
+// still archived and the UI falls back to it.
 
 export interface StoredMediaItem {
   originalUrl: string;
@@ -42,13 +44,14 @@ export async function cacheMediaItems(
       const thumbKey = `${keyPrefix}/${i}_thumb.webp`;
 
       await storage.put(fullKey, buf, `image/${ext === "jpg" ? "jpeg" : ext}`);
-      const thumb = await sharp(buf)
-        .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
-        .webp({ quality: 80 })
-        .toBuffer();
-      await storage.put(thumbKey, thumb, "image/webp");
+      const thumb = await makeThumbnail(buf, THUMB_WIDTH);
+      if (thumb) await storage.put(thumbKey, thumb, "image/webp");
 
-      stored.push({ originalUrl: item.originalUrl, cachedPath: fullKey, thumbPath: thumbKey });
+      stored.push({
+        originalUrl: item.originalUrl,
+        cachedPath: fullKey,
+        thumbPath: thumb ? thumbKey : null,
+      });
     } catch (err) {
       failures.push(`${item.downloadUrl}: ${err instanceof Error ? err.message : String(err)}`);
       stored.push({ originalUrl: item.originalUrl, cachedPath: null, thumbPath: null });
@@ -128,12 +131,11 @@ export async function cacheAdAssets(
       await storage.put(cachedPath, buf, contentType);
 
       if (a.kind === "image") {
-        thumbPath = `${keyPrefix}/${i}_thumb.webp`;
-        const thumb = await sharp(buf)
-          .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
-          .webp({ quality: 80 })
-          .toBuffer();
-        await storage.put(thumbPath, thumb, "image/webp");
+        const thumb = await makeThumbnail(buf, THUMB_WIDTH);
+        if (thumb) {
+          thumbPath = `${keyPrefix}/${i}_thumb.webp`;
+          await storage.put(thumbPath, thumb, "image/webp");
+        }
       }
     } catch (err) {
       failures.push(`${a.url.slice(0, 90)}: ${err instanceof Error ? err.message : String(err)}`);
@@ -144,12 +146,16 @@ export async function cacheAdAssets(
     if (a.kind === "video" && a.posterUrl) {
       try {
         const { buf } = await fetchCapped(a.posterUrl);
-        thumbPath = `${keyPrefix}/${i}_thumb.webp`;
-        const thumb = await sharp(buf)
-          .resize({ width: THUMB_WIDTH, withoutEnlargement: true })
-          .webp({ quality: 80 })
-          .toBuffer();
-        await storage.put(thumbPath, thumb, "image/webp");
+        const thumb = await makeThumbnail(buf, THUMB_WIDTH);
+        if (thumb) {
+          thumbPath = `${keyPrefix}/${i}_thumb.webp`;
+          await storage.put(thumbPath, thumb, "image/webp");
+        } else {
+          // No thumbnailer: keep the poster at full size so the grid still
+          // has something to show for this video.
+          thumbPath = `${keyPrefix}/${i}_poster.jpg`;
+          await storage.put(thumbPath, buf, "image/jpeg");
+        }
       } catch (err) {
         failures.push(`poster ${a.posterUrl.slice(0, 70)}: ${err instanceof Error ? err.message : String(err)}`);
       }
