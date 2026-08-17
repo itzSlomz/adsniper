@@ -42,6 +42,19 @@ const LAUNCH_ARGS = [
   "--font-render-hinting=none",
 ];
 
+// Where the headless browser should fetch the report from. Never the
+// request's own origin: behind a proxy the container sees an internal host
+// (Railway forwards `Host: localhost:8080`), so the browser would attempt
+// HTTPS against a plain-HTTP port and fail with ERR_SSL_PROTOCOL_ERROR.
+// Rendering over loopback also keeps the whole job — page plus every
+// cached creative — inside the container instead of looping through the
+// public internet.
+export function renderOrigin(): string {
+  const override = process.env.PDF_RENDER_ORIGIN?.trim();
+  if (override) return override.replace(/\/+$/, "");
+  return `http://127.0.0.1:${process.env.PORT?.trim() || "3000"}`;
+}
+
 export class PdfUnavailableError extends Error {
   constructor(cause: string) {
     super(cause);

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { launchBrowser, pdfErrorResponse } from "@/lib/pdf";
+import { launchBrowser, pdfErrorResponse, renderOrigin } from "@/lib/pdf";
 import { getInstanceSettings } from "@/lib/settings";
 
 export const runtime = "nodejs";
@@ -14,7 +14,7 @@ export async function GET(
   if (!/^\d{4}-\d{2}-\d{2}$/.test(params.date)) {
     return NextResponse.json({ error: "bad date" }, { status: 400 });
   }
-  const origin = process.env.APP_URL ?? req.nextUrl.origin;
+  const origin = renderOrigin();
   const cookie = req.headers.get("cookie") ?? "";
   const { customerNameEn } = await getInstanceSettings();
   const footerOwner = customerNameEn ? `${customerNameEn} · AdSniper` : "AdSniper";

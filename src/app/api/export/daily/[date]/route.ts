@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { launchBrowser, pdfErrorResponse } from "@/lib/pdf";
+import { launchBrowser, pdfErrorResponse, renderOrigin } from "@/lib/pdf";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export async function GET(
     return NextResponse.json({ error: "bad date" }, { status: 400 });
   }
 
-  const origin = process.env.APP_URL ?? req.nextUrl.origin;
+  const origin = renderOrigin();
   const cookie = req.headers.get("cookie") ?? "";
 
   let browser;

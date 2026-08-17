@@ -11,10 +11,6 @@
 PUPPETEER_CACHE_DIR = "/app/.puppeteer"
 
 [phases.setup]
-# "..." keeps nixpacks' own Node packages; chromium is a real browser
-# build (unlike Ubuntu noble's apt package, which is a snap stub) and
-# carries its own libraries, so PDF export works on any base image.
-nixPkgs = ["...", "chromium"]
 aptPkgs = [
   "libnss3", "libnspr4", "libdrm2", "libxkbcommon0", "libxcomposite1",
   "libxdamage1", "libxfixes3", "libxrandr2", "libgbm1",
