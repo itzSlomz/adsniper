@@ -20,6 +20,10 @@ aptPkgs = [
 
 [phases.chromelibs]
 dependsOn = ["setup"]
+# Best-effort by design (trailing `|| true`): these libraries are only
+# needed by Chromium for the PDF export at runtime. If a package name is
+# wrong for the builder's base image, the export degrades — it must never
+# take down a deploy that is otherwise fine.
 cmds = [
-  "apt-get update && { apt-get install -y libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libasound2t64 || apt-get install -y libatk1.0-0 libatk-bridge2.0-0 libcups2 libasound2; }",
+  "{ apt-get update && { apt-get install -y libatk1.0-0t64 libatk-bridge2.0-0t64 libcups2t64 libasound2t64 || apt-get install -y libatk1.0-0 libatk-bridge2.0-0 libcups2 libasound2; }; } || true",
 ]
