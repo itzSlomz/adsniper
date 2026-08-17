@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import puppeteer from "puppeteer";
+import { launchBrowser, pdfErrorResponse } from "@/lib/pdf";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,11 +20,12 @@ export async function GET(
   const origin = process.env.APP_URL ?? req.nextUrl.origin;
   const cookie = req.headers.get("cookie") ?? "";
 
-  const browser = await puppeteer.launch({
-    headless: true,
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-    args: ["--no-sandbox", "--disable-setuid-sandbox", "--font-render-hinting=none"],
-  });
+  let browser;
+  try {
+    browser = await launchBrowser();
+  } catch (err) {
+    return pdfErrorResponse(err, `/export/daily/${params.date}`);
+  }
   try {
     const page = await browser.newPage();
     await page.setExtraHTTPHeaders({ cookie });
@@ -43,6 +44,8 @@ export async function GET(
         "Content-Disposition": `attachment; filename="adsniper-daily-${params.date}.pdf"`,
       },
     });
+  } catch (err) {
+    return pdfErrorResponse(err, `/export/daily/${params.date}`);
   } finally {
     await browser.close();
   }
