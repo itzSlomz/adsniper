@@ -7,6 +7,7 @@ import { jobs } from "@/jobs/index";
 import { triggerJob } from "@/jobs/index";
 import { revalidatePath } from "next/cache";
 import { clearSampleData, loadSampleData, sampleDataLoaded } from "@/lib/sampleData";
+import { getStorage } from "@/lib/storage";
 
 export const dynamic = "force-dynamic";
 
@@ -92,6 +93,15 @@ export default async function IntelPage() {
           ⏱ Data pulling
         </Link>
       </div>
+
+      {getStorage().kind === "local" && (
+        <div className="callout text-sm">
+          <strong>Media storage is the container filesystem.</strong>{" "}
+          {process.env.MEDIA_DIR
+            ? `Archived creatives are written to ${process.env.MEDIA_DIR} — make sure that path is a persistent volume, or they are lost when the service restarts.`
+            : "Archived creatives will be lost on every redeploy. Configure R2 (R2_* variables) or mount a persistent volume and point MEDIA_DIR at it — the creative archive is the part of this product that cannot be re-fetched later, because ad libraries expire their CDN links."}
+        </div>
+      )}
 
       {(sampleLoaded || (adCount === 0 && postCount === 0)) && (
         <section className="card elev-sm space-y-2">

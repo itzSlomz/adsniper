@@ -89,8 +89,13 @@ One sale = one Railway project. ~30 minutes.
    - fresh `AUTH_SECRET` + `AUTH_PASSCODE` (until Resend is configured)
    - provider keys (one Apify token serves all adapters) and cost
      ceilings matched to their plan
-   - R2 bucket **dedicated to this customer** (or leave R2 unset for
-     volume-disk storage)
+   - **Media storage — do not skip.** Either an R2 bucket dedicated to
+     this customer (`R2_*`), or a mounted persistent volume with
+     `MEDIA_DIR` pointing at it. On the bare container filesystem every
+     redeploy destroys the archived creatives, and they cannot be
+     re-fetched: ad libraries expire their CDN links, which is the whole
+     reason the archive exists. Intel shows a warning while an instance
+     is in that state.
    - `TZ` = the customer's timezone (cron times are instance-local)
 3. **Seed**: `npm run db:seed` (creates the admin user only — no brands).
 4. **Customer onboarding** (them or you, in the app):
