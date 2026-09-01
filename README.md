@@ -41,7 +41,8 @@ operational learnings. The project's *memory* lives in [`docs/`](docs/):
 | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | What shipped, newest first, tied to commits |
 
 **Working on this repo — human or AI agent?** Read
-[`docs/README.md`](docs/README.md) first. Documentation ships in the same
+[`AGENTS.md`](AGENTS.md) first (conventions, commands, boundaries), then
+[`docs/STATUS.md`](docs/STATUS.md) for where the work stands. Documentation ships in the same
 commit as the work it describes: a feature is done when `STATUS.md` and
 `CHANGELOG.md` say what changed, not when the code merges.
 

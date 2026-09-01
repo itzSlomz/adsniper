@@ -17,6 +17,10 @@ Bank Albilad. The ingestion pipeline, media archive and cost guards were
 carried over; the multi-customer, licensing, ads-first and briefing layers
 are new. See `DECISIONS.md` for why the fork exists at all.
 
+Agents reading this repository through the `AGENTS.md` convention (Codex,
+ChatGPT and others) get the short version in [`../AGENTS.md`](../AGENTS.md);
+this directory is the long one.
+
 ## The documents
 
 | File | What it holds | Update it when |
