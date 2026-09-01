@@ -29,6 +29,7 @@ function mapAd(a: LinkedInAd): FetchedAd | null {
   if (type.includes("VIDEO")) format = "video";
   else if (carousel.length > 1) format = "carousel";
   return {
+    raw: a,
     libraryId: a.adId,
     libraryUrl:
       a.adDetailUrl ?? `https://www.linkedin.com/ad-library/detail/${a.adId}`,

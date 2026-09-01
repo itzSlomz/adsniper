@@ -1,4 +1,5 @@
 import { DAILY_SPEND_ASSUMPTIONS_USD, PRESSURE_WEIGHTS } from "@/lib/estimation";
+import { ALL_STAGES, PROVEN_AFTER_DAYS, TRACTION_AFTER_DAYS } from "@/lib/adStage";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +30,44 @@ export default function MethodologyPage() {
           always expose start dates (LinkedIn doesn&apos;t), so for those the
           clock starts at first detection — durations are floors, not exact
           run lengths.
+        </p>
+      </section>
+
+      <section className="card elev-sm space-y-2 text-sm">
+        <h2 style={{ margin: 0, fontSize: 16 }}>Ad lifecycle stage (observed)</h2>
+        <p>
+          Days running are an observation, but a raw day count needs a
+          benchmark most readers don&apos;t carry. Each ad is therefore
+          labelled by how long it has survived — the thresholds are editorial,
+          fixed at {TRACTION_AFTER_DAYS} and {PROVEN_AFTER_DAYS} days, and the
+          same everywhere the label appears.
+        </p>
+        <table className="table">
+          <thead>
+            <tr><th>Stage</th><th>Running</th><th>What it licenses you to conclude</th></tr>
+          </thead>
+          <tbody>
+            {ALL_STAGES.map((s) => (
+              <tr key={s.key}>
+                <td className="font-semibold">
+                  {s.labelEn} <span className="text-muted" dir="rtl">{s.labelAr}</span>
+                </td>
+                <td>
+                  {s.key === "test"
+                    ? `< ${TRACTION_AFTER_DAYS}d`
+                    : s.key === "traction"
+                      ? `${TRACTION_AFTER_DAYS}–${PROVEN_AFTER_DAYS - 1}d`
+                      : `${PROVEN_AFTER_DAYS}d+`}
+                </td>
+                <td>{s.meaning}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="text-xs text-muted">
+          A stage is a floor, not a verdict: where a library publishes no start
+          date, the clock starts at our first detection, so an ad may have been
+          running longer than its label suggests — never shorter.
         </p>
       </section>
 

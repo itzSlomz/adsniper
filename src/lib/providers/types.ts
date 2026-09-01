@@ -80,6 +80,9 @@ export interface FetchedAd {
   // "no video caching" rule is deliberately overridden for ads: the ad
   // archive is the product, and platform CDN URLs expire).
   assets?: FetchedAdAsset[];
+  // The provider's original record, stored verbatim on ingest so unmapped
+  // fields remain recoverable later without another paid call.
+  raw?: unknown;
 }
 
 export interface AdsBrandQuery {

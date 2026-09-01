@@ -167,6 +167,11 @@ model Ad {
   // bytes, contentType }] — creativePath/creativeThumbPath stay as the
   // primary display asset for existing views.
   assets            Json         @default("[]")
+  // The provider's untouched response for this ad. Fields we don't map yet
+  // (targeting, EU reach breakdowns, funding entity) stay recoverable
+  // without paying to re-fetch — libraries drop ads once they stop running,
+  // so a field not captured at ingest is usually gone for good.
+  raw               Json         @default("{}")
   firstSeen         DateTime
   lastSeen          DateTime
   status            AdStatus     @default(active)

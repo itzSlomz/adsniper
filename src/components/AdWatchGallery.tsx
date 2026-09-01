@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { AdCardData } from "@/lib/dashboard";
 import { BrandSquare, Dialog, PlatformBadge, relTime } from "@/components/ui";
+import { daysRunning, stageForDays } from "@/lib/adStage";
 
 const TABS = [
   { key: "all", label: "All" },
@@ -14,10 +15,8 @@ const TABS = [
   { key: "tiktok", label: "TikTok" },
 ];
 
-const DAY = 86400000;
-
 function daysActive(a: AdCardData): number {
-  return Math.max(1, Math.round((+new Date(a.lastSeen) - +new Date(a.firstSeen)) / DAY));
+  return daysRunning(a.firstSeen, a.lastSeen);
 }
 
 function fmtBytes(n: number | null): string {
@@ -61,8 +60,8 @@ function AdCard({ ad, onOpen }: { ad: AdCardData; onOpen: () => void }) {
           </span>
         )}
         <div className="media-strip">
-          <span>Sponsored</span>
-          <span>{daysActive(ad)}d active</span>
+          <span>{stageForDays(daysActive(ad)).labelEn}</span>
+          <span>{daysActive(ad)}d running</span>
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-2.5">
@@ -80,7 +79,9 @@ function AdCard({ ad, onOpen }: { ad: AdCardData; onOpen: () => void }) {
         {ad.status === "stale" && <span className="callout-neutral">Stale — needs recheck</span>}
         <div className="statrow mt-auto border-t pt-1.5" style={{ borderColor: "var(--color-divider)" }}>
           <span className="stat"><b>{ad.format}</b><span>Format</span></span>
-          <span className="stat"><b>{relTime(ad.firstSeen)}</b><span>First seen</span></span>
+          <span className="stat" title={stageForDays(daysActive(ad)).meaning}>
+            <b>{stageForDays(daysActive(ad)).labelEn}</b><span>Stage</span>
+          </span>
           {ad.subPlatforms.length > 0 && (
             <span className="stat"><b>{ad.subPlatforms.length}</b><span>Placements</span></span>
           )}
@@ -197,6 +198,10 @@ export default function AdWatchGallery({ ads }: { ads: AdCardData[] }) {
           {open.adText && <p dir="auto" className="dialog-body whitespace-pre-wrap">{open.adText}</p>}
           <div className="statrow">
             <span className="stat"><b>{open.format}</b><span>Format</span></span>
+            <span className="stat" title={stageForDays(daysActive(open)).meaning}>
+              <b>{daysActive(open)}d · {stageForDays(daysActive(open)).labelEn}</b>
+              <span>Running</span>
+            </span>
             <span className="stat"><b>{relTime(open.firstSeen)}</b><span>First seen</span></span>
             <span className="stat"><b>{relTime(open.lastSeen)}</b><span>Last seen</span></span>
             <span className="stat"><b>{open.source === "manual" ? "Manual" : "Library"}</b><span>Source</span></span>

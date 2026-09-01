@@ -22,6 +22,7 @@ function mapAd(a: GoogleAd): FetchedAd | null {
   const fmt = (a.format ?? "").toUpperCase();
   const format: AdFormat = fmt === "VIDEO" ? "video" : fmt === "IMAGE" ? "image" : "text";
   return {
+    raw: a,
     libraryId: a.creativeId,
     libraryUrl: a.adUrl,
     format,

@@ -1,15 +1,14 @@
 import type { AdCardData, AdOverview } from "@/lib/dashboard";
 import { BrandSquare, PlatformBadge } from "@/components/ui";
+import { daysRunning as sharedDaysRunning, stageForDays } from "@/lib/adStage";
 
 // The ads hero: current competitive ad posture, campaign alerts, and the
 // longest-running ads. A long-running ad is the closest thing public
 // libraries give to "this creative works" — advertisers keep paying for
 // what performs — so duration is the board's first-class metric.
 
-const DAY = 86400000;
-
 function daysRunning(a: AdCardData): number {
-  return Math.max(1, Math.round((+new Date(a.lastSeen) - +new Date(a.firstSeen)) / DAY));
+  return sharedDaysRunning(a.firstSeen, a.lastSeen);
 }
 
 function Chip({ label, value, note }: { label: string; value: string; note?: string }) {
@@ -95,7 +94,7 @@ export default function AdOverviewHero({
                     </div>
                   )}
                   <div className="media-strip">
-                    <span>{a.brandName}</span>
+                    <span>{stageForDays(daysRunning(a)).labelEn}</span>
                     <span>
                       <b>{daysRunning(a)}d</b> running
                     </span>

@@ -5,6 +5,24 @@ import { cacheAdAssets, cacheMediaItems } from "@/lib/media";
 import type { JobContext } from "@/jobs/runner";
 import { getInstanceSettings, getPullSettings, isDue, setStamp } from "@/lib/settings";
 
+// A provider record is kept verbatim, but one pathological ad must not bloat
+// a row past what Postgres and the admin views handle comfortably. Oversized
+// payloads are replaced by a marker that says what happened.
+const MAX_RAW_BYTES = 120_000;
+
+function rawForStorage(raw: unknown): object {
+  if (raw == null) return {};
+  try {
+    const json = JSON.stringify(raw);
+    if (json.length > MAX_RAW_BYTES) {
+      return { _truncated: true, _bytes: json.length, _reason: `exceeds ${MAX_RAW_BYTES} bytes` };
+    }
+    return JSON.parse(json) as object;
+  } catch (err) {
+    return { _unserializable: err instanceof Error ? err.message.slice(0, 120) : String(err) };
+  }
+}
+
 const DAY = 24 * 60 * 60 * 1000;
 // Status logic (brief Section 5.3): a provider ad not returned for 7
 // consecutive daily pulls goes inactive; a manual ad with no team-confirmed
@@ -60,9 +78,18 @@ export async function runAdsPoll(ctx: JobContext): Promise<void> {
             },
           });
           if (existing) {
+            // Backfill the raw payload for ads ingested before it was kept;
+            // an ad already carrying one is left alone, since re-writing it
+            // on every daily pull would churn the row for no gain.
+            const needsRaw =
+              !existing.raw || Object.keys(existing.raw as object).length === 0;
             await prisma.ad.update({
               where: { id: existing.id },
-              data: { lastSeen: new Date(), status: "active" },
+              data: {
+                lastSeen: new Date(),
+                status: "active",
+                ...(needsRaw && ad.raw ? { raw: rawForStorage(ad.raw) } : {}),
+              },
             });
             continue;
           }
@@ -99,6 +126,7 @@ export async function runAdsPoll(ctx: JobContext): Promise<void> {
               landingUrl: ad.landingUrl,
               format: ad.format,
               assets,
+              raw: rawForStorage(ad.raw),
               firstSeen: ad.startDate ?? new Date(),
               lastSeen: new Date(),
               status: "active",

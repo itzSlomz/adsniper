@@ -86,6 +86,7 @@ function mapAd(a: MetaAd): FetchedAd | null {
 
   const firstCard = cards[0];
   return {
+    raw: a,
     assets: uniqueAssets,
     libraryId: a.adArchiveID,
     libraryUrl: `https://www.facebook.com/ads/library/?id=${a.adArchiveID}`,

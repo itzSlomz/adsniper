@@ -56,6 +56,7 @@ export const tiktokApifyAdsProvider: AdsProvider = {
     const items: FetchedAd[] = cache.raw
       .filter((a) => matchesBrand(`${a.brand_name ?? ""} ${a.ad_title ?? ""}`, brand))
       .map((a) => ({
+        raw: a,
         libraryId: String(a.ad_id),
         libraryUrl: a.detail_url,
         adText: a.ad_title,
