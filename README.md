@@ -27,6 +27,24 @@ from the Watchtower internal dashboard — the ingestion pipeline, media
 archive, and cost-guard machinery are carried over verified (see git
 history for the phase-by-phase verification log).
 
+## Documentation
+
+This README is the **technical runbook** — setup, provisioning, cron,
+operational learnings. The project's *memory* lives in [`docs/`](docs/):
+
+| Document | Holds |
+|---|---|
+| [`docs/STATUS.md`](docs/STATUS.md) | Every feature: shipped, in progress, blocked, not started — plus live-environment state |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Decisions taken, with reasoning and rejected alternatives |
+| [`docs/IDEAS.md`](docs/IDEAS.md) | Proposals not built: accepted, undecided, deferred, rejected |
+| [`docs/RESEARCH.md`](docs/RESEARCH.md) | Competitive landscape and external findings, with sources |
+| [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | What shipped, newest first, tied to commits |
+
+**Working on this repo — human or AI agent?** Read
+[`docs/README.md`](docs/README.md) first. Documentation ships in the same
+commit as the work it describes: a feature is done when `STATUS.md` and
+`CHANGELOG.md` say what changed, not when the code merges.
+
 ## Honesty rules (product law)
 
 - **Observed vs modeled, never blurred.** Ad counts, durations,
