@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-09-01 · Branch: `claude/adsniper-fork-baqjyb`
+Last updated: 2026-09-01 · Branch: `main`
 
 Legend: **Shipped** = built, verified, on the branch · **In progress** =
 started, not finished · **Blocked** = cannot proceed without something

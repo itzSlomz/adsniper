@@ -149,7 +149,12 @@ preferred. Never edit a migration that has already shipped.
 - **Never touch the Watchtower production service, its Postgres, or the
   `watchtower-media` R2 bucket.** They belong to a live customer. This
   repository is a fork; work only on its own infrastructure.
-- Work on the branch you were given. Do not push to another branch.
+- **Work on `main`.** It is the release branch: every customer instance
+  deploys from it, so a push here upgrades every deployed instance. Verify
+  before you push — a broken `main` is a broken fleet.
+- The repository still contains `claude/markdown-review-6v7w0s`, the
+  original Watchtower snapshot. It is history, not a target. Never push to
+  it, and never take it as the current state of the project.
 - Do not open a pull request unless explicitly asked.
 - Do not add a payment integration, change pricing, or alter licensing
   enforcement without an explicit instruction — licensing is the vendor's

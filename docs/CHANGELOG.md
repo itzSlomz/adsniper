@@ -3,8 +3,9 @@
 What actually shipped, newest first. Every entry names the commit so the
 diff is one command away.
 
-Branch: `claude/adsniper-fork-baqjyb` (forked from the Watchtower branch
-`claude/markdown-review-6v7w0s`).
+Branch: `main`. Work began on `claude/adsniper-fork-baqjyb`, forked from the
+Watchtower snapshot `claude/markdown-review-6v7w0s`; from 2026-09-01 it
+continues on `main`, which carries the identical history.
 
 ---
 
