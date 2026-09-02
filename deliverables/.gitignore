@@ -1,0 +1,4 @@
+# Generated delivery artifacts (the report source .html and the cost model .xlsx are tracked)
+*.pdf
+*.patch
+*.bundle
