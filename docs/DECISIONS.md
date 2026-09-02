@@ -6,6 +6,51 @@ new information.
 
 ---
 
+## 2026-09-02 · Pricing recommendation — value-based, not cost-plus (needs sign-off)
+**Recommended (not enacted):** sell an annual **Standard** package per
+dedicated instance, up to 5 competitors — list **SAR 96,000** / target **SAR
+75,000** / floor **SAR 55,000** — plus an **Enterprise exception** (SAR
+150,000; 9 competitors + a separate Cloudflare account) and a
+**beta/design-partner** price (~SAR 30,000, year 1, first 2–3 customers) in
+exchange for a reference and feedback.
+**Why:** measured/modeled COGS is only ~$750–$2,490/yr fully loaded per
+instance (see cost model), so cost is the floor, not the anchor. Shared-seat
+tools ($9–159/mo) are not comparable to a dedicated, isolated, Arabic-first
+instance with an executive briefing, so the price is set by value and
+willingness-to-pay. Provider ceilings per plan (Standard $60/mo, Enterprise
+$120/mo) are the margin guardrail.
+**Rejected:** cost-plus per-brand tiering — the COGS delta between 3 and 9
+brands is ~$700/yr, too small to base a price ladder on; per-seat pricing —
+the value is the instance and the briefing, not seats.
+**Status:** recommendation only. Per `AGENTS.md`, pricing/licensing is the
+vendor's revenue control; the operator sets the final number and records it
+here. Validate against the beta customers before locking GA pricing.
+
+## 2026-09-02 · Verify ingestion with an env-gated fixture provider
+**Decided:** prove the ingestion contract (dedup, first/last-seen, status,
+raw retention, archival, cost logging, budget stop) by running the **real**
+`ads-poll` job against a fixture ad provider selected only by `ADS_FIXTURE=1`.
+**Why:** the mechanics can and should be proven without spending provider
+budget; the fixture exercises the exact job path, adapter interface, database
+writes and media archival that a live pull uses. It is loudly identifiable
+(`FIXTURE-` ids, `raw._fixture=true`, a startup warning) and never set by the
+provisioning runbook, so it cannot be mistaken for real data.
+**Rejected:** a bespoke test that bypasses the job (weaker — wouldn't prove
+the real path); mocking Apify HTTP (more brittle, proves less).
+**Consequence:** the only unproven part of Gate 2 is that the live actors
+return usable Saudi-market data — isolated to the one paid pull in
+`verification/pilot.md`.
+
+## 2026-09-02 · Operating cost is modeled, and labelled as modeled
+**Decided:** publish the annual COGS as a sourced **model**
+(`deliverables/AdSniper_cost_model.xlsx`), not as a measured figure, until the
+Gate-2 pilot produces a real invoice.
+**Why:** the product's own law is "never invent a number." Every rate is a
+public list price (Apify, Railway, Cloudflare R2, Anthropic, Resend) or a
+documented Watchtower baseline; the total is explicitly a floor for pricing,
+not a bill. Observed and modeled stay separate here exactly as they do in the
+product UI.
+
 ## 2026-09-01 · Keep the provider's raw payload for every ad
 **Decided:** store the untouched provider record on each `Ad` row.
 **Why:** ad libraries drop an ad once it stops running, so a field not

@@ -26,6 +26,7 @@ this directory is the long one.
 | File | What it holds | Update it when |
 |---|---|---|
 | `STATUS.md` | Every feature: shipped, in progress, blocked, not started. Plus live-environment state. | Any feature changes state |
+| `VERIFICATION.md` | Launch-gate evidence from running the product against a real DB + S3 (2026-09-02). | A gate is re-verified or its evidence changes |
 | `LAUNCH_PLAN.md` | Ordered commercial-readiness gates: durable storage, real ingestion, cost, pricing and provisioning rehearsal. | A gate, dependency or acceptance criterion changes |
 | `DECISIONS.md` | Decisions taken, with the reasoning and the alternatives rejected. | A choice is made that a future reader would otherwise re-litigate |
 | `IDEAS.md` | Proposals not yet built: accepted, deferred, rejected, undecided. | An idea is raised, accepted, or killed |

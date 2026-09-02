@@ -8,6 +8,39 @@ Branch: `claude/adsniper-fork-baqjyb` (forked from the Watchtower branch
 
 ---
 
+## 2026-09-02 — launch-readiness verification
+
+Ran the five launch gates against a real Postgres and a real S3-compatible
+object store (MinIO), and documented the evidence. No shipped product
+behaviour changed; this adds a re-runnable verification harness and the
+launch documentation set.
+
+**Verification harness (`verification/`)**
+- `storage-check.ts` — the product's own `checkStorage()` round-trip against
+  real object storage. Result: write/read/delete ok on `kind: r2`.
+- `ingestion-checks.ts` — runs the real `ads-poll` job with a fixture
+  provider and asserts the full ingestion contract. **22/22 passed**,
+  including a creative archived to the bucket (3994 bytes) and the cost
+  ceiling hard-stop (`stopped_budget`, zero further calls).
+- `rehearsal.sh` — a timed, fresh-database run of the whole provisioning
+  runbook. Boot 0.9s, migrate 1.5s, first pull, bilingual facts briefing, a
+  real **53 KB PDF** via Puppeteer, `/media` anon block, and an expired
+  license locking the app + halting jobs (`stopped_license`).
+- `pilot.md` / `pilot-setup.ts` — the one-command runbook for the remaining
+  paid pull.
+
+**Fixture ad provider (`src/lib/providers/ads/fixture.ts`)**
+Verification-only, selected only by `ADS_FIXTURE=1` (never in the runbook),
+loudly self-identifying. `src/lib/providers/ads/index.ts` swaps it in behind
+that flag. Production registry unchanged when the flag is unset.
+
+**Cost model + pricing** — `deliverables/AdSniper_cost_model.xlsx`
+(sourced, live formulas): fully-loaded annual COGS ~$750–$2,490/instance for
+3–9 brands. Pricing recommendation recorded in `DECISIONS.md`.
+
+**Docs** — new `docs/VERIFICATION.md`; `STATUS.md`, `LAUNCH_PLAN.md`,
+`RESEARCH.md`, `DECISIONS.md` updated to the verified state.
+
 ## 2026-09-01
 
 **`7b2022a` Keep provider payloads verbatim, and label ads by lifecycle stage**

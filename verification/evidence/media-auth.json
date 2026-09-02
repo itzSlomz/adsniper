@@ -1,0 +1,14 @@
+{
+  "test": "Gate 1 — media protection and redeploy persistence",
+  "storage": "R2/S3-compatible (MinIO), bucket adsniper-demo-media, forcePathStyle",
+  "creativeArchivedByPriorProcess": "ads/meta/<brandId>/FIXTURE-M1/0.png (3994 bytes, image/png)",
+  "observations": {
+    "object_in_bucket_after_server_redeploy": { "exists": true, "bytes": 3994, "contentType": "image/png" },
+    "object_on_app_container_disk": { "present": false, "path": ".data/media/...", "note": "lives only in the bucket; a container redeploy cannot destroy it" },
+    "anon_GET_media": { "status": 307, "meaning": "redirected to /login — blocked" },
+    "anon_POST_admin_api_jobs": { "status": 307, "meaning": "admin job trigger blocked for anonymous" },
+    "passcode_login_POST": { "status": 302, "sessionCookie": true },
+    "authed_GET_media": { "status": 200, "bytes": 3994, "contentType": "image/png", "validPng": "600x400 RGB" }
+  },
+  "conclusion": "Archived creatives persist in the bucket across a server redeploy, are never public, and are served only to an authenticated session through the /media proxy."
+}

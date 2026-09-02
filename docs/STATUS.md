@@ -1,10 +1,29 @@
 # Status
 
-Last updated: 2026-09-01 · Branch: `claude/adsniper-fork-baqjyb`
+Last updated: 2026-09-02 · Branch: `claude/adsniper-fork-baqjyb`
 
 Legend: **Shipped** = built, verified, on the branch · **In progress** =
 started, not finished · **Blocked** = cannot proceed without something
 external · **Not started** = agreed but untouched.
+
+---
+
+## Launch-readiness (2026-09-02) — see [`VERIFICATION.md`](VERIFICATION.md)
+
+The five launch gates were exercised against a real Postgres and a real
+S3-compatible object store. Full evidence in `VERIFICATION.md`; harness in
+[`../verification/`](../verification).
+
+| Gate | State | What is left |
+|---|---|---|
+| 1. Durable storage | Code path **proven on real S3** (write/read/delete, redeploy persistence, `/media` auth) | Create the Cloudflare R2 bucket + bucket-scoped token (#1) |
+| 2. Real ingestion | Mechanics **proven, 22/22**, through the real job path | One capped **paid pilot pull** with live keys (#2) |
+| 3. Operating cost | **Modeled + sourced** — $750–$2,490/yr fully loaded per instance | Reconcile against the first real Apify invoice (#3) |
+| 4. Pricing | **Recommendation ready** (Standard SAR 96k list / 75k target) | Operator sign-off + beta willingness-to-pay (#4) |
+| 5. Provisioning | Software path **proven end-to-end**, zero code defects, real 53 KB PDF | Time one real Railway provisioning (#5) |
+
+Recommendation: **proceed to a controlled beta** with 1–2 design-partner
+banks, gated on #1 (bucket) and #2 (pilot pull).
 
 ---
 
@@ -65,7 +84,8 @@ about in-product; the permanent fix is R2 (see In progress).
 
 | Item | State | Next action |
 |---|---|---|
-| Dedicated R2 storage for the preview instance | Code supports it and is verified against a real S3 server; bucket not yet created | Create bucket `adsniper-demo-media`, create an API token **scoped to that bucket only**, set `R2_*` vars, then Intel → Test storage, then reload sample data |
+| Dedicated R2 storage for the preview instance | Storage code **proven against a real S3 server** (`verification/storage-check.ts`): write/read/delete, redeploy persistence, `/media` auth all pass. Cloudflare bucket not yet created | Create bucket `adsniper-demo-media`, an API token **scoped to that bucket only**, set `R2_*`, Intel → Test storage, reload sample data (#1) |
+| Real ad ingestion | Ingestion **mechanics proven, 22/22**, through the real job path with a fixture provider (`verification/ingestion-checks.ts`). Only the live paid pull remains | Run the capped pilot in `verification/pilot.md` with a funded Apify token (#2) |
 
 ---
 
@@ -73,11 +93,11 @@ about in-product; the permanent fix is R2 (see In progress).
 
 | Item | Blocked on | Consequence today |
 |---|---|---|
-| Real ad ingestion | Provider (Apify) keys on the preview instance; the original account was at its spend cap | Preview shows synthetic data only; no real cost measurement yet |
-| AI-written briefings | `ANTHROPIC_API_KEY` | Briefing falls back to the deterministic facts summary |
-| Email sign-in links | Resend API key + sending domain | Sign-in uses a shared passcode |
+| Live paid pull / real cost reconciliation | Funded Apify token on a pilot instance | Cost stays *modeled* (see cost model) until the pilot invoice lands |
+| AI-written briefings | `ANTHROPIC_API_KEY` | Briefing falls back to the deterministic **bilingual** facts summary (verified working) |
+| Email sign-in links | Resend API key + sending domain | Sign-in uses a shared passcode (verified working) |
 | LinkedIn impressions enrichment | A sample XLS export from the customer's own page | Engagement rate stays null for LinkedIn |
-| Pricing | Commercial decision | Sales documents carry a `[ pricing ]` placeholder |
+| Pricing sign-off | Commercial decision by the operator | Recommendation is ready (`DECISIONS.md`); the final number is the operator's |
 
 ---
 
@@ -89,4 +109,4 @@ about in-product; the permanent fix is R2 (see In progress).
 | Per-competitor battlecard in the weekly briefing | Competitive research |
 | Explicit provider capability declarations | Competitive research |
 | Alerting / notification screens | Parked by the operator during Watchtower |
-| Timed end-to-end onboarding rehearsal for a dummy customer | Needed to quote setup time in the pitch |
+| Timed **real** Railway provisioning (infra + human time) | Software path already rehearsed (`VERIFICATION.md` Gate 5); only the live-infra timing remains (#5) |

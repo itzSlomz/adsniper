@@ -84,6 +84,14 @@ thing: typecheck, production build, and exercising the change against a
 real Postgres database and a running server. Do not claim something works
 because it compiles.
 
+**Launch-readiness harness** (`verification/`): re-runnable proof of the five
+launch gates against a real Postgres + a real S3 server. `ingestion-checks.ts`
+runs the real `ads-poll` job with a **fixture ad provider** selected only by
+`ADS_FIXTURE=1` — verification-only, never set by the provisioning runbook,
+and loudly self-identifying (`FIXTURE-` ids, startup warning). See
+`docs/VERIFICATION.md` for results and `verification/pilot.md` for the one
+remaining paid step.
+
 ---
 
 ## Before you finish any change

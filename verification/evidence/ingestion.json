@@ -1,0 +1,118 @@
+{
+  "at": "2026-09-02T06:09:12.901Z",
+  "passed": 22,
+  "total": 22,
+  "storageKind": "r2",
+  "checks": [
+    {
+      "name": "phase1 job did not fail",
+      "pass": true,
+      "detail": "status=partial"
+    },
+    {
+      "name": "phase1 ingested 4 new ads",
+      "pass": true,
+      "detail": "itemsIngested=4"
+    },
+    {
+      "name": "meta + google both ingested",
+      "pass": true,
+      "detail": "M1=true G1=true"
+    },
+    {
+      "name": "raw payload retained verbatim (unmapped field survives)",
+      "pass": true,
+      "detail": "\"keep-me-M1\""
+    },
+    {
+      "name": "firstSeen derived from provider startDate (~20d ago)",
+      "pass": true,
+      "detail": "20d ago"
+    },
+    {
+      "name": "creative archived to storage during ingest",
+      "pass": true,
+      "detail": "path=ads/meta/cmtjp4dws0000fbum3x1c72ty/FIXTURE-M1/0.png kind=r2 bytes=3994"
+    },
+    {
+      "name": "full creative-asset array archived",
+      "pass": true,
+      "detail": "1 asset(s)"
+    },
+    {
+      "name": "provider calls logged with cost",
+      "pass": true,
+      "detail": "$0.0120 over 3 calls"
+    },
+    {
+      "name": "phase2 job did not fail",
+      "pass": true,
+      "detail": "status=partial"
+    },
+    {
+      "name": "phase2 created exactly 1 new ad (M4)",
+      "pass": true,
+      "detail": "itemsIngested=1"
+    },
+    {
+      "name": "no duplicate on re-ingest (M1 still single row)",
+      "pass": true,
+      "detail": "1 rows"
+    },
+    {
+      "name": "firstSeen stable across pulls",
+      "pass": true,
+      "detail": "2026-08-13T06:09:10.269Z"
+    },
+    {
+      "name": "lastSeen advances on re-ingest",
+      "pass": true,
+      "detail": "1167ms later"
+    },
+    {
+      "name": "new ad appears (M4 created)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "disappeared provider ad auto-inactivated (>7d)",
+      "pass": true,
+      "detail": "status=inactive"
+    },
+    {
+      "name": "zero-result brand created no phantom ad",
+      "pass": true,
+      "detail": "1 M3 rows"
+    },
+    {
+      "name": "unconfirmed manual ad marked stale (>14d)",
+      "pass": true,
+      "detail": "status=stale"
+    },
+    {
+      "name": "total distinct ads correct (M1,M2,M3,G1,M4,MANUAL-1)",
+      "pass": true,
+      "detail": "6 rows"
+    },
+    {
+      "name": "provider failure captured, not crashed",
+      "pass": true,
+      "detail": "status=partial errorCaptured=true"
+    },
+    {
+      "name": "other brands still ingest despite one failing",
+      "pass": true,
+      "detail": "FixtureCo lastSeen advanced"
+    },
+    {
+      "name": "cost ceiling stops the job (stopped_budget)",
+      "pass": true,
+      "detail": "status=stopped_budget"
+    },
+    {
+      "name": "no provider call made once ceiling hit",
+      "pass": true,
+      "detail": "7->7"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "at": "2026-09-02T06:12:30.845Z",
+  "target": {
+    "kind": "r2",
+    "target": "adsniper-demo-media",
+    "account": "local-ve"
+  },
+  "result": {
+    "ok": true,
+    "kind": "r2",
+    "target": "adsniper-demo-media",
+    "detail": "write, read and delete all succeeded"
+  }
+}

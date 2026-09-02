@@ -25,16 +25,22 @@ creatives into ephemeral container storage.
 
 ## Current position
 
-| Gate | State | GitHub issue | Immediate dependency |
-|---|---|---|---|
-| 1. Durable storage | Ready for external setup | [#1](https://github.com/itzSlomz/adsniper/issues/1) | Cloudflare R2 bucket and bucket-scoped credentials |
-| 2. Real ingestion | Blocked by gate 1 | [#2](https://github.com/itzSlomz/adsniper/issues/2) | Durable storage and funded provider token |
-| 3. Unit economics | Blocked by gate 2 evidence | [#3](https://github.com/itzSlomz/adsniper/issues/3) | Real provider, hosting and storage usage |
-| 4. Pricing | Blocked by gate 3 | [#4](https://github.com/itzSlomz/adsniper/issues/4) | Base/high annual COGS and support effort |
-| 5. Provisioning rehearsal | Blocked by prior gates | [#5](https://github.com/itzSlomz/adsniper/issues/5) | Approved operating model and test infrastructure |
+Updated 2026-09-02 after the launch-readiness verification pass. Evidence for
+every "proven" claim below is in [`VERIFICATION.md`](VERIFICATION.md); the
+re-runnable harness is in [`../verification/`](../verification).
 
-“Blocked” here means the gate cannot be *completed truthfully* yet. Work
-that removes a blocker may still proceed.
+| Gate | State | GitHub issue | Remaining dependency |
+|---|---|---|---|
+| 1. Durable storage | **Code path proven on real S3** (round-trip, redeploy persistence, `/media` auth) | [#1](https://github.com/itzSlomz/adsniper/issues/1) | Create the Cloudflare R2 bucket + bucket-scoped token |
+| 2. Real ingestion | **Mechanics proven, 22/22** through the real job path | [#2](https://github.com/itzSlomz/adsniper/issues/2) | One capped **paid pilot pull** with live keys |
+| 3. Unit economics | **Modeled + sourced** ($750–$2,490/yr fully loaded) | [#3](https://github.com/itzSlomz/adsniper/issues/3) | Reconcile against the first real Apify invoice |
+| 4. Pricing | **Recommendation ready** (see `DECISIONS.md`) | [#4](https://github.com/itzSlomz/adsniper/issues/4) | Operator sign-off + beta willingness-to-pay |
+| 5. Provisioning rehearsal | **Software path proven end-to-end**, zero code defects | [#5](https://github.com/itzSlomz/adsniper/issues/5) | Time one real Railway provisioning (infra + human) |
+
+“Blocked” here means the gate cannot be *completed truthfully* yet — i.e. it
+still needs money spent or cloud infrastructure created. Everything provable
+without those has been proven; the two paid steps (#1 bucket, #2 pilot) are
+now single, well-instrumented actions.
 
 ---
 

@@ -6,6 +6,28 @@ changes.
 
 ---
 
+## 2026-09-02 · Vendor pricing for the cost model
+
+Current public list prices used as the basis for
+`deliverables/AdSniper_cost_model.xlsx` (Gate 3). All are *inputs to a model*,
+not measured spend — the real per-pull figure comes from the Gate-2 pilot.
+
+| Vendor | What we use | Price (2026-09) |
+|---|---|---|
+| Apify | One token serves every ad/organic actor; pay-per-result draws down credit | Free ($5 credit) · **Starter $19/mo** (incl. $19) · Scale $199/mo · $0.20/CU |
+| Railway | One always-on app service + Postgres + small volume, per instance | Hobby $5/mo · **Pro $20/mo**; usage RAM $0.00000386/GB·s, vCPU $0.00000772/vCPU·s |
+| Cloudflare R2 | One bucket per instance for the creative archive | **$0.015/GB-mo**, Class A $4.50/M, Class B $0.36/M, **egress free**, 10 GB free |
+| Anthropic | Weekly + daily briefings (optional; facts-only fallback) | **Claude Sonnet 5 $2/$10 per MTok**; Haiku 4.5 $1/$5; cache reads 0.1× |
+| Resend | Login magic links; one account for the fleet | **Free 3,000/mo** (100/day) · Pro $20/mo (50k) |
+
+Bottom line for the model: provider (Apify) usage and internal support effort
+dominate; hosting, storage, AI and email are small and near-fixed. Fully
+loaded, one instance is ~$750–$2,490/yr across 3–9 tracked brands.
+
+Sources: apify.com/pricing · railway.com/pricing ·
+developers.cloudflare.com/r2/pricing · platform.claude.com/docs (pricing) ·
+resend.com/pricing.
+
 ## 2026-09-01 · Competitive landscape survey
 
 ### The finding that matters most: no official API path for Saudi Arabia
