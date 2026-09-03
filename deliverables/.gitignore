@@ -2,3 +2,5 @@
 *.pdf
 *.patch
 *.bundle
+# Rendered tour page embeds ~2MB of screenshots; regenerate with verification/build_tour.py
+product-tour.html
