@@ -8,6 +8,23 @@ Branch: `claude/adsniper-fork-baqjyb` (forked from the Watchtower branch
 
 ---
 
+## 2026-09-03 — technical services and hosting baseline
+
+Documentation-only change (this commit). Added
+`docs/TECHNICAL_SERVICES_REQUIREMENTS_AR.md`, defining the external services
+required to operate AdSniper: edge protection, web and worker hosting,
+PostgreSQL, object storage, scheduling, backups, identity, email, monitoring,
+CI/CD, provider access, secrets and customer operations. Each required service
+has a priority, deployment choice and acceptance criterion.
+
+The document records two deployment profiles: Railway/R2 for a controlled
+Pilot without a KSA-residency requirement, and Google Cloud Dammam when the
+customer, contract or data classification requires Saudi hosting. It also
+includes the per-customer isolation rules, secrets inventory, alert catalogue,
+provisioning checklist, implementation order and explicit deferrals of
+Kubernetes, Redis and self-service payments. `docs/README.md` and `STATUS.md`
+now link this baseline. No product behaviour changed.
+
 ## 2026-09-03 — SaaS foundation and enterprise-readiness baseline
 
 Documentation-only change (this commit). Added

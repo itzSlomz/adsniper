@@ -21,6 +21,15 @@ provider/legal review and plan entitlements.
 P0 requirement in that baseline is verified with evidence.** The existing five
 launch gates remain necessary; they are no longer treated as sufficient.
 
+The external services needed to close the infrastructure and operations gaps
+are now specified in
+[`TECHNICAL_SERVICES_REQUIREMENTS_AR.md`](TECHNICAL_SERVICES_REQUIREMENTS_AR.md).
+It defines a Railway/R2 profile for a controlled non-residency Pilot and a
+Google Cloud Dammam profile whenever the customer, contract or data
+classification requires KSA residency. This is a documented baseline only;
+the services remain in their current states below until provisioned and
+verified.
+
 ---
 
 ## Launch-readiness (2026-09-02) — see [`VERIFICATION.md`](VERIFICATION.md)

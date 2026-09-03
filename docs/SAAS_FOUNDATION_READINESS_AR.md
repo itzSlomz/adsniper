@@ -499,6 +499,7 @@ AdSniper يمتلك نواة منتج جيدة: واجهة Ads-first، أرشي�
 
 - `AGENTS.md`
 - `README.md`
+- `docs/TECHNICAL_SERVICES_REQUIREMENTS_AR.md`
 - `docs/STATUS.md`
 - `docs/VERIFICATION.md`
 - `docs/LAUNCH_PLAN.md`

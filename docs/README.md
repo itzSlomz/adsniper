@@ -27,6 +27,7 @@ this directory is the long one.
 |---|---|---|
 | `STATUS.md` | Every feature: shipped, in progress, blocked, not started. Plus live-environment state. | Any feature changes state |
 | `SAAS_FOUNDATION_READINESS_AR.md` | Arabic implementation baseline for SaaS and enterprise readiness: P0/P1/P2 requirements, acceptance evidence and Pilot/GA gates. | A foundational control changes state, scope or evidence |
+| `TECHNICAL_SERVICES_REQUIREMENTS_AR.md` | Arabic service and infrastructure baseline: Pilot/KSA hosting profiles, required vendors, acceptance criteria and provisioning checklist. | A hosting, data-residency, operational-service or vendor decision changes |
 | `VERIFICATION.md` | Launch-gate evidence from running the product against a real DB + S3 (2026-09-02). | A gate is re-verified or its evidence changes |
 | `LAUNCH_PLAN.md` | Ordered commercial-readiness gates: durable storage, real ingestion, cost, pricing and provisioning rehearsal. | A gate, dependency or acceptance criterion changes |
 | `DECISIONS.md` | Decisions taken, with the reasoning and the alternatives rejected. | A choice is made that a future reader would otherwise re-litigate |
