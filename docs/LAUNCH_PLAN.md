@@ -29,6 +29,14 @@ Updated 2026-09-02 after the launch-readiness verification pass. Evidence for
 every "proven" claim below is in [`VERIFICATION.md`](VERIFICATION.md); the
 re-runnable harness is in [`../verification/`](../verification).
 
+**2026-09-03 scope correction:** these five gates prove important product
+mechanics and commercial inputs, but are not sufficient for an external SaaS
+pilot. The P0 security, data-correctness, recovery, job-reliability,
+observability, SDLC, vendor-risk and entitlement requirements in
+[`SAAS_FOUNDATION_READINESS_AR.md`](SAAS_FOUNDATION_READINESS_AR.md) are now an
+additional mandatory gate. No external pilot starts until all P0 items are
+verified with evidence.
+
 | Gate | State | GitHub issue | Remaining dependency |
 |---|---|---|---|
 | 1. Durable storage | **Code path proven on real S3** (round-trip, redeploy persistence, `/media` auth) | [#1](https://github.com/itzSlomz/adsniper/issues/1) | Create the Cloudflare R2 bucket + bucket-scoped token |
@@ -160,6 +168,8 @@ AdSniper is ready for a paid customer only when:
 5. A fresh instance has passed the complete provisioning rehearsal.
 6. Customer-facing data clearly distinguishes observed, modeled, partial,
    unavailable and synthetic information.
+7. Every P0 requirement in `SAAS_FOUNDATION_READINESS_AR.md` is verified with
+   reproducible or reviewable evidence.
 
 Passing a build or showing sample data is not sufficient evidence of
 commercial readiness.

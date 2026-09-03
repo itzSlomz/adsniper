@@ -8,6 +8,22 @@ Branch: `claude/adsniper-fork-baqjyb` (forked from the Watchtower branch
 
 ---
 
+## 2026-09-03 — SaaS foundation and enterprise-readiness baseline
+
+Documentation-only change (this commit). Added
+`docs/SAAS_FOUNDATION_READINESS_AR.md`: an Arabic implementation baseline
+covering architecture and tenant isolation, IAM, application security, data
+correctness, jobs, storage and recovery, observability, SDLC, privacy,
+entitlements, customer operations, performance, accessibility, analytics and
+vendor risk. Every requirement has a stable ID, P0/P1/P2 priority, current
+state and acceptance evidence, with explicit gates for external Pilot, Pilot
+exit and General Availability.
+
+Updated `docs/README.md`, `docs/STATUS.md`, `docs/LAUNCH_PLAN.md` and
+`AGENTS.md` so the earlier recommendation to begin beta after only durable
+storage and a paid pull is no longer treated as sufficient. No product
+behaviour changed.
+
 ## 2026-09-02 — launch-readiness verification
 
 Ran the five launch gates against a real Postgres and a real S3-compatible

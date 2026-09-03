@@ -175,5 +175,8 @@ fabricated for demonstration and every creative is watermarked
 `SAMPLE CREATIVE`. Never present it as a real market reading, and never
 copy numbers out of it into documents as if they were measurements.
 
-Current blockers, and what each one costs, are listed in
-[`docs/STATUS.md`](docs/STATUS.md).
+Current blockers are listed in [`docs/STATUS.md`](docs/STATUS.md). The five
+launch-verification gates are necessary but not sufficient for an external
+customer: all P0 controls in
+[`docs/SAAS_FOUNDATION_READINESS_AR.md`](docs/SAAS_FOUNDATION_READINESS_AR.md)
+must also be verified before a design-partner pilot begins.

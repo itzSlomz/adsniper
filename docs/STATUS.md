@@ -1,10 +1,25 @@
 # Status
 
-Last updated: 2026-09-02 · Branch: `claude/adsniper-fork-baqjyb`
+Last updated: 2026-09-03 · Branch: `claude/adsniper-fork-baqjyb`
 
 Legend: **Shipped** = built, verified, on the branch · **In progress** =
 started, not finished · **Blocked** = cannot proceed without something
 external · **Not started** = agreed but untouched.
+
+---
+
+## SaaS foundation readiness (2026-09-03)
+
+The launch verification below proves valuable software mechanics, but it is
+not by itself an enterprise-SaaS readiness assessment. The broader review in
+[`SAAS_FOUNDATION_READINESS_AR.md`](SAAS_FOUNDATION_READINESS_AR.md) found P0
+gaps in authentication and dependency security, ad-status correctness,
+durable storage and restore, job reliability, external monitoring, CI/tests,
+provider/legal review and plan entitlements.
+
+**Current decision: do not start an external design-partner pilot until every
+P0 requirement in that baseline is verified with evidence.** The existing five
+launch gates remain necessary; they are no longer treated as sufficient.
 
 ---
 
@@ -22,8 +37,9 @@ S3-compatible object store. Full evidence in `VERIFICATION.md`; harness in
 | 4. Pricing | **Recommendation ready** (Standard SAR 96k list / 75k target) | Operator sign-off + beta willingness-to-pay (#4) |
 | 5. Provisioning | Software path **proven end-to-end**, zero code defects, real 53 KB PDF | Time one real Railway provisioning (#5) |
 
-Recommendation: **proceed to a controlled beta** with 1–2 design-partner
-banks, gated on #1 (bucket) and #2 (pilot pull).
+Previous recommendation was to proceed to a controlled beta after #1 and #2.
+The 2026-09-03 SaaS-foundation review supersedes it: #1 and #2 remain required,
+along with all other P0 controls in `SAAS_FOUNDATION_READINESS_AR.md`.
 
 ---
 
