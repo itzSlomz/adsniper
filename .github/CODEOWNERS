@@ -1,5 +1,7 @@
 # Default review owner. Keep this first so the more specific entries below
 # document security-sensitive surfaces without leaving other files unowned.
+# CODEOWNERS identifies responsibility; while @itzSlomz is the sole owner and
+# PR author, branch protection must not require an impossible self-approval.
 * @itzSlomz
 
 # Release, dependency, and deployment controls

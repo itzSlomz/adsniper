@@ -17,13 +17,17 @@ repository security governance**
 This branch configures a Node 22 quality gate for pull requests and pushes to
 `main`: clean install, Prisma schema validation and client generation,
 TypeScript, zero-warning Next.js lint, focused Jest tests, production build,
-and a final clean-tree check. The focused tests cover exact public-route
+and a final clean-tree check. An independent fail-closed dependency gate scans
+both production and development lock trees, accepts only exact time-limited
+exceptions for the pre-existing findings assigned to PR-02, and uploads its
+raw and evaluated evidence. The focused tests cover exact public-route
 matching and authorization of all 19 current admin Server Actions; they are
 not presented as end-to-end coverage. `CODEOWNERS` records review ownership
 for sensitive surfaces, and `SECURITY.md` gives a no-secrets public fallback
 while private vulnerability reporting is unavailable. No product feature,
-UI, or database schema changes. Public matching is deliberately restricted
-to the exact `/login` path and the `/api/auth` route tree.
+UI, database schema, or dependency version changes. Public matching is
+deliberately restricted to the exact `/login` path and the `/api/auth` route
+tree.
 
 ## 2026-09-01
 

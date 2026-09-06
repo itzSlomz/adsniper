@@ -64,7 +64,7 @@ about in-product; the permanent fix is R2 (see In progress).
 
 | Item | State | Next action |
 |---|---|---|
-| PR-01 release gates and authorization regression coverage | Implemented on `fix/release-gates-phase-1`; the full local gate sequence passed from a clean clone on Node 22, and GitHub `Release Gates` run `34022656989` passed on PR #6. The change is not yet merged to `main` | Review PR #6; set GitHub's default branch to `main`; require `Release Gates / Quality gate`; then move these capabilities to Shipped after merge |
+| PR-01 release gates, authorization regression coverage, and dependency-audit policy | Implemented on `fix/release-gates-phase-1`. Before the audit continuation, the PR had two commits: `aba23dc2ec63bc19809e05d527f97938b6a2782f` passed run `34022656989`, and `70141ef33926ed20c3a57834af17357f42ea4a6a` passed run `34022799072`. The continuation adds one scoped third commit with an independent production+development dependency gate. The change is not yet merged to `main` | Review PR #6 only against its current head; require `Release Gates / Quality gate` and `Release Gates / Dependency audit`. Require PRs but zero approvals and no CODEOWNERS review while `@itzSlomz` is the sole owner/author; enable one CODEOWNER approval only after an independent authorized reviewer exists. After merge, start PR-02 from the resulting `main`, not `55a3600` |
 | Dedicated R2 storage for the preview instance | Code supports it and is verified against a real S3 server; bucket not yet created | Create bucket `adsniper-demo-media`, create an API token **scoped to that bucket only**, set `R2_*` vars, then Intel → Test storage, then reload sample data |
 
 The release gates are code-level checks. They do not replace the real-database

@@ -74,6 +74,7 @@ npm run dev
 | Unit tests | `npm test` |
 | Unit tests (CI mode) | `npm run test:ci` |
 | Production build | `npm run build` |
+| Production + development dependency audit | `npm run audit:dependencies` |
 | Run a job manually | `npx tsx scripts/run-job.ts <job>` |
 | Load / clear demo data | `npx tsx scripts/sample-data.ts load` \| `clear` |
 | Seed the demo bank list | `npx tsx scripts/seed-demo.ts` |
@@ -86,10 +87,17 @@ Job names: `ads-poll`, `x-poll`, `linkedin-poll`, `x-metrics-refresh`,
 The automated unit tests cover the release-critical public-route boundary
 and authorization of the current admin mutations. They are deliberately
 narrow, not an end-to-end product suite. The `Release Gates` workflow is
-configured for pull requests to `main` and pushes to `main`, on Node 22, and
-performs a clean install, Prisma validation and generation, typecheck,
-zero-warning lint, unit tests, production build, and a working-tree
-cleanliness check.
+configured for pull requests to `main` and pushes to `main`, on Node 22. Its
+`Quality gate` performs a clean install, Prisma validation and generation,
+typecheck, zero-warning lint, unit tests, production build, and a working-tree
+cleanliness check. Its independent `Dependency audit` scans the production
+lock tree and the complete tree including development tools. Both checks must
+pass. Audit exceptions must match an exact package path, installed version,
+advisory source, GHSA, severity, and scope, and must not be expired or stale.
+The affected-node baseline also pins every High/Critical parent package,
+path, version, aggregate severity, scope, directness, immediate `via` edges,
+and resolved GHSA chain; do not weaken or regenerate either list
+automatically.
 
 Behaviour-changing work still requires exercising the change against a real
 Postgres database or a running server. Do not claim something works only
@@ -105,9 +113,11 @@ because the code-level gates pass.
 4. `npm run test:ci` passes.
 5. `npm run build` passes — this catches App Router problems that the
    typechecker does not.
-6. If behaviour changed, verify it against a real database or a running
+6. `npm run audit:dependencies` passes; review its generated evidence and
+   never extend an exception silently.
+7. If behaviour changed, verify it against a real database or a running
    server rather than asserting it from reading the code.
-7. Documentation updated **in the same commit** (see below).
+8. Documentation updated **in the same commit** (see below).
 
 ---
 
@@ -163,7 +173,8 @@ preferred. Never edit a migration that has already shipped.
 - **Never touch the Watchtower production service, its Postgres, or the
   `watchtower-media` R2 bucket.** They belong to a live customer. This
   repository is a fork; work only on its own infrastructure.
-- **Target `main` through a reviewed branch.** It is the release branch:
+- **Target `main` through a pull-request branch with required release
+  gates.** It is the release branch:
   every customer instance deploys from it, so merging there upgrades every
   deployed instance. Cut work from the intended `main` commit and verify all
   release gates before merge — a broken `main` is a broken fleet.

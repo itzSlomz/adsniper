@@ -194,17 +194,25 @@ npm run typecheck
 npm run lint
 npm run test:ci
 npm run build
+npm run audit:dependencies
 test -z "$(git status --porcelain --untracked-files=all)"
 ```
 
 The placeholder PostgreSQL URL only satisfies Prisma's schema validation;
 these code-level gates do not connect to a database. GitHub Actions is
 configured to run the `Release Gates` workflow on pull requests to `main`
-and pushes to `main`, using Node 22. The unit tests currently protect the
-exact public-route boundary and authorization of the current admin mutations;
-they are not an end-to-end suite. Behaviour-changing work still needs
-verification against a real Postgres database or running server as described
-in [`AGENTS.md`](AGENTS.md).
+and pushes to `main`, using Node 22. Its `Quality gate` performs the clean
+install and application checks. Its independent `Dependency audit` checks
+both the production lock tree and the complete tree including development
+tools, fails closed against the exact time-limited exceptions and exact
+affected-package graph in `.github/dependency-audit-exceptions.json`, and
+checks its directness, immediate `via` edges, and lockfile inventory counts.
+It uploads the raw reports plus its policy decision as a review artifact. Both
+checks are release gates. The
+unit tests protect the exact public-route boundary and authorization of the
+current admin mutations; they are not an end-to-end suite. Behaviour-changing
+work still needs verification against a real Postgres database or running
+server as described in [`AGENTS.md`](AGENTS.md).
 
 ## Operational learnings (inherited from Watchtower, still true)
 

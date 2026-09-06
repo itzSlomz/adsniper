@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "next lint --no-cache --max-warnings 0",
     "typecheck": "tsc --noEmit",
+    "audit:dependencies": "node scripts/dependency-audit.cjs",
     "prisma:validate": "prisma validate",
     "prisma:generate": "prisma generate",
     "test": "jest",
