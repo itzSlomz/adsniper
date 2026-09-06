@@ -15,10 +15,13 @@ The local release-gate replay passes from a clean clone under Node
 the same commands as `.github/workflows/ci.yml`, and ended with a clean Git
 working tree.
 
-This is local evidence only. No branch was pushed, no pull request was
-opened, and GitHub Actions has not run against this branch. GitHub's default
-branch also remains `claude/markdown-review-6v7w0s`; changing it to `main`
-is a repository-setting operation outside this commit.
+The identical Git tree was published directly to `itzSlomz/adsniper` without
+a fork, and [pull request #6](https://github.com/itzSlomz/adsniper/pull/6)
+was opened against `main`. GitHub Actions `Release Gates` run `34022656989`
+completed successfully: all steps in `Quality gate`, including the final
+clean-tree check, passed on GitHub's Ubuntu runner. GitHub's default branch
+still remains `claude/markdown-review-6v7w0s`; changing it to `main` is a
+separate repository-setting operation.
 
 ## Scope controls
 
@@ -32,7 +35,7 @@ is a repository-setting operation outside this commit.
 | Production dependencies | No existing package version, resolved URL, or integrity value changed; 478 lock entries were added for the test/lint toolchain, no lock entry was removed |
 | Customer infrastructure | No deployment service, database, storage bucket, provider credential, or customer environment was accessed or changed |
 | Watchtower | No Watchtower service, database, or media bucket operation was performed |
-| GitHub writes | No push, fork update, pull request, branch setting, protection rule, or security setting was written |
+| GitHub writes | Limited to creating the tested branch and PR #6 directly in `itzSlomz/adsniper`; no fork, default-branch setting, protection rule, or security setting was written |
 
 The only metadata reclassification among pre-existing lock entries is
 `node_modules/source-map`, whose previous `optional: true` flag is absent
@@ -188,22 +191,29 @@ Next.js `14.2.35` release in this narrow PR.
   workflow successfully and verified the `main` pull-request/push triggers.
   This parser check is diagnostic, not a release gate.
 
-## External release actions still required
+## GitHub verification and remaining release actions
 
-The implementation is locally ready, but these facts cannot be established
-by a commit alone:
+The branch and PR were created with the GitHub identity `itzSlomz`, which the
+repository API reports as having admin and push permission. The submitted
+remote commit has parent and merge-base
+`55a3600ad99eb44993940eb585eb27d66de997fb`. GitHub's comparison reports one
+commit ahead, zero behind, and the same 47 changed paths as the verified
+local tree.
 
-1. Authenticate to GitHub as an identity with write/admin access to
-   `itzSlomz/adsniper`.
-2. Change the GitHub default branch from
+`Release Gates` run `34022656989`, job `101457951971`, concluded `success`.
+GitHub reports successful completion for install, Prisma validation and
+generation, TypeScript, lint, tests, production build, and the final clean
+working-tree step.
+
+The following repository-level actions remain:
+
+1. Review and merge PR #6 only while `Release Gates / Quality gate` is green.
+2. Change GitHub's default branch from
    `claude/markdown-review-6v7w0s` to `main`.
-3. Push `fix/release-gates-phase-1` directly to the original repository.
-4. Open a pull request into `main` and observe `Release Gates / Quality gate`
-   passing on GitHub's Ubuntu runner.
-5. Configure branch protection/rulesets so that check and the CODEOWNERS
-   review are required before merging.
-6. Enable GitHub private vulnerability reporting, then replace the temporary
+3. Configure branch protection/rulesets so the release gate and CODEOWNERS
+   review are required before merging future changes.
+4. Enable GitHub private vulnerability reporting, then replace the temporary
    no-details public contact fallback in `SECURITY.md` with the private
    reporting channel.
 
-None of these external actions is claimed as completed in this report.
+Those repository settings and the merge are not claimed as completed here.
