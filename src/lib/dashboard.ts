@@ -52,11 +52,6 @@ function periodRange(date: string, days: RangeDays): { from: Date; to: Date } {
   return { from: new Date(to.getTime() - days * DAY), to };
 }
 
-function dayRange(date: string): { from: Date; to: Date } {
-  const from = new Date(`${date}T00:00:00Z`);
-  return { from, to: new Date(from.getTime() + DAY) };
-}
-
 const HASHTAG_RE = /#[\p{L}\p{N}_]+/gu;
 
 export async function postsForDay(date: string, days: RangeDays = 1): Promise<PostCardData[]> {

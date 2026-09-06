@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { triggerJob } from "@/jobs/index";
+import { regenerate, save } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,33 +14,6 @@ export default async function WeeklyBriefAdminPage() {
   if ((session?.user as { role?: string } | undefined)?.role !== "admin") redirect("/");
 
   const brief = await prisma.weeklyBrief.findFirst({ orderBy: { weekStart: "desc" } });
-
-  async function save(formData: FormData) {
-    "use server";
-    const s = await auth();
-    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
-    const id = String(formData.get("id"));
-    const publish = formData.get("publish") === "1";
-    await prisma.weeklyBrief.update({
-      where: { id },
-      data: {
-        contentEn: String(formData.get("en") ?? ""),
-        contentAr: String(formData.get("ar") ?? ""),
-        editedAt: new Date(),
-        ...(publish ? { status: "published" } : {}),
-      },
-    });
-    revalidatePath("/intel/weekly-brief");
-    revalidatePath("/");
-  }
-
-  async function regenerate() {
-    "use server";
-    const s = await auth();
-    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
-    await triggerJob("weekly-brief");
-    revalidatePath("/intel/weekly-brief");
-  }
 
   const weekEnd = brief
     ? new Date(+brief.weekStart + 6 * 86400000).toISOString().slice(0, 10)

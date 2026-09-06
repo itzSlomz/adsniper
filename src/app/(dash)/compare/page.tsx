@@ -15,8 +15,6 @@ export default async function ComparePage() {
     include: { snapshots: { orderBy: { capturedAt: "desc" }, take: 1 } },
   });
   const self = brands.find((b) => b.type === "self");
-  const name = (id: string) => brands.find((b) => b.id === id)?.nameEn ?? id;
-
   // Share of voice trend (X only): our brand's share of daily X engagement.
   const sovByDay: Record<string, { bab: number; total: number }> = {};
   for (const p of posts) {

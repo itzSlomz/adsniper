@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-09-01 · Branch: `main`
+Last updated: 2026-09-06 · Branch: `main`
 
 Legend: **Shipped** = built, verified, on the branch · **In progress** =
 started, not finished · **Blocked** = cannot proceed without something
@@ -58,14 +58,18 @@ about in-product; the permanent fix is R2 (see In progress).
 | Raw provider payloads | Original record kept per ad (>120KB replaced by a marker); backfilled on next sighting |
 | Provider adapters | Meta, Google, LinkedIn, TikTok behind one interface; region comes from instance settings |
 | Configurable offer categories | Admin-editable keyword→label map; banking defaults |
-
 ---
 
 ## In progress
 
 | Item | State | Next action |
 |---|---|---|
+| PR-01 release gates and authorization regression coverage | Implemented on `fix/release-gates-phase-1`; the full local gate sequence passed from a clean clone on Node 22. The workflow is not yet running on GitHub and the change is not on `main` | Set GitHub's default branch to `main`; push the branch; open the PR against `main`; require `Release Gates / Quality gate`; then move these capabilities to Shipped after merge |
 | Dedicated R2 storage for the preview instance | Code supports it and is verified against a real S3 server; bucket not yet created | Create bucket `adsniper-demo-media`, create an API token **scoped to that bucket only**, set `R2_*` vars, then Intel → Test storage, then reload sample data |
+
+The release gates are code-level checks. They do not replace the real-database
+and running-server verification required for behaviour changes, and they do
+not resolve the live-environment blockers below.
 
 ---
 

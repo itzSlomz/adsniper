@@ -27,7 +27,7 @@ interface WeeklyFacts {
   >;
 }
 
-function fallbackNarrative(facts: WeeklyFacts, customer: string): { en: string; ar: string } {
+function fallbackNarrative(facts: WeeklyFacts): { en: string; ar: string } {
   const { report } = facts;
   const t = report.totals;
   const range = `${report.weekStart} → ${report.weekEnd}`;
@@ -125,11 +125,11 @@ export async function runWeeklyBrief(ctx: JobContext): Promise<void> {
       ctx.errors.push(
         `AI narrative failed, stored facts summary instead: ${err instanceof Error ? err.message : String(err)}`
       );
-      narrative = fallbackNarrative(facts, customer);
+      narrative = fallbackNarrative(facts);
     }
   } else {
     ctx.errors.push("(info) ANTHROPIC_API_KEY not set — stored deterministic facts summary");
-    narrative = fallbackNarrative(facts, customer);
+    narrative = fallbackNarrative(facts);
   }
 
   await prisma.weeklyBrief.upsert({

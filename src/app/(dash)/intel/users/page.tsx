@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { addUser, removeUser } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -13,33 +13,6 @@ export default async function UsersPage() {
   if ((session?.user as { role?: string } | undefined)?.role !== "admin") redirect("/");
 
   const users = await prisma.user.findMany({ orderBy: { email: "asc" } });
-
-  async function addUser(formData: FormData) {
-    "use server";
-    const s = await auth();
-    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
-    const email = String(formData.get("email") ?? "").toLowerCase().trim();
-    const role = formData.get("role") === "admin" ? "admin" : "viewer";
-    if (!email.includes("@")) throw new Error("valid email required");
-    await prisma.user.upsert({
-      where: { email },
-      update: { role },
-      create: { email, role },
-    });
-    revalidatePath("/intel/users");
-  }
-
-  async function removeUser(formData: FormData) {
-    "use server";
-    const s = await auth();
-    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
-    const id = String(formData.get("id"));
-    const target = await prisma.user.findUnique({ where: { id } });
-    // An admin can't remove themself — prevents locking everyone out.
-    if (!target || target.email === s?.user?.email) return;
-    await prisma.user.delete({ where: { id } });
-    revalidatePath("/intel/users");
-  }
 
   return (
     <main className="mx-auto max-w-xl space-y-6">

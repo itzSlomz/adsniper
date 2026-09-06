@@ -4,10 +4,9 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { budgetStatus } from "@/lib/costs";
 import { jobs } from "@/jobs/index";
-import { triggerJob } from "@/jobs/index";
-import { revalidatePath } from "next/cache";
-import { clearSampleData, loadSampleData, sampleDataLoaded } from "@/lib/sampleData";
-import { checkStorage, storageTarget } from "@/lib/storage";
+import { sampleDataLoaded } from "@/lib/sampleData";
+import { storageTarget } from "@/lib/storage";
+import { clearSamples, loadSamples, runNow, testStorage } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -33,48 +32,6 @@ export default async function IntelPage({
   const lastByJob = new Map<string, (typeof runs)[number]>();
   for (const r of runs) if (!lastByJob.has(r.job)) lastByJob.set(r.job, r);
   const ceilingHit = budget.filter((b) => Number.isFinite(b.ceilingUsd) && b.spentUsd >= b.ceilingUsd);
-
-  async function runNow(formData: FormData) {
-    "use server";
-    const s = await auth();
-    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
-    await triggerJob(String(formData.get("job")));
-    revalidatePath("/intel");
-  }
-
-  async function testStorage() {
-    "use server";
-    const s = await auth();
-    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
-    const res = await checkStorage();
-    redirect(
-      `/intel?storage=${encodeURIComponent(
-        `${res.ok ? "ok:" : "no:"}${res.kind === "r2" ? `R2 bucket ${res.target}` : res.target} — ${res.detail}`
-      )}`
-    );
-  }
-
-  async function loadSamples() {
-    "use server";
-    const s = await auth();
-    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
-    await loadSampleData();
-    // Complete the demo: generate and publish the weekly briefing from
-    // the sample dataset through the real job path.
-    await triggerJob("weekly-brief");
-    await triggerJob("brief-auto-publish");
-    revalidatePath("/intel");
-    revalidatePath("/");
-  }
-
-  async function clearSamples() {
-    "use server";
-    const s = await auth();
-    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
-    await clearSampleData();
-    revalidatePath("/intel");
-    revalidatePath("/");
-  }
 
   return (
     <main className="space-y-6">

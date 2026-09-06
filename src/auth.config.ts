@@ -1,5 +1,6 @@
 import "@/lib/authUrl";
 import type { NextAuthConfig } from "next-auth";
+import { isPublicPath } from "@/lib/accessPolicy";
 
 // Edge-safe config shared with middleware: no Prisma, no Node-only imports.
 export const authConfig = {
@@ -9,7 +10,7 @@ export const authConfig = {
     authorized({ auth, request }) {
       const { pathname } = request.nextUrl;
       // NextAuth's own routes must stay reachable or sign-in breaks.
-      if (pathname === "/login" || pathname.startsWith("/api/auth")) return true;
+      if (isPublicPath(pathname)) return true;
       return !!auth?.user;
     },
     jwt({ token, user }) {
