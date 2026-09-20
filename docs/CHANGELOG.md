@@ -45,6 +45,72 @@ container. `R2_ACCOUNT_ID` carries the placeholder `railway-bucket`
 because `getStorage()` requires it even when `R2_ENDPOINT` is set;
 cleanup filed in `IDEAS.md`.
 
+## 2026-09-03 — technical services and hosting baseline
+
+Documentation-only change (this commit). Added
+`docs/TECHNICAL_SERVICES_REQUIREMENTS_AR.md`, defining the external services
+required to operate AdSniper: edge protection, web and worker hosting,
+PostgreSQL, object storage, scheduling, backups, identity, email, monitoring,
+CI/CD, provider access, secrets and customer operations. Each required service
+has a priority, deployment choice and acceptance criterion.
+
+The document records two deployment profiles: Railway/R2 for a controlled
+Pilot without a KSA-residency requirement, and Google Cloud Dammam when the
+customer, contract or data classification requires Saudi hosting. It also
+includes the per-customer isolation rules, secrets inventory, alert catalogue,
+provisioning checklist, implementation order and explicit deferrals of
+Kubernetes, Redis and self-service payments. `docs/README.md` and `STATUS.md`
+now link this baseline. No product behaviour changed.
+
+## 2026-09-03 — SaaS foundation and enterprise-readiness baseline
+
+Documentation-only change (this commit). Added
+`docs/SAAS_FOUNDATION_READINESS_AR.md`: an Arabic implementation baseline
+covering architecture and tenant isolation, IAM, application security, data
+correctness, jobs, storage and recovery, observability, SDLC, privacy,
+entitlements, customer operations, performance, accessibility, analytics and
+vendor risk. Every requirement has a stable ID, P0/P1/P2 priority, current
+state and acceptance evidence, with explicit gates for external Pilot, Pilot
+exit and General Availability.
+
+Updated `docs/README.md`, `docs/STATUS.md`, `docs/LAUNCH_PLAN.md` and
+`AGENTS.md` so the earlier recommendation to begin beta after only durable
+storage and a paid pull is no longer treated as sufficient. No product
+behaviour changed.
+
+## 2026-09-02 — launch-readiness verification
+
+Ran the five launch gates against a real Postgres and a real S3-compatible
+object store (MinIO), and documented the evidence. No shipped product
+behaviour changed; this adds a re-runnable verification harness and the
+launch documentation set.
+
+**Verification harness (`verification/`)**
+- `storage-check.ts` — the product's own `checkStorage()` round-trip against
+  real object storage. Result: write/read/delete ok on `kind: r2`.
+- `ingestion-checks.ts` — runs the real `ads-poll` job with a fixture
+  provider and asserts the full ingestion contract. **22/22 passed**,
+  including a creative archived to the bucket (3994 bytes) and the cost
+  ceiling hard-stop (`stopped_budget`, zero further calls).
+- `rehearsal.sh` — a timed, fresh-database run of the whole provisioning
+  runbook. Boot 0.9s, migrate 1.5s, first pull, bilingual facts briefing, a
+  real **53 KB PDF** via Puppeteer, `/media` anon block, and an expired
+  license locking the app + halting jobs (`stopped_license`).
+- `pilot.md` / `pilot-setup.ts` — the one-command runbook for the remaining
+  paid pull.
+
+**Fixture ad provider (`src/lib/providers/ads/fixture.ts`)**
+Verification-only, selected only by `ADS_FIXTURE=1` (never in the runbook),
+loudly self-identifying. `src/lib/providers/ads/index.ts` swaps it in behind
+that flag. Production registry unchanged when the flag is unset.
+
+**Cost model + pricing** — `deliverables/AdSniper_cost_model.xlsx`
+(sourced, live formulas): fully-loaded annual COGS ~$750–$2,490/instance for
+3–9 brands. Pricing recommendation recorded in `DECISIONS.md`.
+
+**Docs** — new `docs/VERIFICATION.md`; `STATUS.md`, `LAUNCH_PLAN.md`,
+`RESEARCH.md`, `DECISIONS.md` updated to the verified state.
+
 ## 2026-09-01
 
 **`7b2022a` Keep provider payloads verbatim, and label ads by lifecycle stage**

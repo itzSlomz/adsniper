@@ -26,6 +26,10 @@ this directory is the long one.
 | File | What it holds | Update it when |
 |---|---|---|
 | `STATUS.md` | Every feature: shipped, in progress, blocked, not started. Plus live-environment state. | Any feature changes state |
+| `SAAS_FOUNDATION_READINESS_AR.md` | Arabic implementation baseline for SaaS and enterprise readiness: P0/P1/P2 requirements, acceptance evidence and Pilot/GA gates. | A foundational control changes state, scope or evidence |
+| `TECHNICAL_SERVICES_REQUIREMENTS_AR.md` | Arabic service and infrastructure baseline: Pilot/KSA hosting profiles, required vendors, acceptance criteria and provisioning checklist. | A hosting, data-residency, operational-service or vendor decision changes |
+| `VERIFICATION.md` | Launch-gate evidence from running the product against a real DB + S3 (2026-09-02). | A gate is re-verified or its evidence changes |
+| `LAUNCH_PLAN.md` | Ordered commercial-readiness gates: durable storage, real ingestion, cost, pricing and provisioning rehearsal. | A gate, dependency or acceptance criterion changes |
 | `DECISIONS.md` | Decisions taken, with the reasoning and the alternatives rejected. | A choice is made that a future reader would otherwise re-litigate |
 | `IDEAS.md` | Proposals not yet built: accepted, deferred, rejected, undecided. | An idea is raised, accepted, or killed |
 | `RESEARCH.md` | Competitive landscape and external findings, with sources. | New research is done |
@@ -59,6 +63,7 @@ describe. A feature is not done when the code merges; it is done when
 `STATUS.md` and `CHANGELOG.md` say what changed.
 
 - New capability → `CHANGELOG.md` entry + `STATUS.md` row moves to shipped.
+- Launch dependency or gate changes → `LAUNCH_PLAN.md`.
 - Choice with trade-offs → `DECISIONS.md` entry, dated, with what was rejected.
 - Suggestion not being built now → `IDEAS.md`, with a status, so it is not
   raised again from scratch in three months.

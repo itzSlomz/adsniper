@@ -8,6 +8,50 @@ external · **Not started** = agreed but untouched.
 
 ---
 
+## SaaS foundation readiness (2026-09-03)
+
+The launch verification below proves valuable software mechanics, but it is
+not by itself an enterprise-SaaS readiness assessment. The broader review in
+[`SAAS_FOUNDATION_READINESS_AR.md`](SAAS_FOUNDATION_READINESS_AR.md) found P0
+gaps in authentication and dependency security, ad-status correctness,
+durable storage and restore, job reliability, external monitoring, CI/tests,
+provider/legal review and plan entitlements.
+
+**Current decision: do not start an external design-partner pilot until every
+P0 requirement in that baseline is verified with evidence.** The existing five
+launch gates remain necessary; they are no longer treated as sufficient.
+
+The external services needed to close the infrastructure and operations gaps
+are now specified in
+[`TECHNICAL_SERVICES_REQUIREMENTS_AR.md`](TECHNICAL_SERVICES_REQUIREMENTS_AR.md).
+It defines a Railway/R2 profile for a controlled non-residency Pilot and a
+Google Cloud Dammam profile whenever the customer, contract or data
+classification requires KSA residency. This is a documented baseline only;
+the services remain in their current states below until provisioned and
+verified.
+
+---
+
+## Launch-readiness (2026-09-02) — see [`VERIFICATION.md`](VERIFICATION.md)
+
+The five launch gates were exercised against a real Postgres and a real
+S3-compatible object store. Full evidence in `VERIFICATION.md`; harness in
+[`../verification/`](../verification).
+
+| Gate | State | What is left |
+|---|---|---|
+| 1. Durable storage | **Done 2026-09-20** — Railway bucket `adsniper-demo-media` live; round trip ok and creatives survive container replacement, verified on the deployed instance | — |
+| 2. Real ingestion | Mechanics **proven, 22/22**, through the real job path | One capped **paid pilot pull** with live keys (#2) |
+| 3. Operating cost | **Modeled + sourced** — $750–$2,490/yr fully loaded per instance | Reconcile against the first real Apify invoice (#3) |
+| 4. Pricing | **Recommendation ready** (Standard SAR 96k list / 75k target) | Operator sign-off + beta willingness-to-pay (#4) |
+| 5. Provisioning | Software path **proven end-to-end**, zero code defects, real 53 KB PDF | Time one real Railway provisioning (#5) |
+
+Previous recommendation was to proceed to a controlled beta after #1 and #2.
+The 2026-09-03 SaaS-foundation review supersedes it: #1 and #2 remain required,
+along with all other P0 controls in `SAAS_FOUNDATION_READINESS_AR.md`.
+
+---
+
 ## Live environment
 
 | | |
@@ -70,6 +114,7 @@ after a forced container replacement.
 | Item | State | Next action |
 |---|---|---|
 | PR-02 dependency remediation | PR-01's audit gate (merged 2026-09-20) carries time-limited exceptions for pre-existing advisories | Start PR-02 from current `main`, shrinking `.github/dependency-audit-exceptions.json` as packages are upgraded |
+| Real ad ingestion | Ingestion **mechanics proven, 22/22**, through the real job path with a fixture provider (`verification/ingestion-checks.ts`). Only the live paid pull remains | Run the capped pilot in `verification/pilot.md` with a funded Apify token (#2) |
 
 The release gates are code-level checks. They do not replace the real-database
 and running-server verification required for behaviour changes, and they do
@@ -81,11 +126,11 @@ not resolve the live-environment blockers below.
 
 | Item | Blocked on | Consequence today |
 |---|---|---|
-| Real ad ingestion | Provider (Apify) keys on the preview instance; the original account was at its spend cap | Preview shows synthetic data only; no real cost measurement yet |
-| AI-written briefings | `ANTHROPIC_API_KEY` | Briefing falls back to the deterministic facts summary |
-| Email sign-in links | Resend API key + sending domain | Sign-in uses a shared passcode |
+| Live paid pull / real cost reconciliation | Funded Apify token on a pilot instance | Cost stays *modeled* (see cost model) until the pilot invoice lands |
+| AI-written briefings | `ANTHROPIC_API_KEY` | Briefing falls back to the deterministic **bilingual** facts summary (verified working) |
+| Email sign-in links | Resend API key + sending domain | Sign-in uses a shared passcode (verified working) |
 | LinkedIn impressions enrichment | A sample XLS export from the customer's own page | Engagement rate stays null for LinkedIn |
-| Pricing | Commercial decision | Sales documents carry a `[ pricing ]` placeholder |
+| Pricing sign-off | Commercial decision by the operator | Recommendation is ready (`DECISIONS.md`); the final number is the operator's |
 
 ---
 
@@ -97,4 +142,4 @@ not resolve the live-environment blockers below.
 | Per-competitor battlecard in the weekly briefing | Competitive research |
 | Explicit provider capability declarations | Competitive research |
 | Alerting / notification screens | Parked by the operator during Watchtower |
-| Timed end-to-end onboarding rehearsal for a dummy customer | Needed to quote setup time in the pitch |
+| Timed **real** Railway provisioning (infra + human time) | Software path already rehearsed (`VERIFICATION.md` Gate 5); only the live-infra timing remains (#5) |

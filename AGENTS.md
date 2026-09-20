@@ -103,6 +103,14 @@ Behaviour-changing work still requires exercising the change against a real
 Postgres database or a running server. Do not claim something works only
 because the code-level gates pass.
 
+**Launch-readiness harness** (`verification/`): re-runnable proof of the five
+launch gates against a real Postgres + a real S3 server. `ingestion-checks.ts`
+runs the real `ads-poll` job with a **fixture ad provider** selected only by
+`ADS_FIXTURE=1` — verification-only, never set by the provisioning runbook,
+and loudly self-identifying (`FIXTURE-` ids, startup warning). See
+`docs/VERIFICATION.md` for results and `verification/pilot.md` for the one
+remaining paid step.
+
 ---
 
 ## Before you finish any change
@@ -198,5 +206,8 @@ fabricated for demonstration and every creative is watermarked
 `SAMPLE CREATIVE`. Never present it as a real market reading, and never
 copy numbers out of it into documents as if they were measurements.
 
-Current blockers, and what each one costs, are listed in
-[`docs/STATUS.md`](docs/STATUS.md).
+Current blockers are listed in [`docs/STATUS.md`](docs/STATUS.md). The five
+launch-verification gates are necessary but not sufficient for an external
+customer: all P0 controls in
+[`docs/SAAS_FOUNDATION_READINESS_AR.md`](docs/SAAS_FOUNDATION_READINESS_AR.md)
+must also be verified before a design-partner pilot begins.

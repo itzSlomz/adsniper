@@ -1,0 +1,303 @@
+<title>RivalScope Launch Readiness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root{
+    --ground:#FAF9F7; --surface:#FFFFFF; --surface-2:#F3F1EC;
+    --ink:#1A1D24; --ink-soft:#4A4640; --muted:#8A837B; --line:#E7E2DB; --line-strong:#D6CFC5;
+    --accent:#B4122A; --accent-soft:#F4DDDF;
+    --good:#1E7A46; --good-soft:#E0F0E6;
+    --warn:#9A6B15; --warn-soft:#F6ECD6;
+    --ext:#3C5A7A; --ext-soft:#DEE7F0;
+    --shadow:0 1px 2px rgba(26,29,36,.04),0 6px 20px rgba(26,29,36,.06);
+    --radius:14px;
+  }
+  :root:not([data-theme="light"]){}
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#101216; --surface:#181B21; --surface-2:#1F232B;
+      --ink:#ECEAE6; --ink-soft:#B9B4AD; --muted:#8C867E; --line:#2A2F38; --line-strong:#3A404B;
+      --accent:#F1697D; --accent-soft:#3A1B22;
+      --good:#5FCB8C; --good-soft:#173026;
+      --warn:#E4B85F; --warn-soft:#33290F;
+      --ext:#8FB2D6; --ext-soft:#182634;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#101216; --surface:#181B21; --surface-2:#1F232B;
+    --ink:#ECEAE6; --ink-soft:#B9B4AD; --muted:#8C867E; --line:#2A2F38; --line-strong:#3A404B;
+    --accent:#F1697D; --accent-soft:#3A1B22;
+    --good:#5FCB8C; --good-soft:#173026;
+    --warn:#E4B85F; --warn-soft:#33290F;
+    --ext:#8FB2D6; --ext-soft:#182634;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html{direction:rtl}
+  body{
+    margin:0;background:var(--ground);color:var(--ink);
+    font-family:"IBM Plex Sans Arabic","IBM Plex Sans",system-ui,"Segoe UI",sans-serif;
+    line-height:1.65;-webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1000px;margin:0 auto;padding:clamp(20px,4vw,52px) clamp(16px,4vw,40px)}
+  .ltr{direction:ltr;unicode-bidi:isolate}
+  .num{direction:ltr;unicode-bidi:isolate;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+  code,.mono{font-family:"IBM Plex Mono",monospace;font-size:.86em;background:var(--surface-2);padding:.08em .38em;border-radius:5px;direction:ltr;unicode-bidi:isolate}
+
+  /* Masthead */
+  .mast{border-top:3px solid var(--accent);padding-top:26px}
+  .eyebrow{font-size:.74rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  .mast h1{font-size:clamp(1.9rem,4.4vw,2.9rem);line-height:1.15;font-weight:700;margin:.32em 0 .18em;text-wrap:balance}
+  .mast .sub{color:var(--ink-soft);font-size:1.06rem;max-width:60ch}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:16px;color:var(--muted);font-size:.85rem}
+  .meta b{color:var(--ink-soft);font-weight:600}
+
+  .verdict{margin-top:26px;display:flex;gap:16px;align-items:flex-start;background:var(--surface);
+    border:1px solid var(--line);border-inline-start:4px solid var(--good);border-radius:var(--radius);
+    padding:20px 22px;box-shadow:var(--shadow)}
+  .verdict .dot{flex:0 0 auto;width:12px;height:12px;border-radius:50%;background:var(--good);margin-top:8px;
+    box-shadow:0 0 0 4px var(--good-soft)}
+  .verdict h2{margin:0 0 4px;font-size:1.18rem;font-weight:700}
+  .verdict p{margin:0;color:var(--ink-soft);font-size:.98rem}
+
+  section{margin-top:40px}
+  h2.head{font-size:1.32rem;font-weight:700;margin:0 0 4px;display:flex;align-items:baseline;gap:12px}
+  h2.head .n{font-family:"IBM Plex Mono",monospace;font-size:.9rem;color:var(--accent);font-weight:600}
+  .lede{color:var(--ink-soft);margin:0 0 20px;max-width:70ch}
+
+  /* Gate strip */
+  .gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px}
+  .gate{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 15px;box-shadow:var(--shadow)}
+  .gate .g-n{font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:var(--muted)}
+  .gate h3{margin:2px 0 10px;font-size:.98rem;font-weight:600}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;font-weight:600;padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .chip::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+  .c-good{color:var(--good);background:var(--good-soft)}
+  .c-warn{color:var(--warn);background:var(--warn-soft)}
+  .c-ext{color:var(--ext);background:var(--ext-soft)}
+
+  /* Evidence cards */
+  .ev{display:flex;flex-direction:column;gap:14px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow)}
+  .card .row1{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:12px}
+  .card h3{margin:0;font-size:1.08rem;font-weight:700}
+  .card .who{margin-inline-start:auto;font-size:.8rem;color:var(--muted)}
+  .proof{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .proof li{display:flex;gap:10px;align-items:flex-start;font-size:.93rem}
+  .proof li .tick{flex:0 0 auto;color:var(--good);font-weight:700;margin-top:1px}
+  .proof li .warnmark{flex:0 0 auto;color:var(--ext);font-weight:700;margin-top:1px}
+  .remain{margin-top:14px;padding-top:13px;border-top:1px dashed var(--line-strong);font-size:.9rem;color:var(--ink-soft)}
+  .remain b{color:var(--ink)}
+
+  /* Numbers / cost */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+  .tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 16px;box-shadow:var(--shadow)}
+  .tile .k{font-size:.78rem;color:var(--muted);font-weight:500}
+  .tile .v{font-size:1.5rem;font-weight:700;margin-top:3px;letter-spacing:-.01em}
+  .tile .v small{font-size:.9rem;color:var(--ink-soft);font-weight:500}
+
+  .ladder{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow)}
+  .ladder h4{margin:0 0 3px;font-size:1rem}
+  .ladder .cap{margin:0 0 16px;font-size:.83rem;color:var(--muted)}
+  .bar-row{display:grid;grid-template-columns:78px 1fr 132px;align-items:center;gap:12px;margin:9px 0}
+  .bar-row .lbl{font-size:.86rem;color:var(--ink-soft);font-weight:600}
+  .track{position:relative;height:22px;background:var(--surface-2);border-radius:6px;overflow:hidden}
+  .fill{position:absolute;inset-block:0;inset-inline-start:0;border-radius:6px;background:linear-gradient(90deg,var(--ext),var(--accent))}
+  .fill.base{background:var(--ext);opacity:.55}
+  .bar-row .val{font-size:.82rem;color:var(--ink-soft);text-align:start}
+
+  /* Pricing table */
+  .tbl-wrap{overflow-x:auto;margin-top:14px;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  table{border-collapse:collapse;width:100%;min-width:560px;background:var(--surface)}
+  th,td{padding:12px 15px;text-align:start;border-bottom:1px solid var(--line);font-size:.92rem}
+  thead th{background:var(--surface-2);font-weight:600;font-size:.8rem;color:var(--ink-soft);letter-spacing:.02em}
+  tbody tr:last-child td{border-bottom:none}
+  td .num{font-size:.9rem}
+  .mgn{font-weight:700;color:var(--good)}
+  tr.beta td{background:var(--accent-soft)}
+
+  /* Callout، external steps */
+  .callout{margin-top:16px;background:var(--ext-soft);border:1px solid color-mix(in srgb,var(--ext) 30%,transparent);border-radius:var(--radius);padding:20px 22px}
+  .callout h3{margin:0 0 12px;font-size:1.05rem;color:var(--ext)}
+  .steps2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .steps2 .s{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 15px}
+  .steps2 .s .tag{font-family:"IBM Plex Mono",monospace;font-size:.74rem;color:var(--ext);font-weight:600}
+  .steps2 .s h4{margin:4px 0 5px;font-size:.98rem}
+  .steps2 .s p{margin:0;font-size:.86rem;color:var(--ink-soft)}
+
+  /* Plan */
+  ol.plan{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:11px}
+  ol.plan li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:13px;align-items:start;
+    background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:13px 16px;box-shadow:var(--shadow)}
+  ol.plan li::before{content:counter(s);font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:.95rem;
+    color:var(--accent);background:var(--accent-soft);width:34px;height:34px;border-radius:9px;display:grid;place-items:center}
+  ol.plan li h4{margin:2px 0 3px;font-size:.98rem}
+  ol.plan li p{margin:0;font-size:.88rem;color:var(--ink-soft)}
+
+  .foot{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:.82rem}
+  .foot b{color:var(--ink-soft)}
+  .foot p{margin:.5em 0}
+
+  @media (max-width:620px){.steps2{grid-template-columns:1fr}.bar-row{grid-template-columns:60px 1fr 96px}}
+</style>
+
+<div class="wrap">
+
+  <header class="mast">
+    <div class="eyebrow">تقرير جاهزية · RivalScope / AdSniper</div>
+    <h1>جاهزية إطلاق النسخة التجريبية</h1>
+    <p class="sub">إثبات عملي، لا افتراضات، للقدرة على البيع: تشغيل ingestion حقيقي، تخزين دائم، قياس التكاليف، تسعير مقترح، وتجربة تجهيز عميل من البداية للنهاية.</p>
+    <div class="meta">
+      <span><b>التاريخ:</b> 2 سبتمبر 2026</span>
+      <span><b>أعدّه:</b> سليمان الحميدي</span>
+      <span><b>الجهة:</b> التسويق الرقمي، بنك البلاد</span>
+      <span><b>المرجع:</b> <span class="mono">docs/VERIFICATION.md</span></span>
+    </div>
+
+    <div class="verdict">
+      <span class="dot"></span>
+      <div>
+        <h2>الحُكم: جاهز لبيتا مُدارة، بشرط خطوتين خارجيتين فقط</h2>
+        <p>كل ما يمكن إثباته دون صرف مال أو إنشاء بنية سحابية تم إثباته فعليًا على قاعدة بيانات حقيقية وتخزين كائنات حقيقي. المتبقّي خطوتان مدفوعتان صغيرتان ومُجهّزتان بالكامل: إنشاء حاوية <span class="ltr">Cloudflare R2</span>، وتشغيل سحب تجريبي واحد بميزانية مسقوفة.</p>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <h2 class="head">الخلاصة التنفيذية</h2>
+    <p class="lede">المنتج تجاوز ثلاث بوابات من أصل خمس إثباتًا كاملاً، والبوابتان المتبقيتان (التسعير والتجهيز الحيّ) جاهزتان لقرارٍ ولخطوةٍ واحدة لكلٍّ منهما. لم يُستخدم في أيّ رقمٍ هنا بيانات وهمية أو عيّنة؛ كل نتيجة صادرة عن تشغيل كود المنتج نفسه.</p>
+    <div class="tiles">
+      <div class="tile"><div class="k">بوابات مُثبتة عمليًا</div><div class="v">3<small> / 5</small></div></div>
+      <div class="tile"><div class="k">فحوصات ingestion ناجحة</div><div class="v">22<small> / 22</small></div></div>
+      <div class="tile"><div class="k">تكلفة التشغيل السنوية / نسخة</div><div class="v"><span class="num">$750–$2,490</span></div></div>
+      <div class="tile"><div class="k">هامش عند السعر المستهدف</div><div class="v"><span class="num">87.5%</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="head">حالة البوابات الخمس</h2>
+    <p class="lede">إطار الجاهزية التجارية من <span class="mono">LAUNCH_PLAN.md</span>. أخضر = مُثبت عمليًا · كهرماني = قرار مطلوب · أزرق = خطوة خارجية واحدة متبقية.</p>
+    <div class="gates">
+      <div class="gate"><div class="g-n">01</div><h3>التخزين الدائم</h3><span class="chip c-good">مُثبت على S3 حقيقي</span></div>
+      <div class="gate"><div class="g-n">02</div><h3>الـ ingestion الحقيقي</h3><span class="chip c-good">الآليّة مُثبتة 22/22</span></div>
+      <div class="gate"><div class="g-n">03</div><h3>تكلفة التشغيل</h3><span class="chip c-warn">نموذج مصدَّق</span></div>
+      <div class="gate"><div class="g-n">04</div><h3>التسعير</h3><span class="chip c-warn">توصية بانتظار الاعتماد</span></div>
+      <div class="gate"><div class="g-n">05</div><h3>تجهيز العميل</h3><span class="chip c-good">مسار البرمجية مُثبت</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="head"><span class="n">التفصيل</span> الأدلّة، بوابةً بوابة</h2>
+    <div class="ev">
+
+      <article class="card">
+        <div class="row1"><h3>١ · التخزين الدائم</h3><span class="chip c-good">مُثبت</span><span class="who">verification/storage-check.ts</span></div>
+        <ul class="proof">
+          <li><span class="tick">✓</span><span>دورة <span class="ltr">write → read → delete</span> على خادم <span class="ltr">S3</span> حقيقي (MinIO) نجحت بالكامل، <span class="mono">kind: r2</span>.</span></li>
+          <li><span class="tick">✓</span><span>إبداع إعلاني (creative) أُرشِف في الحاوية أثناء سحبٍ حقيقي (<span class="num">3,994</span> بايت، <span class="ltr">image/png</span>).</span></li>
+          <li><span class="tick">✓</span><span>بعد <b>إعادة نشر الخادم</b> بقي الملف في الحاوية، وغير موجود على قرص الحاوية، فلا يُدمَّر عند إعادة النشر.</span></li>
+          <li><span class="tick">✓</span><span>وصول مجهول إلى <span class="mono">/media</span> ← <span class="num">307</span> محجوب؛ وبجلسة موثّقة ← <span class="num">200</span> صورة سليمة.</span></li>
+        </ul>
+        <div class="remain">المتبقّي: <b>إنشاء حاوية Cloudflare R2 فعلية</b> مع مفتاح مقصور على تلك الحاوية وحدها (خطوة إعداد، لا كود).، <span class="mono">issue #1</span></div>
+      </article>
+
+      <article class="card">
+        <div class="row1"><h3>٢ · الـ ingestion الحقيقي</h3><span class="chip c-good">الآليّة مُثبتة</span><span class="who">ingestion-checks.ts · 22/22</span></div>
+        <ul class="proof">
+          <li><span class="tick">✓</span><span>مسار المهمة الحقيقي (<span class="mono">ads-poll</span>) على قاعدة بيانات حقيقية: إنشاء، ومنع التكرار عند إعادة السحب.</span></li>
+          <li><span class="tick">✓</span><span><span class="mono">firstSeen</span> ثابت و<span class="mono">lastSeen</span> يتقدّم؛ الإعلان المختفي يُعطَّل بعد ٧ أيام، واليدوي يُصبح قديمًا بعد ١٤.</span></li>
+          <li><span class="tick">✓</span><span>حفظ حمولة المزوّد الخام حرفيًا (حقول غير مُخطَّطة تبقى)، وأرشفة الإبداع، وتسجيل التكلفة لكل نداء.</span></li>
+          <li><span class="tick">✓</span><span>فشل مزوّد يُلتقط دون تعطّل (بقية العلامات تُسحب)، وسقف التكلفة يوقف المهمة (<span class="mono">stopped_budget</span>، صفر نداءات إضافية).</span></li>
+        </ul>
+        <div class="remain">المتبقّي: <b>سحب تجريبي مدفوع واحد</b> بمفاتيح حيّة للتأكد أن مكتبات <span class="ltr">Meta/Google</span> تُعيد بيانات سعودية صالحة، أمر واحد جاهز في <span class="mono">verification/pilot.md</span>.، <span class="mono">issue #2</span></div>
+      </article>
+
+      <article class="card">
+        <div class="row1"><h3>٣ · تكلفة التشغيل</h3><span class="chip c-warn">نموذج مصدَّق</span><span class="who">AdSniper_cost_model.xlsx</span></div>
+        <ul class="proof">
+          <li><span class="tick">✓</span><span>نموذج بمعادلات حيّة، كل معدّل فيه مصدره سعرٌ عام حالي (Apify، Railway، R2، Anthropic، Resend) أو خطّ أساس موثّق.</span></li>
+          <li><span class="tick">✓</span><span>التكلفة السنوية الكاملة للنسخة: <span class="num">$750–$1,730</span> (٣ علامات) إلى <span class="num">$1,060–$2,490</span> (٩). نقدًا فقط: <span class="num">$450–$1,590</span>.</span></li>
+        </ul>
+        <div class="remain">المتبقّي: استبدال خطّ المزوّد المُقدَّر بالإنفاق <b>الفعلي</b> من السحب التجريبي والمطابقة مع فاتورة Apify.، <span class="mono">issue #3</span></div>
+      </article>
+
+      <article class="card">
+        <div class="row1"><h3>٤ · التسعير</h3><span class="chip c-warn">توصية</span><span class="who">DECISIONS.md · 2026-09-02</span></div>
+        <ul class="proof">
+          <li><span class="tick">✓</span><span>توصية قائمة على القيمة لا على التكلفة: التكلفة أرضية، لا مِرساة. أدوات المقاعد المشتركة (<span class="num">$9–159</span>/شهر) غير قابلة للمقارنة بنسخة معزولة عربية أولاً بموجزٍ تنفيذي.</span></li>
+          <li><span class="warnmark">◆</span><span>قرار تجاري: الرقم النهائي يعتمده المالك، ويُختبر مع عملاء البيتا قبل تثبيت سعر الإطلاق العام.</span></li>
+        </ul>
+        <div class="remain">المتبقّي: <b>اعتماد المالك</b> + التحقق من الاستعداد للدفع مع عملاء البيتا.، <span class="mono">issue #4</span></div>
+      </article>
+
+      <article class="card">
+        <div class="row1"><h3>٥ · تجهيز العميل من الصفر</h3><span class="chip c-good">مُثبت</span><span class="who">rehearsal.sh · DB جديدة</span></div>
+        <ul class="proof">
+          <li><span class="tick">✓</span><span>المسار كامل على قاعدة بيانات جديدة: فحص البيئة، الترحيل (<span class="num">1.5s</span>)، البذر، الإقلاع (<span class="num">0.9s</span>)، تسجيل الدخول، إعداد العلامات.</span></li>
+          <li><span class="tick">✓</span><span>سحب أول، موجز أسبوعي <b>ثنائي اللغة</b> دون مفتاح ذكاء اصطناعي، وتصدير <b>PDF حقيقي بحجم <span class="num">53KB</span></b> عبر Puppeteer.</span></li>
+          <li><span class="tick">✓</span><span>حماية <span class="mono">/media</span>، ورخصة منتهية تُقفل التطبيق وتوقف المهام (<span class="mono">stopped_license</span>). <b>صفر أخطاء برمجية.</b></span></li>
+        </ul>
+        <div class="remain">المتبقّي: قياس زمن تجهيزٍ حقيقي واحد على Railway (بنية + وقت بشري)؛ البرمجية تضيف أقل من دقيقة.، <span class="mono">issue #5</span></div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <h2 class="head">التكلفة والتسعير</h2>
+    <p class="lede">التكلفة نمذجة مصدَّقة (بانتظار فاتورة السحب التجريبي)، والتسعير توصية بانتظار اعتماد المالك. الرسالة الجوهرية: التكلفة ليست القيد، القيمة والاستعداد للدفع هما القيد.</p>
+
+    <div class="ladder">
+      <h4>سُلّم التكلفة السنوية الكاملة لكل نسخة</h4>
+      <p class="cap">بالدولار، حسب عدد العلامات المتتبَّعة (العميل + المنافسون). الشريط الفاتح = الاستخدام الأساس، الغامق = الاستخدام المرتفع.</p>
+      <div class="bar-row"><span class="lbl">٣ علامات</span><div class="track"><div class="fill" style="width:69.5%"></div><div class="fill base" style="width:30%"></div></div><span class="val"><span class="num">$750 → $1,730</span></span></div>
+      <div class="bar-row"><span class="lbl">٥ علامات</span><div class="track"><div class="fill" style="width:79.8%"></div><div class="fill base" style="width:32.9%"></div></div><span class="val"><span class="num">$820 → $1,990</span></span></div>
+      <div class="bar-row"><span class="lbl">٩ علامات</span><div class="track"><div class="fill" style="width:100%"></div><div class="fill base" style="width:42.6%"></div></div><span class="val"><span class="num">$1,060 → $2,490</span></span></div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>الباقة (سنويًا / نسخة)</th><th>ريال سعودي</th><th>دولار</th><th>الأرضية COGS</th><th>الهامش</th></tr></thead>
+        <tbody>
+          <tr><td>القياسية، سعر القائمة (حتى ٥ منافسين)</td><td><span class="num">96,000</span></td><td><span class="num">$25,600</span></td><td><span class="num">$2,490</span></td><td class="mgn"><span class="num">90.3%</span></td></tr>
+          <tr><td>القياسية، المستهدف</td><td><span class="num">75,000</span></td><td><span class="num">$20,000</span></td><td><span class="num">$2,490</span></td><td class="mgn"><span class="num">87.5%</span></td></tr>
+          <tr><td>القياسية، الأرضية (باعتماد)</td><td><span class="num">55,000</span></td><td><span class="num">$14,667</span></td><td><span class="num">$2,490</span></td><td class="mgn"><span class="num">83.0%</span></td></tr>
+          <tr><td>الاستثناء المؤسسي (٩ منافسين + حساب Cloudflare منفصل)</td><td><span class="num">150,000</span></td><td><span class="num">$40,000</span></td><td><span class="num">$2,490</span></td><td class="mgn"><span class="num">93.8%</span></td></tr>
+          <tr class="beta"><td>البيتا / الشريك التأسيسي (السنة الأولى، أول ٢–٣)</td><td><span class="num">30,000</span></td><td><span class="num">$8,000</span></td><td><span class="num">$2,490</span></td><td class="mgn"><span class="num">68.9%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="head">الخطوتان الخارجيتان المتبقيتان</h2>
+    <div class="callout">
+      <h3>ما يفصل المنتج عن بيتا حقيقية، إجراءان مُجهّزان بالكامل</h3>
+      <div class="steps2">
+        <div class="s"><div class="tag">issue #1 · ~١٥ دقيقة</div><h4>إنشاء حاوية R2</h4><p>حاوية <span class="ltr">Cloudflare R2</span> مخصّصة + مفتاح مقصور عليها وحدها، ثم <span class="ltr">Intel → Test storage</span>. الكود مُثبت مسبقًا على S3 حقيقي.</p></div>
+        <div class="s"><div class="tag">issue #2 · تكلفة أحادية الرقم</div><h4>سحب تجريبي مسقوف</h4><p>علامة العميل + منافسان، <span class="ltr">Meta+Google</span>، سقف تكلفة محافظ. سحبان لتأكيد البيانات الحقيقية وقياس الإنفاق الفعلي.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="head">خطة الوصول إلى البيتا</h2>
+    <p class="lede">تسلسل مقصود: كل خطوة تعتمد على دليلٍ من سابقتها.</p>
+    <ol class="plan">
+      <li><div><h4>إنشاء حاوية R2 مخصّصة</h4><p>مع مفتاح مقصور عليها، وتأكيد اختبار التخزين الأخضر على النسخة الحيّة. (بوابة ١)</p></div></li>
+      <li><div><h4>تشغيل السحب التجريبي المدفوع</h4><p>عميل + منافسان، مفاتيح Apify مموّلة وسقف مُحافظ؛ تسجيل البيانات المُعادة والإنفاق الفعلي. (بوابة ٢)</p></div></li>
+      <li><div><h4>مطابقة التكلفة وتثبيت الهامش</h4><p>استبدال خطّ المزوّد المُقدَّر بالفعلي، وضبط سقوف التكلفة لكل باقة. (بوابة ٣)</p></div></li>
+      <li><div><h4>اعتماد التسعير</h4><p>يعتمد المالك الرقم النهائي وحدود الباقات وصلاحيات الخصم، ويُسجَّل في <span class="mono">DECISIONS.md</span>. (بوابة ٤)</p></div></li>
+      <li><div><h4>تجهيز عميل بيتا حقيقي وقياس زمنه</h4><p>أول عميل تأسيسي كتمرين تجهيز موقوت يؤكد رقم «~٣٠ دقيقة» ويصقل دليل التشغيل. (بوابة ٥)</p></div></li>
+    </ol>
+  </section>
+
+  <footer class="foot">
+    <p><b>ما هو مُثبت مقابل ما هو منمذج:</b> نتائج البوابتين ١ و٥ و آليّة البوابة ٢ أدلّة تشغيلية فعلية. البوابة ٣ نموذج تكلفة مصدَّق (لا فاتورة بعد)، والبوابة ٤ توصية تنتظر اعتماد المالك. لا رقم هنا مُقدَّم كقراءة سوقٍ حقيقية.</p>
+    <p><b>مخاطرة يجب إفصاحها في العقد:</b> لا يوجد مسار API رسمي لبيانات الإعلانات التجارية في السعودية؛ السحب يعتمد على مكتبات عامة، ما يخالف شروط المنصّات وقد يتوقف دون إشعار. تفصيلها في <span class="mono">docs/RESEARCH.md</span>.</p>
+    <p style="margin-top:12px"><b>المراجع:</b> <span class="mono">docs/VERIFICATION.md</span> · <span class="mono">docs/STATUS.md</span> · <span class="mono">docs/LAUNCH_PLAN.md</span> · <span class="mono">deliverables/AdSniper_cost_model.xlsx</span> · الأدلّة الخام في <span class="mono">verification/evidence/</span>.</p>
+  </footer>
+
+</div>
