@@ -9,6 +9,24 @@ continues on `main`, which carries the identical history.
 
 ---
 
+## 2026-09-20
+
+**(infra + docs, no product code diff) Demo-instance media archive moved
+into a Railway object-storage bucket; service now deploys from `main`**
+Bucket `adsniper-demo-media` created in the `handsome-manifestation`
+Railway project and attached to the service purely by variable references
+(`R2_ENDPOINT`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET`),
+so no secret ever transited chat or the repository. Monthly cost ceilings
+set: ads $40 / X $10 / LinkedIn $10. The service source moved from the
+old session branch to `main`, the release branch. Verified against the
+live instance: storage round trip reports ok against the bucket, the
+sample dataset was cleared and reloaded so creatives write through the
+storage layer, and after a forced container replacement every sampled
+creative still serves HTTP 200 — the archive no longer dies with the
+container. `R2_ACCOUNT_ID` carries the placeholder `railway-bucket`
+because `getStorage()` requires it even when `R2_ENDPOINT` is set;
+cleanup filed in `IDEAS.md`.
+
 ## 2026-09-01
 
 **`7b2022a` Keep provider payloads verbatim, and label ads by lifecycle stage**

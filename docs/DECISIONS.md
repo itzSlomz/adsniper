@@ -6,6 +6,25 @@ new information.
 
 ---
 
+## 2026-09-20 · Demo-instance media lives in a Railway bucket, not Cloudflare R2
+**Decided:** the preview/demo instance's creative archive is a Railway
+object-storage bucket (`adsniper-demo-media`) in the same project as the
+service, consumed through the existing `R2_ENDPOINT` override and
+credentials passed as Railway variable references.
+**Why:** identical S3 API — zero code change; credentials never leave
+Railway (references, not values), which matters because this operator's
+sessions must not carry secrets through chat; one console to operate; the
+bucket sits beside the service it serves, preserving the one-bucket-per-
+instance isolation law. Verified live the day it was decided: round trip
+ok, creatives survive container replacement.
+**Rejected:** Cloudflare R2 for *this* instance (needs a second account,
+manual token handling, and a human to ferry credentials — it remains the
+documented option for customer instances, and nothing in the code
+changed); a Railway volume + `MEDIA_DIR` (persists, but no object
+semantics, no bucket-scoped token, harder migration); leaving media on
+the container filesystem (the archive died on every redeploy — the one
+part of this product that cannot be re-fetched).
+
 ## 2026-09-01 · Keep the provider's raw payload for every ad
 **Decided:** store the untouched provider record on each `Ad` row.
 **Why:** ad libraries drop an ad once it stops running, so a field not

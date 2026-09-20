@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-09-01 · Branch: `main`
+Last updated: 2026-09-20 · Branch: `main`
 
 Legend: **Shipped** = built, verified, on the branch · **In progress** =
 started, not finished · **Blocked** = cannot proceed without something
@@ -18,14 +18,18 @@ external · **Not started** = agreed but untouched.
 | Auth | Allowlisted email + shared passcode (Resend not configured) |
 | Data shown | **Synthetic sample set** — no provider keys on this instance |
 | Verification | 21 of 22 automated checks passed against the deployed build |
+| Media storage | Railway bucket `adsniper-demo-media` — wired by variable references, no secret ever left Railway |
+| Cost ceilings | ads $40 · X $10 · LinkedIn $10 per month |
 
 **Do not demo this instance to a customer as a real market reading.**
 Every figure is synthetic and every creative is watermarked
 `SAMPLE CREATIVE`.
 
-The 22nd check failed because ad creatives were written to the container
-filesystem, which Railway wipes on redeploy. Fixed in guidance and warned
-about in-product; the permanent fix is R2 (see In progress).
+The 22nd check — creatives lost on redeploy because they lived on the
+container filesystem — was resolved on 2026-09-20: media now lives in a
+Railway object-storage bucket (see `DECISIONS.md`), verified live by a
+write→read→delete round trip and by re-serving every sampled creative
+after a forced container replacement.
 
 ---
 
@@ -55,6 +59,7 @@ about in-product; the permanent fix is R2 (see In progress).
 | Startup preflight | `scripts/check-env.mjs` refuses to boot with a named missing variable; warns on unusable configs |
 | Cost guard | Per-call logging + monthly ceilings per group; hard stop at ceiling (`stopped_budget`) |
 | Storage health panel | Shows bucket/path; "Test storage" does a real write→read→delete round trip |
+| Persistent media storage (demo instance) | Railway bucket `adsniper-demo-media`; creatives survive container replacement — verified live 2026-09-20 |
 | Raw provider payloads | Original record kept per ad (>120KB replaced by a marker); backfilled on next sighting |
 | Provider adapters | Meta, Google, LinkedIn, TikTok behind one interface; region comes from instance settings |
 | Configurable offer categories | Admin-editable keyword→label map; banking defaults |
@@ -65,7 +70,7 @@ about in-product; the permanent fix is R2 (see In progress).
 
 | Item | State | Next action |
 |---|---|---|
-| Dedicated R2 storage for the preview instance | Code supports it and is verified against a real S3 server; bucket not yet created | Create bucket `adsniper-demo-media`, create an API token **scoped to that bucket only**, set `R2_*` vars, then Intel → Test storage, then reload sample data |
+| Integrating the external branches into `main` | `fix/release-gates-phase-1` (per-action authorization, unit tests, CI gates) and the launch-verification commits on the old fork branch are reviewed and judged sound | Operator approves the merge — this session's permission mode blocks `git merge` — then the new `Release Gates` CI verifies the result |
 
 ---
 

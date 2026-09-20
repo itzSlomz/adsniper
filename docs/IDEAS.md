@@ -11,6 +11,14 @@ call made) · `deferred` (good, not now) · `rejected` (with reason).
 
 ## Accepted — agreed, not yet built
 
+### Storage config cleanup for endpoint-style buckets
+`accepted` · raised 2026-09-20 while wiring the Railway bucket
+`getStorage()` should treat `R2_ENDPOINT` as sufficient on its own —
+today `R2_ACCOUNT_ID` must be set even when the endpoint overrides it,
+so the demo instance carries the placeholder `railway-bucket` — and the
+storage panel should say “S3-compatible bucket” instead of assuming
+Cloudflare R2. Pure cleanup; behaviour is correct today.
+
 ### Reactive backoff with a user-visible notice
 `accepted` · raised 2026-09-01 from competitive research
 When a provider throttles (HTTP 429/403), back off with escalating
