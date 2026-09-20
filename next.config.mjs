@@ -1,9 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    instrumentationHook: true,
-    serverComponentsExternalPackages: ["sharp", "node-cron"],
-  },
+  // Next 15+: instrumentation.ts loads by default, and external server
+  // packages moved out of `experimental`.
+  serverExternalPackages: ["sharp", "node-cron"],
   async headers() {
     return [
       {

@@ -19,11 +19,12 @@ export const dynamic = "force-dynamic";
 // each ad has survived, and who looks like they just launched a campaign.
 // Organic social remains available in its own box below — context, not
 // the headline.
-export default async function CommandView({
-  searchParams,
-}: {
-  searchParams: { date?: string; range?: string };
-}) {
+export default async function CommandView(
+  props: {
+    searchParams: Promise<{ date?: string; range?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const date =
     searchParams.date && /^\d{4}-\d{2}-\d{2}$/.test(searchParams.date)
       ? searchParams.date

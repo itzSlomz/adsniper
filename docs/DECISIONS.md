@@ -6,6 +6,25 @@ new information.
 
 ---
 
+## 2026-09-20 · Direct ESLint 9 after Next 16, with three scoped overrides
+**Decided:** with `next lint` removed in Next 16, `npm run lint` runs
+ESLint 9 on eslint-config-next's native flat configs over the whole
+repository, with exactly three scoped overrides: the React Compiler
+purity rule off for the two per-request dashboard pages whose
+`Date.now()` is request-time data (async Server Components, rendered
+per request by design); and `no-require-imports`/`no-explicit-any` off
+for `tests/**` and `**/*.cjs`, which predate direct ESLint coverage.
+**Why:** widening lint to the whole repo is a win, but failing the gate
+on idioms that were never in scope (CommonJS audit script, Jest suite)
+or on a false positive for server rendering would either block the
+security upgrade or invite `--max-warnings` erosion. Narrow, named,
+commented overrides keep the zero-warning bar meaningful.
+**Rejected:** restricting lint back to `src/` (hides real issues in
+scripts and tests going forward); inline eslint-disable comments at five
+call sites (noise, invisible to the next config reader); rewriting the
+audit script as ESM to satisfy a lint rule (churn in a security-critical
+file for zero behavior change).
+
 ## 2026-09-20 · Demo-instance media lives in a Railway bucket, not Cloudflare R2
 **Decided:** the preview/demo instance's creative archive is a Railway
 object-storage bucket (`adsniper-demo-media`) in the same project as the

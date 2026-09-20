@@ -13,11 +13,12 @@ export const dynamic = "force-dynamic";
 // Intel capture home (brief Section 7.4): capture links + ingestion health
 // panel (per-job last run, items, errors, provider spend vs ceiling) with
 // "Run now" per job.
-export default async function IntelPage({
-  searchParams,
-}: {
-  searchParams: { storage?: string };
-}) {
+export default async function IntelPage(
+  props: {
+    searchParams: Promise<{ storage?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const session = await auth();
   if ((session?.user as { role?: string } | undefined)?.role !== "admin") redirect("/");
 

@@ -11,11 +11,12 @@ export const dynamic = "force-dynamic";
 // Brand setup — the core of AdSniper onboarding: the customer's own brand
 // plus up to 8 competitors, all admin-managed here (no seeded market).
 // Deactivating stops polling but keeps history; brands are never deleted.
-export default async function BrandsPage({
-  searchParams,
-}: {
-  searchParams: { error?: string };
-}) {
+export default async function BrandsPage(
+  props: {
+    searchParams: Promise<{ error?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const session = await auth();
   if ((session?.user as { role?: string } | undefined)?.role !== "admin") redirect("/");
 
