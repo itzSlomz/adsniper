@@ -6,6 +6,41 @@ changes.
 
 ---
 
+## 2026-09-20 · Understand-Anything — codebase knowledge graphs (operator tooling)
+
+Source: https://github.com/Egonex-AI/Understand-Anything (MIT, Egonex AI,
+v2.9.7, active — 689+ PRs, last merge 2026-09-12). Reviewed at the
+operator's request from a local clone.
+
+What it is: a Claude Code plugin (also Codex/Cursor/Copilot/Gemini CLI)
+whose `/understand` skill runs a multi-agent pipeline over a codebase —
+deterministic scanners first (file scan, import map), then batched LLM
+file analysis, architecture/domain analyzers, a reviewer agent and
+validation — producing `.ua/knowledge-graph.json` and an interactive
+dashboard: structural graph of files/functions/classes/dependencies,
+plain-language node summaries, dependency-ordered guided tours, and a
+separate business-domain view. Incremental updates on commit; output
+language selectable (`--language ar` works). Initial run is token-heavy
+on the operator's own Claude plan; later runs are incremental.
+
+Relevance to AdSniper — **operator tooling, not product**:
+- No overlap with the product (ad intelligence ≠ codebase intelligence);
+  nothing belongs in the AdSniper runtime.
+- Real value is onboarding humans onto this multi-agent-developed repo:
+  the independent reviewer that `CODEOWNERS` still lacks, a future hire,
+  or the operator himself. Complements — does not replace — `AGENTS.md`
+  and `docs/`, which stay the agent-facing source of truth.
+- The dependency-ordered tour and domain view are a useful map before the
+  PR-02 Next 14→16 migration.
+- Its pipeline shape (deterministic extraction first, LLM on top,
+  reviewer pass, loud validation) matches this project's own
+  observed-vs-modeled discipline; nothing to copy code-wise.
+
+Decision: recommended to the operator as a personal-tooling install
+(`/plugin marketplace add Egonex-AI/Understand-Anything`), run against
+this repo with `--language ar`; keep `.ua/` out of git. Not adopted into
+the product or CI.
+
 ## 2026-09-02 · Vendor pricing for the cost model
 
 Current public list prices used as the basis for
