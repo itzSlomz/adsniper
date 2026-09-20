@@ -12,6 +12,22 @@ continues on `main`, which carries the identical history.
 
 ## 2026-09-20
 
+**Remediate the expiring Auth.js criticals instead of extending them**
+The dependency-audit gate's three shortest exceptions — the critical
+next-auth/@auth/core advisories — expired today by design. Rather than
+extend them, next-auth moves 5.0.0-beta.29 → beta.32 (nested @auth/core
+0.40.0 → 0.41.3, deduped), and `npm audit fix` patches js-yaml, nanoid and
+sharp, clearing eight findings outright. The exception file drops the six
+remediated entries, refreshes the affected-node baseline to the script's
+own computed graph, and adds three dated entries for advisories published
+after PR-01 acceptance (two Next criticals, one extract-zip high) — all
+owned by PR-02's major upgrades, criticals capped at the policy's 14 days.
+Verified: audit gate PASS (15/15 matched), typecheck, zero-warning lint,
+193/193 unit tests, production build, and a real-server login matrix on
+the upgraded Auth.js — anonymous redirect, wrong-passcode rejection,
+admin sign-in, and the new per-action guard (viewer invoking an admin
+Server Action is refused; the same action succeeds for an admin).
+
 **PR-01 (merged 2026-09-20) · `fix/release-gates-phase-1` — Add deterministic release gates and
 repository security governance**
 This branch configures a Node 22 quality gate for pull requests and pushes to

@@ -2,119 +2,84 @@
   "schemaVersion": 1,
   "affectedNodes": [
     {
-      "package": "@auth/core",
-      "nodePath": "node_modules/next-auth/node_modules/@auth/core",
-      "installedVersion": "0.40.0",
-      "isDirect": false,
-      "severity": "critical",
-      "scope": "production",
-      "viaPackages": [],
-      "advisories": [
-        "GHSA-7rqj-j65f-68wh",
-        "GHSA-xmf8-cvqr-rfgj"
-      ]
-    },
-    {
       "package": "@next/eslint-plugin-next",
       "nodePath": "node_modules/@next/eslint-plugin-next",
       "installedVersion": "14.2.35",
-      "isDirect": false,
       "severity": "high",
-      "scope": "development",
+      "isDirect": false,
       "viaPackages": [
         "glob"
       ],
       "advisories": [
         "GHSA-5j98-mcp5-4vw2"
-      ]
+      ],
+      "scope": "development"
     },
     {
       "package": "@puppeteer/browsers",
       "nodePath": "node_modules/@puppeteer/browsers",
       "installedVersion": "2.13.2",
-      "isDirect": false,
       "severity": "high",
-      "scope": "production",
+      "isDirect": false,
       "viaPackages": [
         "extract-zip"
       ],
       "advisories": [
+        "GHSA-7pqw-9j4j-h8q3",
         "GHSA-jmr9-qjv8-65gv"
-      ]
+      ],
+      "scope": "production"
     },
     {
       "package": "eslint-config-next",
       "nodePath": "node_modules/eslint-config-next",
       "installedVersion": "14.2.35",
-      "isDirect": true,
       "severity": "high",
-      "scope": "development",
+      "isDirect": true,
       "viaPackages": [
         "@next/eslint-plugin-next"
       ],
       "advisories": [
         "GHSA-5j98-mcp5-4vw2"
-      ]
+      ],
+      "scope": "development"
     },
     {
       "package": "extract-zip",
       "nodePath": "node_modules/extract-zip",
       "installedVersion": "2.0.1",
-      "isDirect": false,
       "severity": "high",
-      "scope": "production",
+      "isDirect": false,
       "viaPackages": [],
       "advisories": [
+        "GHSA-7pqw-9j4j-h8q3",
         "GHSA-jmr9-qjv8-65gv"
-      ]
+      ],
+      "scope": "production"
     },
     {
       "package": "glob",
       "nodePath": "node_modules/@next/eslint-plugin-next/node_modules/glob",
       "installedVersion": "10.3.10",
-      "isDirect": false,
       "severity": "high",
-      "scope": "development",
+      "isDirect": false,
       "viaPackages": [],
       "advisories": [
         "GHSA-5j98-mcp5-4vw2"
-      ]
-    },
-    {
-      "package": "js-yaml",
-      "nodePath": "node_modules/js-yaml",
-      "installedVersion": "4.3.0",
-      "isDirect": false,
-      "severity": "high",
-      "scope": "production",
-      "viaPackages": [],
-      "advisories": [
-        "GHSA-5p4m-2wfm-xmqj"
-      ]
-    },
-    {
-      "package": "nanoid",
-      "nodePath": "node_modules/nanoid",
-      "installedVersion": "3.3.16",
-      "isDirect": false,
-      "severity": "high",
-      "scope": "production",
-      "viaPackages": [],
-      "advisories": [
-        "GHSA-2v37-7h3g-55p8"
-      ]
+      ],
+      "scope": "development"
     },
     {
       "package": "next",
       "nodePath": "node_modules/next",
       "installedVersion": "14.2.35",
+      "severity": "critical",
       "isDirect": true,
-      "severity": "high",
-      "scope": "production",
       "viaPackages": [
         "postcss"
       ],
       "advisories": [
+        "GHSA-2xp9-vwfh-vxw4",
         "GHSA-36qx-fr4f-26g5",
         "GHSA-6g55-p6wh-862q",
         "GHSA-89xv-2m56-2m9x",
@@ -122,146 +87,59 @@
         "GHSA-c4j6-fc7j-m34r",
         "GHSA-h25m-26qc-wcjf",
         "GHSA-m99w-x7hq-7vfj",
+        "GHSA-p293-qw3h-jr36",
         "GHSA-p9j2-gv94-2wf4",
         "GHSA-q4gf-8mx6-v5v3",
         "GHSA-r28c-9q8g-f849"
-      ]
-    },
-    {
-      "package": "next-auth",
-      "nodePath": "node_modules/next-auth",
-      "installedVersion": "5.0.0-beta.29",
-      "isDirect": true,
-      "severity": "critical",
-      "scope": "production",
-      "viaPackages": [
-        "@auth/core"
       ],
-      "advisories": [
-        "GHSA-7rqj-j65f-68wh",
-        "GHSA-8fpg-xm3f-6cx3",
-        "GHSA-xmf8-cvqr-rfgj"
-      ]
+      "scope": "production"
     },
     {
       "package": "postcss",
       "nodePath": "node_modules/next/node_modules/postcss",
       "installedVersion": "8.4.31",
-      "isDirect": false,
       "severity": "high",
-      "scope": "production",
+      "isDirect": false,
       "viaPackages": [],
       "advisories": [
         "GHSA-6g55-p6wh-862q",
         "GHSA-r28c-9q8g-f849"
-      ]
-    },
-    {
-      "package": "puppeteer",
-      "nodePath": "node_modules/puppeteer",
-      "installedVersion": "24.43.1",
-      "isDirect": true,
-      "severity": "high",
-      "scope": "production",
-      "viaPackages": [
-        "@puppeteer/browsers",
-        "puppeteer-core"
       ],
-      "advisories": [
-        "GHSA-jmr9-qjv8-65gv"
-      ]
+      "scope": "production"
     },
     {
       "package": "puppeteer-core",
       "nodePath": "node_modules/puppeteer-core",
       "installedVersion": "24.43.1",
-      "isDirect": false,
       "severity": "high",
-      "scope": "production",
+      "isDirect": false,
       "viaPackages": [
         "@puppeteer/browsers"
       ],
       "advisories": [
+        "GHSA-7pqw-9j4j-h8q3",
         "GHSA-jmr9-qjv8-65gv"
-      ]
+      ],
+      "scope": "production"
+    },
+    {
+      "package": "puppeteer",
+      "nodePath": "node_modules/puppeteer",
+      "installedVersion": "24.43.1",
+      "severity": "high",
+      "isDirect": true,
+      "viaPackages": [
+        "@puppeteer/browsers",
+        "puppeteer-core"
+      ],
+      "advisories": [
+        "GHSA-7pqw-9j4j-h8q3",
+        "GHSA-jmr9-qjv8-65gv"
+      ],
+      "scope": "production"
     }
   ],
   "exceptions": [
-    {
-      "package": "next-auth",
-      "nodePath": "node_modules/next-auth",
-      "installedVersion": "5.0.0-beta.29",
-      "npmSource": 1139357,
-      "advisory": "GHSA-8fpg-xm3f-6cx3",
-      "severity": "critical",
-      "scope": "production",
-      "owner": "@itzSlomz",
-      "trackingItem": "https://github.com/itzSlomz/adsniper/pull/6",
-      "reason": "The finding existed at the PR-01 base. Moving Auth.js to the fixed beta changes authentication-critical code and requires focused login, session, and failure-mode regression work outside this hardening-only PR.",
-      "mitigation": "Current authorization checks require auth.user rather than treating any auth object as authenticated; this narrows the described fail-open path but is not accepted as remediation.",
-      "acceptedOn": "2026-09-06",
-      "expiresOn": "2026-09-20"
-    },
-    {
-      "package": "next-auth",
-      "nodePath": "node_modules/next-auth",
-      "installedVersion": "5.0.0-beta.29",
-      "npmSource": 1139361,
-      "advisory": "GHSA-7rqj-j65f-68wh",
-      "severity": "critical",
-      "scope": "production",
-      "owner": "@itzSlomz",
-      "trackingItem": "https://github.com/itzSlomz/adsniper/pull/6",
-      "reason": "The vulnerable Auth.js beta existed at the PR-01 base. Its upgrade belongs in PR-02 so email normalization, allowlisting, and every configured sign-in path can be regression-tested together.",
-      "mitigation": "Email sign-in is only enabled when the Resend configuration is present, but that does not remove the vulnerable normalization code when enabled.",
-      "acceptedOn": "2026-09-06",
-      "expiresOn": "2026-09-20"
-    },
-    {
-      "package": "next-auth",
-      "nodePath": "node_modules/next-auth",
-      "installedVersion": "5.0.0-beta.29",
-      "npmSource": 1139571,
-      "advisory": "GHSA-xmf8-cvqr-rfgj",
-      "severity": "high",
-      "scope": "production",
-      "owner": "@itzSlomz",
-      "trackingItem": "https://github.com/itzSlomz/adsniper/pull/6",
-      "reason": "The finding existed at the PR-01 base. Updating the authentication beta is intentionally deferred to PR-02 for isolated auth regression testing.",
-      "mitigation": "No getToken or next-auth/jwt call exists in the repository, so the documented malformed-Bearer path is not currently invoked directly; this is not treated as a fix.",
-      "acceptedOn": "2026-09-06",
-      "expiresOn": "2026-10-06"
-    },
-    {
-      "package": "@auth/core",
-      "nodePath": "node_modules/next-auth/node_modules/@auth/core",
-      "installedVersion": "0.40.0",
-      "npmSource": 1139363,
-      "advisory": "GHSA-7rqj-j65f-68wh",
-      "severity": "critical",
-      "scope": "production",
-      "owner": "@itzSlomz",
-      "trackingItem": "https://github.com/itzSlomz/adsniper/pull/6",
-      "reason": "This is the nested Auth.js core used by next-auth at the PR-01 base. It must be upgraded with next-auth and the complete authentication regression set in PR-02.",
-      "mitigation": "Email sign-in is configuration-gated; the vulnerable nested package remains present and no remediation is claimed.",
-      "acceptedOn": "2026-09-06",
-      "expiresOn": "2026-09-20"
-    },
-    {
-      "package": "@auth/core",
-      "nodePath": "node_modules/next-auth/node_modules/@auth/core",
-      "installedVersion": "0.40.0",
-      "npmSource": 1139572,
-      "advisory": "GHSA-xmf8-cvqr-rfgj",
-      "severity": "high",
-      "scope": "production",
-      "owner": "@itzSlomz",
-      "trackingItem": "https://github.com/itzSlomz/adsniper/pull/6",
-      "reason": "This nested dependency and advisory existed at the PR-01 base. Coordinated Auth.js remediation is reserved for PR-02 to avoid an unreviewed auth change here.",
-      "mitigation": "No getToken or next-auth/jwt call exists in the repository; the affected package is nevertheless retained only under this time-limited exception.",
-      "acceptedOn": "2026-09-06",
-      "expiresOn": "2026-10-06"
-    },
     {
       "package": "next",
       "nodePath": "node_modules/next",
@@ -413,21 +291,6 @@
       "expiresOn": "2026-10-06"
     },
     {
-      "package": "nanoid",
-      "nodePath": "node_modules/nanoid",
-      "installedVersion": "3.3.16",
-      "npmSource": 1139427,
-      "advisory": "GHSA-2v37-7h3g-55p8",
-      "severity": "high",
-      "scope": "production",
-      "owner": "@itzSlomz",
-      "trackingItem": "https://github.com/itzSlomz/adsniper/pull/6",
-      "reason": "The transitive version was already locked and its fix changes the dependency graph. The exact patch/override will be selected and regression-tested in PR-02.",
-      "mitigation": "No direct nanoid import or custom zero-sized generator exists in the repository; the affected transitive package is nevertheless tracked as unresolved.",
-      "acceptedOn": "2026-09-06",
-      "expiresOn": "2026-10-06"
-    },
-    {
       "package": "extract-zip",
       "nodePath": "node_modules/extract-zip",
       "installedVersion": "2.0.1",
@@ -439,21 +302,6 @@
       "trackingItem": "https://github.com/itzSlomz/adsniper/pull/6",
       "reason": "The package is inherited through Puppeteer's browser installer. Puppeteer remediation must preserve Chromium/PDF behavior and is therefore isolated to PR-02.",
       "mitigation": "CI disables Puppeteer's browser download. The package remains in the production lock tree, so the exception does not claim the install-time path is universally absent.",
-      "acceptedOn": "2026-09-06",
-      "expiresOn": "2026-10-06"
-    },
-    {
-      "package": "js-yaml",
-      "nodePath": "node_modules/js-yaml",
-      "installedVersion": "4.3.0",
-      "npmSource": 1138115,
-      "advisory": "GHSA-5p4m-2wfm-xmqj",
-      "severity": "high",
-      "scope": "production",
-      "owner": "@itzSlomz",
-      "trackingItem": "https://github.com/itzSlomz/adsniper/pull/6",
-      "reason": "This is an existing transitive dependency of Puppeteer's configuration loader. Updating it or its parent is dependency-remediation work for PR-02.",
-      "mitigation": "No application import of js-yaml or runtime parsing of user-provided YAML was found; the affected package version remains explicitly recorded.",
       "acceptedOn": "2026-09-06",
       "expiresOn": "2026-10-06"
     },
@@ -471,6 +319,51 @@
       "mitigation": "CI invokes Next lint and never invokes glob's -c/--cmd option with attacker-controlled patterns; this is dev-only exposure, not a dependency fix.",
       "acceptedOn": "2026-09-06",
       "expiresOn": "2026-10-21"
+    },
+    {
+      "package": "next",
+      "nodePath": "node_modules/next",
+      "installedVersion": "14.2.35",
+      "npmSource": 1193677,
+      "advisory": "GHSA-p293-qw3h-jr36",
+      "severity": "critical",
+      "scope": "production",
+      "owner": "@itzSlomz",
+      "trackingItem": "https://github.com/itzSlomz/adsniper/pull/6",
+      "reason": "Advisory published after PR-01 acceptance against the locked Next 14.2.35. Remediation is the PR-02 major framework upgrade already scheduled for the rest of the Next findings; same deadline applies.",
+      "mitigation": "All application routes except /login and /api/auth sit behind the authentication middleware; no compensating control is claimed to eliminate the framework-level risk.",
+      "acceptedOn": "2026-09-20",
+      "expiresOn": "2026-10-04"
+    },
+    {
+      "package": "next",
+      "nodePath": "node_modules/next",
+      "installedVersion": "14.2.35",
+      "npmSource": 1193733,
+      "advisory": "GHSA-2xp9-vwfh-vxw4",
+      "severity": "critical",
+      "scope": "production",
+      "owner": "@itzSlomz",
+      "trackingItem": "https://github.com/itzSlomz/adsniper/pull/6",
+      "reason": "Advisory published after PR-01 acceptance against the locked Next 14.2.35. Remediation is the PR-02 major framework upgrade already scheduled for the rest of the Next findings; same deadline applies.",
+      "mitigation": "All application routes except /login and /api/auth sit behind the authentication middleware; no compensating control is claimed to eliminate the framework-level risk.",
+      "acceptedOn": "2026-09-20",
+      "expiresOn": "2026-10-04"
+    },
+    {
+      "package": "extract-zip",
+      "nodePath": "node_modules/extract-zip",
+      "installedVersion": "2.0.1",
+      "npmSource": 1193685,
+      "advisory": "GHSA-7pqw-9j4j-h8q3",
+      "severity": "high",
+      "scope": "production",
+      "owner": "@itzSlomz",
+      "trackingItem": "https://github.com/itzSlomz/adsniper/pull/6",
+      "reason": "Advisory published after PR-01 acceptance against the Puppeteer dependency chain. Remediation is the PR-02 Puppeteer 25 major upgrade, same deadline as the existing extract-zip finding.",
+      "mitigation": "extract-zip only runs if Puppeteer downloads a browser at install time; on Railway the Nix chromium is used and the download path is disabled (PUPPETEER_SKIP_DOWNLOAD). No claim is made for other environments.",
+      "acceptedOn": "2026-09-20",
+      "expiresOn": "2026-10-06"
     }
   ]
 }
