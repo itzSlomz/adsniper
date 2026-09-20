@@ -7,3 +7,7 @@ node_modules/
 *.tsbuildinfo
 next-env.d.ts
 /artifacts/dependency-audit/
+
+# Understand-Anything knowledge-graph output (operator tooling, per-person)
+/.ua/
+/.understand-anything/
