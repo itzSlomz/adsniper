@@ -58,7 +58,7 @@ These are not style preferences. Violating one is a bug.
 ## Setup and commands
 
 ```bash
-npm install
+npm ci
 cp .env.example .env          # fill DATABASE_URL, AUTH_SECRET, AUTH_PASSCODE at minimum
 npx prisma migrate deploy     # or: npm run db:migrate
 npm run db:seed               # SEED_ADMIN_EMAIL creates the first admin
@@ -67,9 +67,14 @@ npm run dev
 
 | Task | Command |
 |---|---|
-| Typecheck | `npx tsc --noEmit` |
+| Validate Prisma schema | `npm run prisma:validate` |
+| Generate Prisma client | `npm run prisma:generate` |
+| Typecheck | `npm run typecheck` |
 | Lint | `npm run lint` |
+| Unit tests | `npm test` |
+| Unit tests (CI mode) | `npm run test:ci` |
 | Production build | `npm run build` |
+| Production + development dependency audit | `npm run audit:dependencies` |
 | Run a job manually | `npx tsx scripts/run-job.ts <job>` |
 | Load / clear demo data | `npx tsx scripts/sample-data.ts load` \| `clear` |
 | Seed the demo bank list | `npx tsx scripts/seed-demo.ts` |
@@ -79,21 +84,40 @@ Job names: `ads-poll`, `x-poll`, `linkedin-poll`, `x-metrics-refresh`,
 `weekly-brief`, `daily-brief`, `brief-auto-publish`, `resolve-identities`,
 `media-migrate`.
 
-**There is no automated test suite.** Verification here means running the
-thing: typecheck, production build, and exercising the change against a
-real Postgres database and a running server. Do not claim something works
-because it compiles.
+The automated unit tests cover the release-critical public-route boundary
+and authorization of the current admin mutations. They are deliberately
+narrow, not an end-to-end product suite. The `Release Gates` workflow is
+configured for pull requests to `main` and pushes to `main`, on Node 22. Its
+`Quality gate` performs a clean install, Prisma validation and generation,
+typecheck, zero-warning lint, unit tests, production build, and a working-tree
+cleanliness check. Its independent `Dependency audit` scans the production
+lock tree and the complete tree including development tools. Both checks must
+pass. Audit exceptions must match an exact package path, installed version,
+advisory source, GHSA, severity, and scope, and must not be expired or stale.
+The affected-node baseline also pins every High/Critical parent package,
+path, version, aggregate severity, scope, directness, immediate `via` edges,
+and resolved GHSA chain; do not weaken or regenerate either list
+automatically.
+
+Behaviour-changing work still requires exercising the change against a real
+Postgres database or a running server. Do not claim something works only
+because the code-level gates pass.
 
 ---
 
 ## Before you finish any change
 
-1. `npx tsc --noEmit` passes.
-2. `npm run build` passes — this catches App Router problems that the
+1. `npm run prisma:validate` and `npm run prisma:generate` pass.
+2. `npm run typecheck` passes.
+3. `npm run lint` passes with zero warnings.
+4. `npm run test:ci` passes.
+5. `npm run build` passes — this catches App Router problems that the
    typechecker does not.
-3. The behaviour is verified against a real database or a running server,
-   not asserted from reading the code.
-4. Documentation updated **in the same commit** (see below).
+6. `npm run audit:dependencies` passes; review its generated evidence and
+   never extend an exception silently.
+7. If behaviour changed, verify it against a real database or a running
+   server rather than asserting it from reading the code.
+8. Documentation updated **in the same commit** (see below).
 
 ---
 
@@ -149,9 +173,11 @@ preferred. Never edit a migration that has already shipped.
 - **Never touch the Watchtower production service, its Postgres, or the
   `watchtower-media` R2 bucket.** They belong to a live customer. This
   repository is a fork; work only on its own infrastructure.
-- **Work on `main`.** It is the release branch: every customer instance
-  deploys from it, so a push here upgrades every deployed instance. Verify
-  before you push — a broken `main` is a broken fleet.
+- **Target `main` through a pull-request branch with required release
+  gates.** It is the release branch:
+  every customer instance deploys from it, so merging there upgrades every
+  deployed instance. Cut work from the intended `main` commit and verify all
+  release gates before merge — a broken `main` is a broken fleet.
 - The repository still contains `claude/markdown-review-6v7w0s`, the
   original Watchtower snapshot. It is history, not a target. Never push to
   it, and never take it as the current state of the project.

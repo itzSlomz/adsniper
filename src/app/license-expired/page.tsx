@@ -15,7 +15,7 @@ export default function LicenseExpiredPage() {
       <div className="card elev-md w-full max-w-md space-y-3" style={{ padding: "var(--space-6)" }}>
         <h1 style={{ fontSize: 22, margin: 0 }}>Subscription expired</h1>
         <p className="text-sm">
-          This AdSniper workspace's yearly subscription ended
+          This AdSniper workspace&apos;s yearly subscription ended
           {license.expiresAt ? ` on ${license.expiresAt.toISOString().slice(0, 10)}` : ""}.
           Your data and archived creatives are safe — competitor tracking and
           dashboards resume the moment the subscription is renewed.

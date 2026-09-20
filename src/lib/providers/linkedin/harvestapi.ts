@@ -1,5 +1,5 @@
 import { runApifyActorSync } from "@/lib/apify";
-import type { FetchedPost, LinkedInPostsProvider, ProviderResult } from "@/lib/providers/types";
+import type { FetchedPost, LinkedInPostsProvider } from "@/lib/providers/types";
 import type { MediaType } from "@prisma/client";
 
 const ACTOR = "harvestapi~linkedin-company-posts";

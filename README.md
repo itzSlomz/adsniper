@@ -39,6 +39,7 @@ operational learnings. The project's *memory* lives in [`docs/`](docs/):
 | [`docs/IDEAS.md`](docs/IDEAS.md) | Proposals not built: accepted, undecided, deferred, rejected |
 | [`docs/RESEARCH.md`](docs/RESEARCH.md) | Competitive landscape and external findings, with sources |
 | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | What shipped, newest first, tied to commits |
+| [`docs/PR-01-VERIFICATION.md`](docs/PR-01-VERIFICATION.md) | Exact local release-gate commands, results, and unresolved risks for PR-01 |
 
 **Working on this repo — human or AI agent?** Read
 [`AGENTS.md`](AGENTS.md) first (conventions, commands, boundaries), then
@@ -167,11 +168,51 @@ All triggerable from Intel → "Run now", or `npx tsx scripts/run-job.ts <job>`.
 
 ```bash
 cp .env.example .env   # fill in values
-npm install
+npm ci                 # install exactly from package-lock.json
 npx prisma migrate dev
 npm run db:seed        # SEED_ADMIN_EMAIL seeds the first admin
 npm run dev
 ```
+
+## Release gates
+
+Run the same code-level checks as CI from a clean checkout:
+
+```bash
+export DATABASE_URL='postgresql://ci:ci@127.0.0.1:5432/adsniper_ci?schema=public'
+export AUTH_SECRET='local-ci-only-secret-local-ci-only-secret'
+export AUTH_URL='http://localhost:3000'
+export CI='true'
+export TZ='UTC'
+export NEXT_TELEMETRY_DISABLED='1'
+export DISABLE_CRON='1'
+export PUPPETEER_SKIP_DOWNLOAD='true'
+npm ci
+npm run prisma:validate
+npm run prisma:generate
+npm run typecheck
+npm run lint
+npm run test:ci
+npm run build
+npm run audit:dependencies
+test -z "$(git status --porcelain --untracked-files=all)"
+```
+
+The placeholder PostgreSQL URL only satisfies Prisma's schema validation;
+these code-level gates do not connect to a database. GitHub Actions is
+configured to run the `Release Gates` workflow on pull requests to `main`
+and pushes to `main`, using Node 22. Its `Quality gate` performs the clean
+install and application checks. Its independent `Dependency audit` checks
+both the production lock tree and the complete tree including development
+tools, fails closed against the exact time-limited exceptions and exact
+affected-package graph in `.github/dependency-audit-exceptions.json`, and
+checks its directness, immediate `via` edges, and lockfile inventory counts.
+It uploads the raw reports plus its policy decision as a review artifact. Both
+checks are release gates. The
+unit tests protect the exact public-route boundary and authorization of the
+current admin mutations; they are not an end-to-end suite. Behaviour-changing
+work still needs verification against a real Postgres database or running
+server as described in [`AGENTS.md`](AGENTS.md).
 
 ## Operational learnings (inherited from Watchtower, still true)
 

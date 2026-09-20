@@ -1,44 +1,16 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { triggerJob } from "@/jobs/index";
 import type { Brand } from "@prisma/client";
+import { createBrand, resolveNow, saveBrand, toggleBrand } from "./actions";
+import { MAX_COMPETITORS } from "./constants";
 
 export const dynamic = "force-dynamic";
 
 // Brand setup — the core of AdSniper onboarding: the customer's own brand
 // plus up to 8 competitors, all admin-managed here (no seeded market).
 // Deactivating stops polling but keeps history; brands are never deleted.
-const MAX_COMPETITORS = 8;
-
-async function requireAdmin() {
-  const s = await auth();
-  if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
-}
-
-function parseList(v: FormDataEntryValue | null): string[] {
-  return String(v ?? "")
-    .split(/[\n,]/)
-    .map((s) => s.trim())
-    .filter((s, i, arr) => s.length > 0 && arr.indexOf(s) === i);
-}
-
-function brandFields(formData: FormData) {
-  return {
-    nameEn: String(formData.get("nameEn") ?? "").trim(),
-    nameAr: String(formData.get("nameAr") ?? "").trim(),
-    xHandle: String(formData.get("xHandle") ?? "").trim().replace(/^@/, "") || null,
-    linkedinPageUrl: String(formData.get("linkedinPageUrl") ?? "").trim() || null,
-    facebookPageUrl: String(formData.get("facebookPageUrl") ?? "").trim() || null,
-    brandColor: String(formData.get("brandColor") ?? "").trim() || null,
-    aliases: parseList(formData.get("aliases")),
-    metaPageIds: parseList(formData.get("metaPageIds")),
-    googleAdvertiserIds: parseList(formData.get("googleAdvertiserIds")),
-  };
-}
-
 export default async function BrandsPage({
   searchParams,
 }: {
@@ -60,60 +32,6 @@ export default async function BrandsPage({
   const resolveLines = ((lastResolve?.errorsJson as string[]) ?? []).filter((l) =>
     l.startsWith("(info)")
   );
-
-  async function createBrand(formData: FormData) {
-    "use server";
-    await requireAdmin();
-    const type = formData.get("type") === "self" ? "self" : "competitor";
-    const fields = brandFields(formData);
-    if (!fields.nameEn) redirect("/intel/brands?error=name");
-    const activeOfType = await prisma.brand.count({ where: { type, active: true } });
-    if (type === "self" && activeOfType >= 1) redirect("/intel/brands?error=self");
-    if (type === "competitor" && activeOfType >= MAX_COMPETITORS)
-      redirect("/intel/brands?error=cap");
-    await prisma.brand.create({
-      data: { ...fields, nameAr: fields.nameAr || fields.nameEn, type },
-    });
-    revalidatePath("/intel/brands");
-    redirect("/intel/brands");
-  }
-
-  async function saveBrand(formData: FormData) {
-    "use server";
-    await requireAdmin();
-    const id = String(formData.get("id"));
-    const fields = brandFields(formData);
-    if (!fields.nameEn) redirect("/intel/brands?error=name");
-    await prisma.brand.update({
-      where: { id },
-      data: { ...fields, nameAr: fields.nameAr || fields.nameEn },
-    });
-    revalidatePath("/intel/brands");
-  }
-
-  async function toggleBrand(formData: FormData) {
-    "use server";
-    await requireAdmin();
-    const id = String(formData.get("id"));
-    const brand = await prisma.brand.findUniqueOrThrow({ where: { id } });
-    if (!brand.active) {
-      const activeOfType = await prisma.brand.count({
-        where: { type: brand.type, active: true },
-      });
-      if (brand.type === "self" && activeOfType >= 1) redirect("/intel/brands?error=self");
-      if (brand.type === "competitor" && activeOfType >= MAX_COMPETITORS)
-        redirect("/intel/brands?error=cap");
-    }
-    await prisma.brand.update({ where: { id }, data: { active: !brand.active } });
-    revalidatePath("/intel/brands");
-  }
-
-  async function resolveNow() {
-    "use server";
-    await requireAdmin();
-    await triggerJob("resolve-identities");
-    revalidatePath("/intel/brands");
-  }
 
   const errorMsg =
     searchParams.error === "cap"

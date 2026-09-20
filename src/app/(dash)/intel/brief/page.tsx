@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { triggerJob } from "@/jobs/index";
+import { regenerate, save } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -13,33 +12,6 @@ export default async function BriefAdminPage() {
   if ((session?.user as { role?: string } | undefined)?.role !== "admin") redirect("/");
 
   const brief = await prisma.dailyBrief.findFirst({ orderBy: { date: "desc" } });
-
-  async function save(formData: FormData) {
-    "use server";
-    const s = await auth();
-    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
-    const id = String(formData.get("id"));
-    const publish = formData.get("publish") === "1";
-    await prisma.dailyBrief.update({
-      where: { id },
-      data: {
-        contentEn: String(formData.get("en") ?? ""),
-        contentAr: String(formData.get("ar") ?? ""),
-        editedAt: new Date(),
-        ...(publish ? { status: "published" } : {}),
-      },
-    });
-    revalidatePath("/intel/brief");
-    revalidatePath("/");
-  }
-
-  async function regenerate() {
-    "use server";
-    const s = await auth();
-    if ((s?.user as { role?: string } | undefined)?.role !== "admin") throw new Error("forbidden");
-    await triggerJob("daily-brief");
-    revalidatePath("/intel/brief");
-  }
 
   return (
     <main className="space-y-4">

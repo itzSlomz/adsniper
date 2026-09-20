@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { authConfig } from "@/auth.config";
+import { isLicenseExemptPath, isPublicPath } from "@/lib/accessPolicy";
 import { getLicense } from "@/lib/license";
 
 // AdSniper is a per-customer SaaS instance: every surface requires login,
@@ -14,24 +15,24 @@ import { getLicense } from "@/lib/license";
 // authorized-callback result only short-circuits when it is a Response).
 // Both gates are therefore enforced explicitly here — do not rely on the
 // authorized callback for page protection.
-const PUBLIC = ["/login", "/api/auth"];
-const LICENSE_EXEMPT = ["/login", "/license-expired", "/api/auth"];
+export type AccessRequest = Pick<NextRequest, "nextUrl"> & {
+  auth?: { user?: unknown } | null;
+};
 
-const matches = (pathname: string, prefixes: string[]) =>
-  prefixes.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-
-export default NextAuth(authConfig).auth((req) => {
+export function handleAccessRequest(req: AccessRequest) {
   const { pathname } = req.nextUrl;
-  if (!req.auth?.user && !matches(pathname, PUBLIC)) {
+  if (!req.auth?.user && !isPublicPath(pathname)) {
     const url = new URL("/login", req.nextUrl);
     url.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(url);
   }
-  if (getLicense().state === "expired" && !matches(pathname, LICENSE_EXEMPT)) {
+  if (getLicense().state === "expired" && !isLicenseExemptPath(pathname)) {
     return NextResponse.redirect(new URL("/license-expired", req.nextUrl));
   }
   return NextResponse.next();
-});
+}
+
+export default NextAuth(authConfig).auth(handleAccessRequest);
 
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|robots.txt).*)"],

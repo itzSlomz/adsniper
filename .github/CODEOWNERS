@@ -1,0 +1,30 @@
+# Default review owner. Keep this first so the more specific entries below
+# document security-sensitive surfaces without leaving other files unowned.
+# CODEOWNERS identifies responsibility; while @itzSlomz is the sole owner and
+# PR author, branch protection must not require an impossible self-approval.
+* @itzSlomz
+
+# Release, dependency, and deployment controls
+/.github/ @itzSlomz
+/package.json @itzSlomz
+/package-lock.json @itzSlomz
+/next.config.mjs @itzSlomz
+/nixpacks.toml @itzSlomz
+/.env.example @itzSlomz
+/scripts/ @itzSlomz
+
+# Data model and migrations
+/prisma/ @itzSlomz
+
+# Authentication, authorization, licensing, and privileged surfaces
+/src/auth.ts @itzSlomz
+/src/auth.config.ts @itzSlomz
+/src/middleware.ts @itzSlomz
+/src/lib/accessPolicy.ts @itzSlomz
+/src/lib/authorization.ts @itzSlomz
+/src/instrumentation.ts @itzSlomz
+/src/app/api/ @itzSlomz
+/src/app/(dash)/intel/ @itzSlomz
+/src/jobs/ @itzSlomz
+/src/lib/license.ts @itzSlomz
+/src/lib/providers/ @itzSlomz

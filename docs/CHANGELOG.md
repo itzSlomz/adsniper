@@ -1,7 +1,8 @@
 # Changelog
 
-What actually shipped, newest first. Every entry names the commit so the
-diff is one command away.
+What actually shipped, newest first. Merged entries name the commit so the
+diff is one command away; an in-flight change names its work item and branch
+until the merge commit exists.
 
 Branch: `main`. Work began on `claude/adsniper-fork-baqjyb`, forked from the
 Watchtower snapshot `claude/markdown-review-6v7w0s`; from 2026-09-01 it
@@ -10,6 +11,23 @@ continues on `main`, which carries the identical history.
 ---
 
 ## 2026-09-20
+
+**PR-01 (merged 2026-09-20) · `fix/release-gates-phase-1` — Add deterministic release gates and
+repository security governance**
+This branch configures a Node 22 quality gate for pull requests and pushes to
+`main`: clean install, Prisma schema validation and client generation,
+TypeScript, zero-warning Next.js lint, focused Jest tests, production build,
+and a final clean-tree check. An independent fail-closed dependency gate scans
+both production and development lock trees, accepts only exact time-limited
+exceptions for the pre-existing findings assigned to PR-02, and uploads its
+raw and evaluated evidence. The focused tests cover exact public-route
+matching and authorization of all 19 current admin Server Actions; they are
+not presented as end-to-end coverage. `CODEOWNERS` records review ownership
+for sensitive surfaces, and `SECURITY.md` gives a no-secrets public fallback
+while private vulnerability reporting is unavailable. No product feature,
+UI, database schema, or dependency version changes. Public matching is
+deliberately restricted to the exact `/login` path and the `/api/auth` route
+tree.
 
 **(infra + docs, no product code diff) Demo-instance media archive moved
 into a Railway object-storage bucket; service now deploys from `main`**

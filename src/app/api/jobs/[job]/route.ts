@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getAdminSession } from "@/lib/authorization";
 import { jobs, triggerJob } from "@/jobs/index";
 import { budgetStatus } from "@/lib/costs";
 
@@ -11,8 +11,8 @@ export async function POST(
   _req: Request,
   { params }: { params: { job: string } }
 ) {
-  const session = await auth();
-  if ((session?.user as { role?: string } | undefined)?.role !== "admin") {
+  const session = await getAdminSession();
+  if (!session) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
   if (!jobs[params.job]) {

@@ -1,5 +1,5 @@
 import { runApifyActorSync } from "@/lib/apify";
-import type { AdsProvider, FetchedAd, ProviderResult } from "@/lib/providers/types";
+import type { AdsProvider, FetchedAd } from "@/lib/providers/types";
 import type { AdFormat } from "@prisma/client";
 
 const ACTOR = "scrapesage~google-ads-transparency-scraper";

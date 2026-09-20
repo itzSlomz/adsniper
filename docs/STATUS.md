@@ -63,14 +63,17 @@ after a forced container replacement.
 | Raw provider payloads | Original record kept per ad (>120KB replaced by a marker); backfilled on next sighting |
 | Provider adapters | Meta, Google, LinkedIn, TikTok behind one interface; region comes from instance settings |
 | Configurable offer categories | Admin-editable keyword→label map; banking defaults |
-
 ---
 
 ## In progress
 
 | Item | State | Next action |
 |---|---|---|
-| Integrating the external branches into `main` | `fix/release-gates-phase-1` (per-action authorization, unit tests, CI gates) and the launch-verification commits on the old fork branch are reviewed and judged sound | Operator approves the merge — this session's permission mode blocks `git merge` — then the new `Release Gates` CI verifies the result |
+| PR-02 dependency remediation | PR-01's audit gate (merged 2026-09-20) carries time-limited exceptions for pre-existing advisories | Start PR-02 from current `main`, shrinking `.github/dependency-audit-exceptions.json` as packages are upgraded |
+
+The release gates are code-level checks. They do not replace the real-database
+and running-server verification required for behaviour changes, and they do
+not resolve the live-environment blockers below.
 
 ---
 
