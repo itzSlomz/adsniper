@@ -12,6 +12,26 @@ continues on `main`, which carries the identical history.
 
 ## 2026-09-20
 
+**Upgrade the framework: Next 14.2 → 16.3, React 18 → 19 (PR-02, part 1)**
+Clears every remaining Next-family advisory — both criticals included —
+leaving only the Puppeteer chain (4 high, excepted until 2026-10-06).
+What changed beyond version numbers: request APIs are async (`params` /
+`searchParams` are Promises now; 11 files transformed with the official
+codemod and reviewed), `serverExternalPackages` moved out of
+`experimental` and the `instrumentationHook` flag is gone (default),
+builds run on Turbopack, and Next 16 removed `next lint`, so ESLint 9
+now runs directly on eslint-config-next's native flat configs. Direct
+ESLint also lints files `next lint` never covered; scoped overrides keep
+the pre-existing Jest suite and the CommonJS audit script passing, and
+the React Compiler purity rule is off for exactly two per-request server
+pages where `Date.now()` is request-time data, not render impurity
+(see DECISIONS). Exceptions file shrinks 15 → 2.
+Verified: typecheck, zero-warning lint, 193/193 tests, Turbopack
+production build, dependency audit PASS, and a real-server matrix on
+Next 16 — auth gates, wrong-passcode rejection, all dashboards, async
+params 404, viewer-forbidden/admin-allowed Server Actions, and a 48KB
+PDF export through Puppeteer.
+
 **Remediate the expiring Auth.js criticals instead of extending them**
 The dependency-audit gate's three shortest exceptions — the critical
 next-auth/@auth/core advisories — expired today by design. Rather than

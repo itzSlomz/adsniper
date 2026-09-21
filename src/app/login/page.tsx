@@ -6,11 +6,12 @@ export const dynamic = "force-dynamic";
 
 // Deliberately neutral surface: no bank name, branding, or purpose disclosed
 // pre-auth (Section 10). Passcode fallback is active until Resend is wired.
-export default function LoginPage({
-  searchParams,
-}: {
-  searchParams: { error?: string };
-}) {
+export default async function LoginPage(
+  props: {
+    searchParams: Promise<{ error?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const magicLinks = !!process.env.RESEND_API_KEY;
 
   async function login(formData: FormData) {

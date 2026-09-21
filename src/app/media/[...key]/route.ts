@@ -9,10 +9,8 @@ export const dynamic = "force-dynamic";
 // through here. Public read access per operator decision (2026-07-29).
 // Responses stream rather than buffer, and honour HTTP Range, so a 50MB
 // video creative never sits in the server's memory and can be scrubbed.
-export async function GET(
-  req: Request,
-  { params }: { params: { key: string[] } }
-) {
+export async function GET(req: Request, props: { params: Promise<{ key: string[] }> }) {
+  const params = await props.params;
   const key = params.key.join("/");
   const url = new URL(req.url);
   // ?download=1 forces a save dialog; ?name= supplies a readable filename.

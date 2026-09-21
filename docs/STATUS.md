@@ -113,7 +113,7 @@ after a forced container replacement.
 
 | Item | State | Next action |
 |---|---|---|
-| PR-02 dependency remediation | Auth.js criticals fixed 2026-09-20 (next-auth beta.32); js-yaml/nanoid/sharp patched. 15 findings remain, all excepted and dated: Next 14→16 (criticals expire **2026-10-04**) and Puppeteer 24→25 (2026-10-06) | Do the two major upgrades before their exception deadlines; each removes its block of `.github/dependency-audit-exceptions.json` |
+| PR-02 dependency remediation | Auth.js criticals fixed (beta.32). **Next 14→16 + React 19 done on `upgrade/next-16`** — zero criticals remain; only the Puppeteer chain is left (4 high, excepted to 2026-10-06), exceptions file 19 → 2 | Merge `upgrade/next-16` through the release gates, then upgrade Puppeteer 24→25 before 2026-10-06 |
 | Real ad ingestion | Ingestion **mechanics proven, 22/22**, through the real job path with a fixture provider (`verification/ingestion-checks.ts`). Only the live paid pull remains | Run the capped pilot in `verification/pilot.md` with a funded Apify token (#2) |
 
 The release gates are code-level checks. They do not replace the real-database

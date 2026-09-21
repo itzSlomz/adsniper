@@ -21,7 +21,7 @@ const budgetStatusMock = budgetStatus as jest.Mock;
 async function post(job: string) {
   return POST(new Request(`https://adsniper.test/api/jobs/${job}`, {
     method: "POST",
-  }), { params: { job } });
+  }), { params: Promise.resolve({ job }) });
 }
 
 describe("POST /api/jobs/[job]", () => {

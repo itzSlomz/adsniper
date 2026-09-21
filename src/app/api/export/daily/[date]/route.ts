@@ -9,10 +9,8 @@ export const dynamic = "force-dynamic";
 // page. The requester's session cookie is forwarded so the print request
 // passes the same auth wall. PUPPETEER_EXECUTABLE_PATH overrides the
 // browser binary (used in dev sandboxes with a preinstalled Chromium).
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { date: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ date: string }> }) {
+  const params = await props.params;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(params.date)) {
     return NextResponse.json({ error: "bad date" }, { status: 400 });
   }

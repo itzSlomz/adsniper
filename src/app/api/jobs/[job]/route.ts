@@ -7,10 +7,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 // "Run now" per job (brief Section 2 / 7.4). Admin only.
-export async function POST(
-  _req: Request,
-  { params }: { params: { job: string } }
-) {
+export async function POST(_req: Request, props: { params: Promise<{ job: string }> }) {
+  const params = await props.params;
   const session = await getAdminSession();
   if (!session) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });

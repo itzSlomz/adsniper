@@ -7,10 +7,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 // Weekly executive PDF: Puppeteer prints /export/weekly/[date].
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { date: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ date: string }> }) {
+  const params = await props.params;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(params.date)) {
     return NextResponse.json({ error: "bad date" }, { status: 400 });
   }
