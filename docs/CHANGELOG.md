@@ -12,6 +12,22 @@ continues on `main`, which carries the identical history.
 
 ## 2026-09-21
 
+**(infra, no code diff) Demo instance moved to the `marketingspy-demo-media`
+bucket; Railway naming partially blocked**
+A new Railway bucket `marketingspy-demo-media` was created in the same
+project and the `R2_*` variable references repointed at it. Sample data
+was cleared from the old bucket first so nothing was orphaned, then
+reloaded through the storage layer. Verified live: the storage round trip
+reports ok against the new bucket, the Intel panel names it, and sampled
+creatives serve 200. The old `adsniper-demo-media` bucket is left in place,
+empty, rather than deleted.
+Not done, and not doable from here: renaming the Railway **project** and
+**service** — the MCP surface has no project rename, and the service rename
+reported success but did not take (verified: the service is still named
+`adsniper`, with no staged changes). Both need the Railway dashboard, as
+does the GitHub repository rename. The service domain
+`adsniper-production.up.railway.app` is unchanged and still correct.
+
 **Rebrand to MarketingSpy and rebuild the theme dark-first from the brand**
 The product takes the MarketingSpy identity the operator supplied. The
 design system (`modernist.css`) keeps its class contract but its tokens

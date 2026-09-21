@@ -62,7 +62,7 @@ along with all other P0 controls in `SAAS_FOUNDATION_READINESS_AR.md`.
 | Auth | Allowlisted email + shared passcode (Resend not configured) |
 | Data shown | **Synthetic sample set** — no provider keys on this instance |
 | Verification | 21 of 22 automated checks passed against the deployed build |
-| Media storage | Railway bucket `adsniper-demo-media` — wired by variable references, no secret ever left Railway |
+| Media storage | Railway bucket `marketingspy-demo-media` — wired by variable references, no secret ever left Railway |
 | Cost ceilings | ads $40 · X $10 · LinkedIn $10 per month |
 
 **Do not demo this instance to a customer as a real market reading.**
@@ -103,9 +103,10 @@ after a forced container replacement.
 | Startup preflight | `scripts/check-env.mjs` refuses to boot with a named missing variable; warns on unusable configs |
 | Cost guard | Per-call logging + monthly ceilings per group; hard stop at ceiling (`stopped_budget`) |
 | Storage health panel | Shows bucket/path; "Test storage" does a real write→read→delete round trip |
-| Persistent media storage (demo instance) | Railway bucket `adsniper-demo-media`; creatives survive container replacement — verified live 2026-09-20 |
+| Persistent media storage (demo instance) | Railway bucket `marketingspy-demo-media`; creatives survive container replacement — verified live |
 | Dependency hygiene | **Zero known advisories** across prod+dev trees (2026-09-21): Auth.js beta.32, Next 16 + React 19, Puppeteer 25; audit gate runs with an empty exceptions file |
 | Brand identity in-product | MarketingSpy dark theme: brand tokens, Geist + Noto Sans Arabic + Geist Mono, logo/favicons, validated chart palettes, light PDF scope |
+| Infrastructure rename | **Operator action required**: rename the GitHub repository, and the Railway project and service, from the dashboard — no API path exists for any of the three. The bucket is already renamed; the domain is unchanged |
 | Raw provider payloads | Original record kept per ad (>120KB replaced by a marker); backfilled on next sighting |
 | Provider adapters | Meta, Google, LinkedIn, TikTok behind one interface; region comes from instance settings |
 | Configurable offer categories | Admin-editable keyword→label map; banking defaults |
