@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-09-20 · Branch: `main`
+Last updated: 2026-09-21 · Branch: `main`
 
 Legend: **Shipped** = built, verified, on the branch · **In progress** =
 started, not finished · **Blocked** = cannot proceed without something
@@ -104,6 +104,7 @@ after a forced container replacement.
 | Cost guard | Per-call logging + monthly ceilings per group; hard stop at ceiling (`stopped_budget`) |
 | Storage health panel | Shows bucket/path; "Test storage" does a real write→read→delete round trip |
 | Persistent media storage (demo instance) | Railway bucket `adsniper-demo-media`; creatives survive container replacement — verified live 2026-09-20 |
+| Dependency hygiene | **Zero known advisories** across prod+dev trees (2026-09-21): Auth.js beta.32, Next 16 + React 19, Puppeteer 25; audit gate runs with an empty exceptions file |
 | Raw provider payloads | Original record kept per ad (>120KB replaced by a marker); backfilled on next sighting |
 | Provider adapters | Meta, Google, LinkedIn, TikTok behind one interface; region comes from instance settings |
 | Configurable offer categories | Admin-editable keyword→label map; banking defaults |
@@ -113,7 +114,6 @@ after a forced container replacement.
 
 | Item | State | Next action |
 |---|---|---|
-| PR-02 dependency remediation | Auth.js criticals fixed (beta.32). **Next 14→16 + React 19 done on `upgrade/next-16`** — zero criticals remain; only the Puppeteer chain is left (4 high, excepted to 2026-10-06), exceptions file 19 → 2 | Merge `upgrade/next-16` through the release gates, then upgrade Puppeteer 24→25 before 2026-10-06 |
 | Real ad ingestion | Ingestion **mechanics proven, 22/22**, through the real job path with a fixture provider (`verification/ingestion-checks.ts`). Only the live paid pull remains | Run the capped pilot in `verification/pilot.md` with a funded Apify token (#2) |
 
 The release gates are code-level checks. They do not replace the real-database
