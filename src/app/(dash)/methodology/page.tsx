@@ -11,7 +11,7 @@ export default function MethodologyPage() {
     <main className="mx-auto max-w-2xl space-y-6">
       <div className="section-head">
         <span className="section-kicker neutral">Reference</span>
-        <h1 style={{ margin: 0, fontSize: 28 }}>How AdSniper counts and estimates</h1>
+        <h1 style={{ margin: 0, fontSize: 28 }}>How MarketingSpy counts and estimates</h1>
       </div>
 
       <section className="card elev-sm space-y-2 text-sm">
@@ -100,7 +100,7 @@ export default function MethodologyPage() {
         <h2 style={{ margin: 0, fontSize: 16 }}>Estimated spend (modeled range)</h2>
         <p>
           Public ad libraries <strong>do not disclose commercial ad budgets
-          in most regions, including Saudi Arabia</strong>. AdSniper therefore
+          in most regions, including Saudi Arabia</strong>. MarketingSpy therefore
           never reports spend as fact. The estimate works like this: every ad
           observed in the trailing 30 days contributes an assumed daily spend
           range for its platform and format, multiplied by the days it was

@@ -1,4 +1,4 @@
-# AdSniper
+# MarketingSpy
 
 Competitive **ad intelligence** for brand leadership, sold as a yearly
 subscription. Each customer gets a **dedicated instance** (own app

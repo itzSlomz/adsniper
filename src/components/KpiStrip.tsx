@@ -24,7 +24,7 @@ function toneOf(delta: number | null, higherIsBetter: boolean, deadband = 0.1): 
 }
 
 const TONE_COLOR: Record<Tone, string> = {
-  good: "#1a7f37",
+  good: "#4ade80",
   bad: "var(--color-accent)",
   flat: "color-mix(in srgb, var(--color-text) 55%, transparent)",
   none: "color-mix(in srgb, var(--color-text) 40%, transparent)",

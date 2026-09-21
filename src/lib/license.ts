@@ -1,4 +1,4 @@
-// Per-instance licensing. Each customer runs a dedicated AdSniper
+// Per-instance licensing. Each customer runs a dedicated MarketingSpy
 // instance; the yearly license is controlled by the vendor through env
 // vars on the service — never editable from inside the app:
 //

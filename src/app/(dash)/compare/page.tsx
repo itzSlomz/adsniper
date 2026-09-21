@@ -5,7 +5,9 @@ import { SeriesLineChart, StackedBars } from "@/components/charts";
 export const dynamic = "force-dynamic";
 
 const DAY = 86400000;
-const BRAND_COLORS = ["#ec3013", "#201e1d", "#9b9797", "#ae1800", "#605d5d", "#ff9783", "#2d2b2b", "#c94b39", "#bab6b6"];
+// Validated dark categorical order (dataviz checks); brands beyond the
+// seventh fold into the last slot rather than minting new hues.
+const BRAND_COLORS = ["#3987e5", "#c98500", "#199e70", "#8b5cf6", "#d95926", "#d6409f", "#9c6f1f"];
 
 export default async function ComparePage() {
   const brands = await prisma.brand.findMany({ where: { active: true }, orderBy: { type: "asc" } });
@@ -89,12 +91,12 @@ export default async function ComparePage() {
         <p className="mb-2 text-xs text-gray-500">
           X only — your brand&apos;s share of daily engagement across tracked brands.
         </p>
-        <SeriesLineChart data={sovSeries} series={[{ key: "sov", color: "#ec3013" }]} percent />
+        <SeriesLineChart data={sovSeries} series={[{ key: "sov", color: "#ff7f5c" }]} percent />
       </section>
 
       <section className="card elev-sm">
         <h2 className="mb-2 text-base font-semibold">Average engagement per post (30d)</h2>
-        <StackedBars data={agg} xKey="brand" bars={[{ key: "avgEngagement", color: "#ec3013" }]} />
+        <StackedBars data={agg} xKey="brand" bars={[{ key: "avgEngagement", color: "#ff7f5c" }]} />
       </section>
 
       {raceSeries.length > 1 && (
@@ -106,7 +108,7 @@ export default async function ComparePage() {
 
       <section className="card elev-sm">
         <h2 className="mb-2 text-base font-semibold">Posting volume (30d)</h2>
-        <StackedBars data={agg} xKey="brand" bars={[{ key: "posts", color: "#201e1d" }]} />
+        <StackedBars data={agg} xKey="brand" bars={[{ key: "posts", color: "#f5f5f4" }]} />
       </section>
 
       <section className="card elev-sm">
@@ -115,10 +117,10 @@ export default async function ComparePage() {
           data={agg}
           xKey="brand"
           bars={[
-            { key: "image", color: "#605d5d" },
-            { key: "video", color: "#ec3013" },
-            { key: "carousel", color: "#ff9783" },
-            { key: "text", color: "#d7d3d3" },
+            { key: "image", color: "#3987e5" },
+            { key: "video", color: "#d95926" },
+            { key: "carousel", color: "#d6409f" },
+            { key: "text", color: "#9c6f1f" },
           ]}
         />
       </section>

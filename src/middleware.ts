@@ -4,7 +4,7 @@ import { authConfig } from "@/auth.config";
 import { isLicenseExemptPath, isPublicPath } from "@/lib/accessPolicy";
 import { getLicense } from "@/lib/license";
 
-// AdSniper is a per-customer SaaS instance: every surface requires login,
+// MarketingSpy is a per-customer SaaS instance: every surface requires login,
 // reversing Watchtower's public-viewer posture. On top of auth, an
 // expired license locks the whole instance to /license-expired;
 // in-process cron is gated separately in the job runner, since it never

@@ -15,7 +15,7 @@ export async function setSetting(key: string, value: unknown): Promise<void> {
   });
 }
 
-// Per-instance workspace identity: each AdSniper deployment serves one
+// Per-instance workspace identity: each MarketingSpy deployment serves one
 // customer. Their display name, the market their ad-library pulls target,
 // and the preferred report language are admin-editable, not hardcoded.
 export interface InstanceSettings {

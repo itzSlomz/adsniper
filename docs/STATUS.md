@@ -105,6 +105,7 @@ after a forced container replacement.
 | Storage health panel | Shows bucket/path; "Test storage" does a real write→read→delete round trip |
 | Persistent media storage (demo instance) | Railway bucket `adsniper-demo-media`; creatives survive container replacement — verified live 2026-09-20 |
 | Dependency hygiene | **Zero known advisories** across prod+dev trees (2026-09-21): Auth.js beta.32, Next 16 + React 19, Puppeteer 25; audit gate runs with an empty exceptions file |
+| Brand identity in-product | MarketingSpy dark theme: brand tokens, Geist + Noto Sans Arabic + Geist Mono, logo/favicons, validated chart palettes, light PDF scope |
 | Raw provider payloads | Original record kept per ad (>120KB replaced by a marker); backfilled on next sighting |
 | Provider adapters | Meta, Google, LinkedIn, TikTok behind one interface; region comes from instance settings |
 | Configurable offer categories | Admin-editable keyword→label map; banking defaults |

@@ -15,7 +15,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ date: str
   const origin = renderOrigin();
   const cookie = req.headers.get("cookie") ?? "";
   const { customerNameEn } = await getInstanceSettings();
-  const footerOwner = customerNameEn ? `${customerNameEn} · AdSniper` : "AdSniper";
+  const footerOwner = customerNameEn ? `${customerNameEn} · MarketingSpy` : "MarketingSpy";
 
   let browser;
   try {
@@ -41,7 +41,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ date: str
     return new NextResponse(new Uint8Array(pdf), {
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="adsniper-weekly-${params.date}.pdf"`,
+        "Content-Disposition": `attachment; filename="marketingspy-weekly-${params.date}.pdf"`,
       },
     });
   } catch (err) {

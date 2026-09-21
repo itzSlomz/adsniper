@@ -23,9 +23,9 @@ separate business-domain view. Incremental updates on commit; output
 language selectable (`--language ar` works). Initial run is token-heavy
 on the operator's own Claude plan; later runs are incremental.
 
-Relevance to AdSniper — **operator tooling, not product**:
+Relevance to MarketingSpy — **operator tooling, not product**:
 - No overlap with the product (ad intelligence ≠ codebase intelligence);
-  nothing belongs in the AdSniper runtime.
+  nothing belongs in the MarketingSpy runtime.
 - Real value is onboarding humans onto this multi-agent-developed repo:
   the independent reviewer that `CODEOWNERS` still lacks, a future hire,
   or the operator himself. Complements — does not replace — `AGENTS.md`

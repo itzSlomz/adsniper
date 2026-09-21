@@ -8,7 +8,7 @@ import { MAX_COMPETITORS } from "./constants";
 
 export const dynamic = "force-dynamic";
 
-// Brand setup — the core of AdSniper onboarding: the customer's own brand
+// Brand setup — the core of MarketingSpy onboarding: the customer's own brand
 // plus up to 8 competitors, all admin-managed here (no seeded market).
 // Deactivating stops polling but keeps history; brands are never deleted.
 export default async function BrandsPage(
@@ -147,7 +147,7 @@ function BrandFieldsInputs({ brand }: { brand?: Brand }) {
         </label>
         <label className="text-xs text-muted">
           Brand color (hex)
-          <input name="brandColor" defaultValue={brand?.brandColor ?? ""} placeholder="#C8102E" className="input" />
+          <input name="brandColor" defaultValue={brand?.brandColor ?? ""} placeholder="#3987E5" className="input" />
         </label>
       </div>
       <label className="text-xs text-muted" style={{ display: "block" }}>

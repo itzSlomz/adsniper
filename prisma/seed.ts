@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// A fresh AdSniper instance seeds no brands — the customer admin sets up
+// A fresh MarketingSpy instance seeds no brands — the customer admin sets up
 // their own brand and up to 8 competitors in Intel → Brands. Only the
 // first admin user is created here (SEED_ADMIN_EMAIL). For a sales-demo
 // instance with the Saudi-banks dataset, run scripts/seed-demo.ts instead.

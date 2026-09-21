@@ -1,15 +1,15 @@
-# AdSniper — متطلبات الخدمات والبنية التقنية
+# MarketingSpy — متطلبات الخدمات والبنية التقنية
 
 - **الإصدار:** 1.0
 - **التاريخ:** 2026-09-03
-- **النطاق:** الخدمات السحابية والتشغيلية الخارجية اللازمة لتشغيل AdSniper كمنتج SaaS يُباع للشركات
+- **النطاق:** الخدمات السحابية والتشغيلية الخارجية اللازمة لتشغيل MarketingSpy كمنتج SaaS يُباع للشركات
 - **يرتبط بـ:** [`SAAS_FOUNDATION_READINESS_AR.md`](SAAS_FOUNDATION_READINESS_AR.md)
 
 ---
 
 ## 1. الغرض من الوثيقة
 
-تحدد هذه الوثيقة الخدمات التقنية التي يجب توفيرها خارج كود AdSniper: الاستضافة،
+تحدد هذه الوثيقة الخدمات التقنية التي يجب توفيرها خارج كود MarketingSpy: الاستضافة،
 قاعدة البيانات، تخزين الوسائط، المهام الخلفية، الهوية، البريد، النسخ الاحتياطي،
 المراقبة، الحماية، CI/CD ومزودي البيانات.
 
@@ -115,7 +115,7 @@ flowchart TD
 | TSV-17 | تحليلات استخدام المنتج | PostHog أو بديل privacy-approved | قياس التبني والقيمة دون تخمين | events محددة، لا محتوى حساس، opt-out/retention موثق |
 | TSV-18 | دعم العملاء | Zendesk/HubSpot أو نظام معتمد | تذاكر، SLA وتصعيد | owner، severity، response targets وسجل مراسلات |
 | TSV-19 | Status Page | Better Stack Status أو بديل | إبلاغ العملاء بالأعطال والصيانة | قوالب incident، سجل زمني، وربط بالتنبيهات |
-| TSV-20 | إدارة الخطط والتراخيص | داخل AdSniper + سجل تعاقدي | users/brands/polling/retention/exports/support | enforcement server-side، audit، grace period وتجديد |
+| TSV-20 | إدارة الخطط والتراخيص | داخل MarketingSpy + سجل تعاقدي | users/brands/polling/retention/exports/support | enforcement server-side، audit، grace period وتجديد |
 | TSV-21 | إدارة أسطول النسخ | Control plane أو inventory مؤتمت | معرفة نسخة وصحة وتكلفة كل عميل | version، migrations، backup، heartbeat، provider وlicense state |
 | TSV-22 | إدارة مركزية للأسرار | Cloud Secret Manager أو خدمة مستقلة | rotation وaccess audit على نطاق الأسطول | RBAC، versioning، rotation، break-glass وتنبيه وصول |
 

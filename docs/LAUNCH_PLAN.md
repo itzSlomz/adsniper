@@ -1,4 +1,4 @@
-# AdSniper launch plan
+# MarketingSpy launch plan
 
 Last updated: 2026-09-01
 
@@ -159,7 +159,7 @@ automation opportunities.
 
 ## Customer-ready definition
 
-AdSniper is ready for a paid customer only when:
+MarketingSpy is ready for a paid customer only when:
 
 1. Irreplaceable creative files persist outside the application container.
 2. Real ingestion has been repeated and verified without duplication.

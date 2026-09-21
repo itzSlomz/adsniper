@@ -15,14 +15,21 @@ import {
 
 // Modernist mono palette: accent ramp + neutral ramp only.
 const PLATFORM_COLORS: Record<string, string> = {
-  meta: "#ec3013",
-  google: "#ff9783",
-  linkedin: "#ae1800",
-  x: "#201e1d",
-  snapchat: "#9b9797",
-  tiktok: "#4d170e",
-  other: "#d7d3d3",
+  // Validated for the dark surface (dataviz six checks, 2026-09-21):
+  // lightness band, chroma floor, adjacent CVD, normal-vision floor,
+  // contrast. Fixed assignment — never re-ordered or cycled per chart.
+  meta: "#3987e5",
+  google: "#c98500",
+  linkedin: "#199e70",
+  x: "#8b5cf6",
+  snapchat: "#d95926",
+  tiktok: "#d6409f",
+  other: "#9c6f1f",
 };
+
+// Fallback series order for lines whose brand has no stored color — the
+// same validated seven; an eighth uncolored series belongs in "Other".
+const CATEGORICAL = ["#3987e5", "#c98500", "#199e70", "#8b5cf6", "#d95926", "#d6409f", "#9c6f1f"];
 
 export function AdPressureChart({
   data,
@@ -74,7 +81,7 @@ export function SeriesLineChart({
             key={s.key}
             type="monotone"
             dataKey={s.key}
-            stroke={s.color ?? ["#ec3013", "#201e1d", "#9b9797", "#ae1800", "#605d5d", "#ff9783", "#2d2b2b", "#c94b39", "#bab6b6"][i % 9]}
+            stroke={s.color ?? CATEGORICAL[i % CATEGORICAL.length]}
             dot={false}
             strokeWidth={2}
             connectNulls
