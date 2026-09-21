@@ -57,7 +57,7 @@ along with all other P0 controls in `SAAS_FOUNDATION_READINESS_AR.md`.
 | | |
 |---|---|
 | Preview instance | https://adsniper-production.up.railway.app |
-| Railway project | `handsome-manifestation` (repo `itzSlomz/adsniper`) |
+| Railway project | `marketingspy`, service `marketingspy` (repo `itzSlomz/marketingspy`) |
 | Database | Railway Postgres, service name `Postgres` |
 | Auth | Allowlisted email + shared passcode (Resend not configured) |
 | Data shown | **Synthetic sample set** — no provider keys on this instance |
@@ -106,7 +106,6 @@ after a forced container replacement.
 | Persistent media storage (demo instance) | Railway bucket `marketingspy-demo-media`; creatives survive container replacement — verified live |
 | Dependency hygiene | **Zero known advisories** across prod+dev trees (2026-09-21): Auth.js beta.32, Next 16 + React 19, Puppeteer 25; audit gate runs with an empty exceptions file |
 | Brand identity in-product | MarketingSpy dark theme: brand tokens, Geist + Noto Sans Arabic + Geist Mono, logo/favicons, validated chart palettes, light PDF scope |
-| Infrastructure rename | **Operator action required**: rename the GitHub repository, and the Railway project and service, from the dashboard — no API path exists for any of the three. The bucket is already renamed; the domain is unchanged |
 | Raw provider payloads | Original record kept per ad (>120KB replaced by a marker); backfilled on next sighting |
 | Provider adapters | Meta, Google, LinkedIn, TikTok behind one interface; region comes from instance settings |
 | Configurable offer categories | Admin-editable keyword→label map; banking defaults |

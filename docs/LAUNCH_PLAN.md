@@ -39,11 +39,11 @@ verified with evidence.
 
 | Gate | State | GitHub issue | Remaining dependency |
 |---|---|---|---|
-| 1. Durable storage | **Code path proven on real S3** (round-trip, redeploy persistence, `/media` auth) | [#1](https://github.com/itzSlomz/adsniper/issues/1) | Create the Cloudflare R2 bucket + bucket-scoped token |
-| 2. Real ingestion | **Mechanics proven, 22/22** through the real job path | [#2](https://github.com/itzSlomz/adsniper/issues/2) | One capped **paid pilot pull** with live keys |
-| 3. Unit economics | **Modeled + sourced** ($750–$2,490/yr fully loaded) | [#3](https://github.com/itzSlomz/adsniper/issues/3) | Reconcile against the first real Apify invoice |
-| 4. Pricing | **Recommendation ready** (see `DECISIONS.md`) | [#4](https://github.com/itzSlomz/adsniper/issues/4) | Operator sign-off + beta willingness-to-pay |
-| 5. Provisioning rehearsal | **Software path proven end-to-end**, zero code defects | [#5](https://github.com/itzSlomz/adsniper/issues/5) | Time one real Railway provisioning (infra + human) |
+| 1. Durable storage | **Code path proven on real S3** (round-trip, redeploy persistence, `/media` auth) | [#1](https://github.com/itzSlomz/marketingspy/issues/1) | Create the Cloudflare R2 bucket + bucket-scoped token |
+| 2. Real ingestion | **Mechanics proven, 22/22** through the real job path | [#2](https://github.com/itzSlomz/marketingspy/issues/2) | One capped **paid pilot pull** with live keys |
+| 3. Unit economics | **Modeled + sourced** ($750–$2,490/yr fully loaded) | [#3](https://github.com/itzSlomz/marketingspy/issues/3) | Reconcile against the first real Apify invoice |
+| 4. Pricing | **Recommendation ready** (see `DECISIONS.md`) | [#4](https://github.com/itzSlomz/marketingspy/issues/4) | Operator sign-off + beta willingness-to-pay |
+| 5. Provisioning rehearsal | **Software path proven end-to-end**, zero code defects | [#5](https://github.com/itzSlomz/marketingspy/issues/5) | Time one real Railway provisioning (infra + human) |
 
 “Blocked” here means the gate cannot be *completed truthfully* yet — i.e. it
 still needs money spent or cloud infrastructure created. Everything provable

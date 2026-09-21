@@ -839,7 +839,10 @@ function validateAllowlist(allowlist, lockPackages, now, problems) {
     const trackingMatch =
       typeof entry.trackingItem === "string"
         ? entry.trackingItem.match(
-            /^https:\/\/github\.com\/itzSlomz\/adsniper\/(?:issues|pull)\/(\d+)(?:#[A-Za-z0-9_.-]+)?$/
+            // The repository was renamed adsniper → marketingspy on
+            // 2026-09-21. Both names are accepted: GitHub redirects the old
+            // one, and exceptions accepted before the rename cite it.
+            /^https:\/\/github\.com\/itzSlomz\/(?:marketingspy|adsniper)\/(?:issues|pull)\/(\d+)(?:#[A-Za-z0-9_.-]+)?$/
           )
         : null;
     if (
