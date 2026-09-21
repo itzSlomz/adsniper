@@ -12,6 +12,20 @@ continues on `main`, which carries the identical history.
 
 ## 2026-09-21
 
+**Repository, Railway project and service renamed; references follow**
+The operator completed the three dashboard renames (GitHub repository,
+Railway project, Railway service) that no API path covers. This commit
+follows them in the codebase. The functional change is in the dependency
+audit: its tracking-URL check was hard-coded to the old repository name,
+so any exception citing the renamed repository would have been rejected
+and failed CI. It now accepts either name — GitHub redirects the old one,
+and exceptions accepted before the rename still cite it — and continues to
+reject other owners and other hosts (verified against both).
+STATUS records the new project, service and repository and drops the
+infrastructure-rename blocker; the launch-plan tracker links point at the
+new name. `docs/PR-01-VERIFICATION.md` keeps the old name: it is a dated
+record of runs that happened under it. The service domain is unchanged.
+
 **(infra, no code diff) Demo instance moved to the `marketingspy-demo-media`
 bucket; Railway naming partially blocked**
 A new Railway bucket `marketingspy-demo-media` was created in the same
