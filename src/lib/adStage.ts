@@ -16,6 +16,9 @@ export interface AdStage {
   labelAr: string;
   /** What the label licenses a reader to conclude. */
   meaning: string;
+  /** UI badge color, stepped for the dark theme. The dot never appears
+   *  without its label — stage identity must survive without color. */
+  color: string;
 }
 
 export const TRACTION_AFTER_DAYS = 14;
@@ -26,18 +29,21 @@ const STAGES: Record<AdStageKey, AdStage> = {
     key: "test",
     labelEn: "New test",
     labelAr: "اختبار جديد",
+    color: "#ffb020",
     meaning: `Running under ${TRACTION_AFTER_DAYS} days — may be switched off at any point.`,
   },
   traction: {
     key: "traction",
     labelEn: "Gaining traction",
     labelAr: "يكتسب زخمًا",
+    color: "#5cd5ff",
     meaning: `Running ${TRACTION_AFTER_DAYS}–${PROVEN_AFTER_DAYS - 1} days — survived the usual kill window.`,
   },
   proven: {
     key: "proven",
     labelEn: "Proven",
     labelAr: "مثبت",
+    color: "#4ade80",
     meaning: `Running ${PROVEN_AFTER_DAYS}+ days — the advertiser keeps funding it.`,
   },
 };

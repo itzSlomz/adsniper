@@ -60,7 +60,10 @@ function AdCard({ ad, onOpen }: { ad: AdCardData; onOpen: () => void }) {
           </span>
         )}
         <div className="media-strip">
-          <span>{stageForDays(daysActive(ad)).labelEn}</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+            <span aria-hidden style={{ width: 6, height: 6, borderRadius: "50%", background: stageForDays(daysActive(ad)).color }} />
+            {stageForDays(daysActive(ad)).labelEn}
+          </span>
           <span>{daysActive(ad)}d running</span>
         </div>
       </div>

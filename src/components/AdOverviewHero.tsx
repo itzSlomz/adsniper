@@ -94,7 +94,10 @@ export default function AdOverviewHero({
                     </div>
                   )}
                   <div className="media-strip">
-                    <span>{stageForDays(daysRunning(a)).labelEn}</span>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                      <span aria-hidden style={{ width: 6, height: 6, borderRadius: "50%", background: stageForDays(daysRunning(a)).color }} />
+                      {stageForDays(daysRunning(a)).labelEn}
+                    </span>
                     <span>
                       <b>{daysRunning(a)}d</b> running
                     </span>

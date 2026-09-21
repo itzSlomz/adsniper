@@ -6,6 +6,27 @@ new information.
 
 ---
 
+## 2026-09-21 · MarketingSpy, dark-first, with Noto Sans Arabic as the Arabic peer
+**Decided:** the product is renamed MarketingSpy and themed dark-first
+from the supplied brand package; Arabic sets in Noto Sans Arabic at the
+same scale and weights as the Latin, and PDF exports stay light via a
+`.print-light` token scope.
+**Why:** the brand is black-shelled, and a dark ground is what lets
+competitor creatives — the actual product — carry all the colour;
+a light chrome competes with them. The brand ships no Arabic face, and
+Product Law 4 makes Arabic a peer rather than a fallback, so a companion
+had to be named rather than left to the system font: Noto Sans Arabic is
+the neutral match for Geist and holds up at dashboard sizes. Reports are
+printed and forwarded, where ink-on-paper is the only sane default, so
+the export scope re-declares the same token names instead of forking the
+component classes.
+**Rejected:** a light theme with dark accents (fights the identity and
+the creatives); shipping both themes now (doubles the surface to verify
+for no customer asking); IBM Plex Sans Arabic (good face, further from
+Geist's voice) and Cairo (strong personality that competes with the
+brand); recolouring the charts by eye (the palettes were re-stepped and
+run through the validator instead).
+
 ## 2026-09-20 · Direct ESLint 9 after Next 16, with three scoped overrides
 **Decided:** with `next lint` removed in Next 16, `npm run lint` runs
 ESLint 9 on eslint-config-next's native flat configs over the whole

@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(Readable.toWeb(pass) as ReadableStream, {
     headers: {
       "Content-Type": "application/zip",
-      "Content-Disposition": `attachment; filename="adsniper-ads-${stamp}.zip"`,
+      "Content-Disposition": `attachment; filename="marketingspy-ads-${stamp}.zip"`,
       "Cache-Control": "no-store",
     },
   });

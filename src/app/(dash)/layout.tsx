@@ -17,8 +17,8 @@ export default async function DashLayout({ children }: { children: React.ReactNo
       {isStaging && (
         <div
           style={{
-            background: "#201e1d",
-            color: "#fff",
+            background: "var(--color-accent)",
+            color: "#000",
             textAlign: "center",
             fontSize: 12,
             fontWeight: 800,
@@ -47,8 +47,20 @@ export default async function DashLayout({ children }: { children: React.ReactNo
         </div>
       )}
       <header className="nav sticky top-0 z-40" style={{ background: "var(--color-bg)" }}>
-        <span className="nav-brand">
-          ADSNIPER<span style={{ color: "var(--color-accent)" }}>.</span>
+        <span className="nav-brand wordmark">
+          <svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true" style={{ color: "var(--color-text)" }}>
+            <g fill="currentColor">
+              <rect x="15" y="4.5" width="18" height="5" rx="2.5" />
+              <rect x="9" y="13" width="30" height="5" rx="2.5" />
+              <rect x="9" y="30" width="30" height="5" rx="2.5" />
+              <rect x="15" y="38.5" width="18" height="5" rx="2.5" />
+            </g>
+            <g fill="var(--color-accent)">
+              <rect x="4" y="21.5" width="14" height="5" rx="2.5" />
+              <rect x="30" y="21.5" width="14" height="5" rx="2.5" />
+            </g>
+          </svg>
+          Marketing<span className="dim">Spy</span>
         </span>
         {instance.customerNameEn && (
           <span className="text-muted" style={{ fontSize: 12, marginInlineEnd: 8 }}>

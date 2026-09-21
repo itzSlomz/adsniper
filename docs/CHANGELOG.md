@@ -12,6 +12,28 @@ continues on `main`, which carries the identical history.
 
 ## 2026-09-21
 
+**Rebrand to MarketingSpy and rebuild the theme dark-first from the brand**
+The product takes the MarketingSpy identity the operator supplied. The
+design system (`modernist.css`) keeps its class contract but its tokens
+now implement the brand: black shell (#000 / #181818), hairline borders
+instead of 2px rules, one coral signal (#FF7F5C on dark, #D9420F on
+light), Geist for the interface, Noto Sans Arabic as the approved Arabic
+peer (the brand ships no Arabic face), Geist Mono with tabular figures
+for every count, date and money figure, and Chakra Petch reserved for the
+wordmark — it sets no UI text. The neutral and accent ramps are inverted
+for the dark ground so existing pairings keep their meaning.
+Chart palettes were re-stepped for the dark surface and validated with
+the dataviz six checks (lightness band, chroma floor, adjacent CVD,
+normal-vision floor, contrast): all pass. Ad lifecycle stages now carry a
+color on the stage object, rendered as a dot that never appears without
+its label. PDF exports get a `.print-light` scope that re-declares the
+tokens to ink-on-paper, so a customer-facing report never inherits the
+dark app theme. The real logo mark ships in the nav, as the favicon set
+and under `public/brand/`.
+Verified: typecheck, zero-warning lint, 193/193 tests, production build,
+and a real server on a real database — sign-in, dashboard, Intel,
+methodology and compare all render on the new theme (screenshots taken).
+
 **Upgrade Puppeteer 24 → 25 — the dependency tree reaches zero known
 advisories (PR-02 complete)**
 The last four High findings all rode the Puppeteer chain; 25.11 drops

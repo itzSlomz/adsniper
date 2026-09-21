@@ -11,7 +11,7 @@ Humans: this is a summary of conventions. The full runbook is
 
 ## What this project is
 
-AdSniper is competitive **ad intelligence**, sold to a brand as a yearly
+MarketingSpy is competitive **ad intelligence**, sold to a brand as a yearly
 subscription. Each customer runs a **dedicated instance** — its own app
 service, Postgres database and media storage — tracking that customer's
 brand plus up to eight competitors. It archives every competitor ad

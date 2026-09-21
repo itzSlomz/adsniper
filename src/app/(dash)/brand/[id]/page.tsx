@@ -102,7 +102,7 @@ export default async function BrandDeepDive(props: { params: Promise<{ id: strin
 
       <section className="card elev-sm">
         <h2 className="mb-2 text-base font-semibold">Engagement trend (90d)</h2>
-        <SeriesLineChart data={Object.values(trend)} series={[{ key: "engagement", color: "#ec3013" }]} />
+        <SeriesLineChart data={Object.values(trend)} series={[{ key: "engagement", color: "#ff7f5c" }]} />
       </section>
 
       <section>
@@ -138,7 +138,7 @@ export default async function BrandDeepDive(props: { params: Promise<{ id: strin
       {followerSeries.length > 1 && (
         <section className="card elev-sm">
           <h2 className="mb-2 text-base font-semibold">Follower growth</h2>
-          <SeriesLineChart data={followerSeries} series={[{ key: "x", color: "#201e1d" }, { key: "linkedin", color: "#ec3013" }]} />
+          <SeriesLineChart data={followerSeries} series={[{ key: "x", color: "#f5f5f4" }, { key: "linkedin", color: "#3987e5" }]} />
         </section>
       )}
 

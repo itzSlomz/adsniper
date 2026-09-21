@@ -17,9 +17,9 @@
 .plat-badge {
   position: absolute; top: 0; left: 0; z-index: 1;
   display: inline-flex; align-items: center; justify-content: center;
-  width: 26px; height: 26px; font-size: 12px; font-weight: 800;
-  font-family: var(--font-heading);
-  background: var(--color-text); color: var(--color-bg);
+  width: 26px; height: 26px; font-size: 12px; font-weight: 700;
+  font-family: var(--font-numeric);
+  background: rgba(255, 255, 255, 0.92); color: #111111;
 }
 
 .media-strip {
@@ -28,8 +28,8 @@
   padding: 4px 8px; font-size: 10px; letter-spacing: 0.08em;
   text-transform: uppercase; font-weight: 800;
   font-family: var(--font-heading);
-  background: color-mix(in srgb, var(--color-text) 82%, transparent);
-  color: var(--color-bg);
+  background: rgba(0, 0, 0, 0.72);
+  color: #ffffff;
 }
 
 /* Red-left-border callout, per the mock ("Above average engagement" etc.) */
@@ -47,7 +47,7 @@
 /* Labeled stat columns (LIKES / COMMENTS / …) in card footers. */
 .statrow { display: flex; gap: var(--space-3); }
 .statrow .stat { display: flex; flex-direction: column; }
-.statrow .stat b { font-size: 13px; font-family: var(--font-heading); font-weight: 800; }
+.statrow .stat b { font-size: 13px; font-family: var(--font-numeric); font-variant-numeric: tabular-nums; font-weight: 600; }
 .statrow .stat span {
   font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
   color: color-mix(in srgb, var(--color-text) 55%, transparent);
@@ -58,7 +58,7 @@
   border: 1px solid var(--color-divider); padding: 6px 12px; min-width: 96px;
   background: var(--color-surface);
 }
-.kpi-chip b { display: block; font-size: 20px; line-height: 1.1; font-family: var(--font-heading); font-weight: 800; }
+.kpi-chip b { display: block; font-size: 20px; line-height: 1.1; font-family: var(--font-numeric); font-variant-numeric: tabular-nums; font-weight: 600; }
 .kpi-chip span {
   font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
   color: color-mix(in srgb, var(--color-text) 60%, transparent);
@@ -76,7 +76,7 @@
 /* Section header: kicker tag + flush-left title over a 2px rule. */
 .section-head {
   display: flex; align-items: baseline; gap: var(--space-3);
-  padding-bottom: var(--space-2); border-bottom: 2px solid var(--color-divider);
+  padding-bottom: var(--space-2); border-bottom: 1px solid var(--color-divider);
   margin-bottom: var(--space-4);
 }
 .section-kicker {

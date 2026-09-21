@@ -214,7 +214,7 @@ export interface StorageCheck {
 export async function checkStorage(): Promise<StorageCheck> {
   const { kind, target } = storageTarget();
   const key = `_healthcheck/${Date.now()}.txt`;
-  const payload = Buffer.from(`adsniper storage check ${new Date().toISOString()}`);
+  const payload = Buffer.from(`marketingspy storage check ${new Date().toISOString()}`);
   try {
     const s = getStorage();
     await s.put(key, payload, "text/plain");

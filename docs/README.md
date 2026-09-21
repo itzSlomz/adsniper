@@ -1,4 +1,10 @@
-# AdSniper — project documentation
+# MarketingSpy — project documentation
+
+> Formerly **AdSniper**; renamed 2026-09-21 when the brand identity landed
+> (see `DECISIONS.md`). Dated entries in `CHANGELOG.md` and `DECISIONS.md`
+> keep the old name where that is what was decided at the time, and
+> `deliverables/AdSniper_cost_model.xlsx` keeps its filename until the cost
+> model is next rebuilt.
 
 Written for humans **and for AI agents** picking this project up cold.
 If you are an agent starting a session on this repository, read this page
@@ -6,7 +12,7 @@ first, then `STATUS.md`.
 
 ## What this project is
 
-AdSniper is competitive **ad intelligence** sold to a brand as a yearly
+MarketingSpy is competitive **ad intelligence** sold to a brand as a yearly
 subscription. Each customer runs a dedicated instance (own app service,
 own Postgres, own media storage) that tracks their brand plus up to eight
 competitors, archives every ad creative, tracks how long each ad has run,

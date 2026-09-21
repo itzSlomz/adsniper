@@ -76,7 +76,7 @@ export default async function SettingsPage() {
             : license.expiresAt
               ? `${license.plan ? `${license.plan} — ` : ""}until ${license.expiresAt.toISOString().slice(0, 10)} (${license.daysLeft} days left)`
               : "—"}
-          . Managed by your AdSniper account manager.
+          . Managed by your MarketingSpy account manager.
         </p>
       </form>
 

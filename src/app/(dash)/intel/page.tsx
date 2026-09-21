@@ -102,7 +102,7 @@ export default async function IntelPage(
         {searchParams.storage && (
           <p
             className="text-sm"
-            style={{ margin: 0, color: searchParams.storage.startsWith("ok") ? "#1a7f37" : "var(--color-accent)" }}
+            style={{ margin: 0, color: searchParams.storage.startsWith("ok") ? "#4ade80" : "var(--color-accent)" }}
           >
             {searchParams.storage.startsWith("ok") ? "✓ " : "✗ "}
             {searchParams.storage.slice(3)}
