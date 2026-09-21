@@ -10,6 +10,20 @@ continues on `main`, which carries the identical history.
 
 ---
 
+## 2026-09-21
+
+**Upgrade Puppeteer 24 → 25 — the dependency tree reaches zero known
+advisories (PR-02 complete)**
+The last four High findings all rode the Puppeteer chain; 25.11 drops
+`extract-zip` entirely (33 packages removed). Our surface is one
+`puppeteer.launch({ headless, args, executablePath })` call, unchanged
+across the major. The dependency-audit exceptions file is now empty —
+zero exceptions, zero baseline pins — so any future finding fails the
+gate on arrival and must be remediated or explicitly, datedly excepted.
+Verified: audit PASS with 0 exceptions, typecheck, zero-warning lint,
+193/193 tests, Turbopack build, and a 48KB weekly PDF exported through
+Puppeteer 25 against a running server.
+
 ## 2026-09-20
 
 **Upgrade the framework: Next 14.2 → 16.3, React 18 → 19 (PR-02, part 1)**
