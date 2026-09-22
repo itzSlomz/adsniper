@@ -84,9 +84,10 @@ commit as the work it describes: a feature is done when `STATUS.md` and
   Expired → middleware locks every surface to `/license-expired` AND the
   job runner refuses to run (status `stopped_license`), so a lapsed
   customer costs nothing. 30-day renewal banner ahead of expiry.
-- **Auth**: everything requires login (allowlisted emails, magic links
-  via Resend or passcode fallback). Viewer role for executives, admin
-  for the marketing/product operators.
+- **Auth**: everything requires login (allowlisted accounts: username +
+  instance password, or magic links via Resend once configured; an email
+  is never a login handle). Viewer role for executives, admin for the
+  marketing/product operators.
 
 ## Provisioning runbook — new customer
 
@@ -105,8 +106,11 @@ One sale = one Railway project. ~30 minutes.
 2. **Set env vars** from `.env.example`. Per customer:
    - `LICENSE_EXPIRES_AT` (contract end date), `LICENSE_PLAN`,
      `VENDOR_CONTACT_EMAIL`, `CUSTOMER_NAME`, `MARKET_REGION`
-   - `SEED_ADMIN_EMAIL` = the customer admin's email
-   - fresh `AUTH_SECRET` + `AUTH_PASSCODE` (until Resend is configured)
+   - `SEED_ADMIN_EMAIL` = the customer admin's email, and
+     `SEED_ADMIN_USERNAME` = the handle they sign in with (e.g.
+     `marketingspy`; letters, digits, dot, dash, underscore — never an email)
+   - fresh `AUTH_SECRET` + `AUTH_PASSWORD` (until Resend is configured;
+     the retired `AUTH_PASSCODE` is no longer read)
    - provider keys (one Apify token serves all adapters) and cost
      ceilings matched to their plan
    - **Media storage — do not skip.** Either an R2 bucket dedicated to
@@ -170,7 +174,7 @@ All triggerable from Intel → "Run now", or `npx tsx scripts/run-job.ts <job>`.
 cp .env.example .env   # fill in values
 npm ci                 # install exactly from package-lock.json
 npx prisma migrate dev
-npm run db:seed        # SEED_ADMIN_EMAIL seeds the first admin
+npm run db:seed        # SEED_ADMIN_EMAIL + SEED_ADMIN_USERNAME seed the first admin
 npm run dev
 ```
 

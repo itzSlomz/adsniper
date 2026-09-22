@@ -5,11 +5,18 @@ import Resend from "next-auth/providers/resend";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import { authConfig } from "@/auth.config";
+import {
+  configuredPassword,
+  normalizeUsername,
+  passwordMatches,
+} from "@/lib/passwordLogin";
 
 // Primary sign-in is Resend magic links, active once RESEND_API_KEY is set.
-// Until then the Phase 0 fallback applies: allowlisted email + a 6-digit
-// passcode from AUTH_PASSCODE. Both paths reject any email not in the User
-// table (the allowlist).
+// Until then the fallback applies: a username from the User table plus the
+// instance password from AUTH_PASSWORD. Both paths reject anyone not in the
+// User table (the allowlist). The password path never takes an email as the
+// login handle — the email is the account's contact and magic-link address,
+// the username is what a person types on the sign-in screen.
 const providers = [];
 
 if (process.env.RESEND_API_KEY) {
@@ -21,27 +28,35 @@ if (process.env.RESEND_API_KEY) {
   );
 }
 
-if (process.env.AUTH_PASSCODE) {
+const instancePassword = configuredPassword();
+
+if (instancePassword) {
   providers.push(
     Credentials({
-      name: "Email + passcode",
+      name: "Username + password",
       credentials: {
-        email: { label: "Email", type: "email" },
-        passcode: { label: "Passcode", type: "password" },
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        // Trim both fields — copy-pasted credentials often carry stray
-        // whitespace, and an exact-match passcode must not fail on it.
-        const email = String(credentials?.email ?? "").toLowerCase().trim();
-        const passcode = String(credentials?.passcode ?? "").trim();
-        if (!email || passcode !== process.env.AUTH_PASSCODE?.trim()) return null;
-        const user = await prisma.user.findUnique({ where: { email } });
+        const username = normalizeUsername(credentials?.username);
+        // Password first, before any database read: a wrong password then
+        // costs the same whether or not the username exists.
+        if (!username || !passwordMatches(credentials?.password, instancePassword)) {
+          return null;
+        }
+        const user = await prisma.user.findUnique({ where: { username } });
         if (!user) return null;
         await prisma.user.update({
           where: { id: user.id },
           data: { lastLoginAt: new Date() },
         });
-        return { id: user.id, email: user.email, role: user.role };
+        return {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          role: user.role,
+        };
       },
     })
   );

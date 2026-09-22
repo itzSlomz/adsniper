@@ -70,6 +70,17 @@ comparable to a dedicated instance).
 
 ## Deferred — good, not now
 
+### Per-user passwords instead of one instance password
+`deferred` · raised 2026-09-22 while moving sign-in from email to username
+Sign-in now identifies a person by username, but every account still
+shares the one `AUTH_PASSWORD` — readiness item IAM-01 (no shared
+credential in production) stays open. The next step is a password hash
+per `User` row (Node's `scrypt`, no new dependency), with an admin flow
+to set, reset and revoke it and a rate limit on the sign-in route. Not
+now: it is a credential-management feature of its own, and the current
+customer is a single-admin demo instance. Resend magic links remain the
+intended primary path once a sending domain exists.
+
 ### Alerting and notification screens
 `deferred` · parked by the operator during Watchtower
 Mid-week alerts for significant competitor moves. The weekly briefing is
