@@ -6,6 +6,28 @@ new information.
 
 ---
 
+## 2026-09-22 · Password sign-in identifies a person by username; the password stays an instance secret
+**Decided:** the Credentials path takes a username and a password. The
+username lives on the `User` row (nullable, unique) and is never an
+email; the password is one instance secret, `AUTH_PASSWORD`, which
+replaces the 6-digit `AUTH_PASSCODE` with no alias.
+**Why:** the operator asked for a login handle (`marketingspy`) instead
+of a personal email on the sign-in screen. Keeping the handle in the
+database preserves the existing model — allowlisted accounts, one
+instance secret — so Intel → Users keeps working and no
+credential-management surface is added. The email stays on the row as
+the account's contact and future magic-link address. No alias for
+`AUTH_PASSCODE`: a silent alias would let an instance keep a variable
+the code no longer documents, so the startup preflight names the rename
+instead.
+**Rejected:** a single `AUTH_USERNAME` variable mapped onto the seeded
+admin (an implicit coupling to `SEED_ADMIN_EMAIL`, and no second account
+could ever sign in); accepting either an email or a username at sign-in
+(defeats the point of the change); per-user password hashes now — the
+right answer to readiness item IAM-01, but they need set, reset and
+revoke flows of their own, so they are deferred in `IDEAS.md`, not
+rejected.
+
 ## 2026-09-21 · MarketingSpy, dark-first, with Noto Sans Arabic as the Arabic peer
 **Decided:** the product is renamed MarketingSpy and themed dark-first
 from the supplied brand package; Arabic sets in Noto Sans Arabic at the

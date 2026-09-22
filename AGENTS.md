@@ -59,9 +59,9 @@ These are not style preferences. Violating one is a bug.
 
 ```bash
 npm ci
-cp .env.example .env          # fill DATABASE_URL, AUTH_SECRET, AUTH_PASSCODE at minimum
+cp .env.example .env          # fill DATABASE_URL, AUTH_SECRET, AUTH_PASSWORD at minimum
 npx prisma migrate deploy     # or: npm run db:migrate
-npm run db:seed               # SEED_ADMIN_EMAIL creates the first admin
+npm run db:seed               # SEED_ADMIN_EMAIL + SEED_ADMIN_USERNAME create the first admin
 npm run dev
 ```
 
