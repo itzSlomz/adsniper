@@ -59,7 +59,7 @@ along with all other P0 controls in `SAAS_FOUNDATION_READINESS_AR.md`.
 | Preview instance | https://adsniper-production.up.railway.app |
 | Railway project | `marketingspy`, service `marketingspy` (repo `itzSlomz/marketingspy`) |
 | Database | Railway Postgres, service name `Postgres` |
-| Auth | Username + instance password (`AUTH_PASSWORD`); Resend not configured. Variables for the cutover are set on the service; live once this change deploys from `main` |
+| Auth | Username + instance password (`AUTH_PASSWORD`), live since 2026-09-22 and verified on the deployed build (the handle signs in; the email and the retired `AUTH_PASSCODE` do not); Resend not configured |
 | Data shown | **Synthetic sample set** — no provider keys on this instance |
 | Verification | 21 of 22 automated checks passed against the deployed build |
 | Media storage | Railway bucket `marketingspy-demo-media` — wired by variable references, no secret ever left Railway |

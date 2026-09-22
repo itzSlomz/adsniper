@@ -12,7 +12,7 @@ continues on `main`, which carries the identical history.
 
 ## 2026-09-22
 
-**Password sign-in identifies a person by username, never by email**
+**`efda925` Password sign-in identifies a person by username, never by email**
 The sign-in screen now asks for a username and a password. `User` gains a
 nullable unique `username` (additive migration
 `20260922100000_user_username`); the Credentials provider looks the handle
@@ -39,11 +39,18 @@ handle rules and the password comparison. The password is still one
 shared instance secret, so readiness item IAM-01 stays open (see
 `IDEAS.md`).
 
-**(infra, no code diff) Demo instance variables prepared for the cutover**
+**(infra, no code diff) Demo instance cut over to username sign-in**
 `SEED_ADMIN_USERNAME` and `AUTH_PASSWORD` were set on the `marketingspy`
-service without a redeploy; they take effect with the first deploy of
-this change from `main`. `AUTH_PASSCODE` stays until then so the current
-build keeps its sign-in, and can be deleted afterwards.
+service without a redeploy, so the running build kept its passcode
+sign-in until the merge deployed. The deploy of merge commit `56271ea`
+applied `20260922100000_user_username`, the seed reported the admin
+signing in as `marketingspy`, and the live instance was verified:
+username + password → session, a wrong password and the email as
+username → none, the header shows the handle and the email appears
+nowhere on the page. `AUTH_PASSCODE` was then deleted from the service
+(Railway redeploys the same build on a variable change). The sign-in
+screen at `adsniper-production.up.railway.app` now takes a username and
+a password.
 
 ## 2026-09-21
 
