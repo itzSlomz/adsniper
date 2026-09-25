@@ -24,10 +24,24 @@ if (!process.env.AUTH_SECRET) {
 
 // Without a sign-in method nobody can reach the dashboard: the instance
 // would deploy successfully and still be unusable.
-if (!process.env.RESEND_API_KEY && !process.env.AUTH_PASSCODE) {
+const password = process.env.AUTH_PASSWORD?.trim();
+if (!process.env.RESEND_API_KEY && !password) {
   warnings.push(
     "No sign-in method configured — set RESEND_API_KEY (magic links) or " +
-      "AUTH_PASSCODE (shared passcode). Nobody can sign in until one exists."
+      "AUTH_PASSWORD (username + password). Nobody can sign in until one exists." +
+      (process.env.AUTH_PASSCODE
+        ? " AUTH_PASSCODE is no longer read: move its value to AUTH_PASSWORD."
+        : "")
+  );
+}
+
+// Password sign-in identifies a person by username, never by email: with
+// a password but no handle for the admin, a fresh database has no one who
+// can sign in.
+if (password && !process.env.SEED_ADMIN_USERNAME) {
+  warnings.push(
+    "SEED_ADMIN_USERNAME not set — the admin has no username to sign in " +
+      "with; set it (e.g. marketingspy) alongside SEED_ADMIN_EMAIL."
   );
 }
 

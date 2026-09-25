@@ -60,6 +60,46 @@ visible job through the `(job, startedAt)` index instead of an in-memory
 `distinct` over the whole JobRun table; a job whose last run fell outside
 the old 30-row window now shows its real last run. Harness: 85/85.
 
+**`efda925` Password sign-in identifies a person by username, never by email**
+The sign-in screen now asks for a username and a password. `User` gains a
+nullable unique `username` (additive migration
+`20260922100000_user_username`); the Credentials provider looks the handle
+up in the User table and checks the password against `AUTH_PASSWORD` in
+constant time, before any database read, so a wrong password costs the
+same whether or not the handle exists. An email is never accepted as a
+login handle — it stays the account's contact and magic-link address.
+The seed sets the admin's handle from `SEED_ADMIN_USERNAME`, and refuses
+with a warning (rather than crashing the container start) when the value
+is not a valid handle or already belongs to another account. The header
+shows the handle instead of the email, and Intel → Users lists and sets
+usernames — required there while password sign-in is the active method,
+because an account without one cannot sign in. `AUTH_PASSCODE` is
+retired with no alias: the preflight names the rename when the old
+variable is still set, and warns when a password is configured without
+`SEED_ADMIN_USERNAME`. The rehearsal and tour scripts follow.
+Verified on the production build against a real Postgres: the migration
+applies; username + password → session (also with mixed case and
+padding); wrong password, the email as username, and an unknown handle →
+no session; a second allowlisted account signs in with its own handle;
+the header carries the handle and the email appears nowhere on the
+page; anonymous requests still redirect to `/login`. Unit tests pin the
+handle rules and the password comparison. The password is still one
+shared instance secret, so readiness item IAM-01 stays open (see
+`IDEAS.md`).
+
+**(infra, no code diff) Demo instance cut over to username sign-in**
+`SEED_ADMIN_USERNAME` and `AUTH_PASSWORD` were set on the `marketingspy`
+service without a redeploy, so the running build kept its passcode
+sign-in until the merge deployed. The deploy of merge commit `56271ea`
+applied `20260922100000_user_username`, the seed reported the admin
+signing in as `marketingspy`, and the live instance was verified:
+username + password → session, a wrong password and the email as
+username → none, the header shows the handle and the email appears
+nowhere on the page. `AUTH_PASSCODE` was then deleted from the service
+(Railway redeploys the same build on a variable change). The sign-in
+screen at `adsniper-production.up.railway.app` now takes a username and
+a password.
+
 ## 2026-09-21
 
 **Repository, Railway project and service renamed; references follow**

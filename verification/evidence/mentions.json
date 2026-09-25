@@ -1,5 +1,5 @@
 {
-  "at": "2026-09-25T16:10:14.646Z",
+  "at": "2026-09-25T16:14:44.358Z",
   "passed": 85,
   "total": 85,
   "checks": [
@@ -71,7 +71,7 @@
     {
       "name": "05 X-1 has one author: handle alice_pub, externalAuthorId 9001, displayName null",
       "pass": true,
-      "detail": "{\"id\":\"cmuh5pxxt000fe3q6mqp2kq77\",\"mentionId\":\"cmuh5pxxt000ee3q6p9g44zn1\",\"handle\":\"alice_pub\",\"externalAuthorId\":\"9001\",\"displayName\":null,\"followers\":null,\"createdAt\":\"2026-09-25T16:10:13.650Z\"}"
+      "detail": "{\"id\":\"cmuh5vq4z000faqp1sy4l9auv\",\"mentionId\":\"cmuh5vq4y000eaqp1zfp84dq9\",\"handle\":\"alice_pub\",\"externalAuthorId\":\"9001\",\"displayName\":null,\"followers\":null,\"createdAt\":\"2026-09-25T16:14:43.475Z\"}"
     },
     {
       "name": "05 every Mention.url is the identifier-free /i/status/ form",
@@ -136,7 +136,7 @@
     {
       "name": "10 third pull under a cap of 2: partial, both brands report daily cap reached",
       "pass": true,
-      "detail": "(info) Bank Albilad: daily cap reached (calls 5/2, items 0/200) — skipped | (info) FixtureCo: daily cap reached (calls 2/2, items 15/200) — skipped | (info) Al Rajhi Bank: daily cap reached (calls 5/2, items 0/200) — skipped | (info) SNB (Saudi National Bank): daily cap reached (calls 5/2, items 0/200) — skipped | (info) Riyad Bank: daily cap reached (calls 5/2, items 0/200) — skipped | (info) Alinma Bank: daily cap reached (calls 5/2, items 0/200) — skipped | (info) SAB: daily cap reached (calls 5/2, items 0/200) — skipped | (info) ANB (Arab National Bank): daily cap reached (calls 5/2, items 0/200) — skipped | (info) D360 Bank: daily cap reached (calls 5/2, items 0/200) — skipped | (info) STC Bank: daily cap reached (calls 5/2, items 0/200) — skipped | (info) RivalCo: daily cap reached (calls 2/2, items 2/200) — skipped"
+      "detail": "(info) Bank Albilad: daily cap reached (calls 8/2, items 0/200) — skipped | (info) FixtureCo: daily cap reached (calls 2/2, items 15/200) — skipped | (info) Al Rajhi Bank: daily cap reached (calls 8/2, items 0/200) — skipped | (info) SNB (Saudi National Bank): daily cap reached (calls 8/2, items 0/200) — skipped | (info) Riyad Bank: daily cap reached (calls 8/2, items 0/200) — skipped | (info) Alinma Bank: daily cap reached (calls 8/2, items 0/200) — skipped | (info) SAB: daily cap reached (calls 8/2, items 0/200) — skipped | (info) ANB (Arab National Bank): daily cap reached (calls 8/2, items 0/200) — skipped | (info) D360 Bank: daily cap reached (calls 8/2, items 0/200) — skipped | (info) STC Bank: daily cap reached (calls 8/2, items 0/200) — skipped | (info) RivalCo: daily cap reached (calls 2/2, items 2/200) — skipped"
     },
     {
       "name": "10 cap: no new log rows or MentionPull rows",

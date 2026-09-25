@@ -82,7 +82,7 @@ export default async function DashLayout({ children }: { children: React.ReactNo
             }}
           >
             <button className="btn btn-ghost" style={{ fontSize: 12 }}>
-              {session.user.email} · Sign out
+              {(session.user as { username?: string }).username ?? session.user.email} · Sign out
             </button>
           </form>
         )}

@@ -5,7 +5,8 @@ import { redirect } from "next/navigation";
 export const dynamic = "force-dynamic";
 
 // Deliberately neutral surface: no bank name, branding, or purpose disclosed
-// pre-auth (Section 10). Passcode fallback is active until Resend is wired.
+// pre-auth (Section 10). Username + password is the fallback until Resend is
+// wired; the handle is never an email.
 export default async function LoginPage(
   props: {
     searchParams: Promise<{ error?: string }>;
@@ -40,22 +41,36 @@ export default async function LoginPage(
             Sign-in failed. Check your details.
           </p>
         )}
-        <input
-          name="email"
-          type="email"
-          required
-          placeholder="Email"
-          className="input"
-        />
-        {!magicLinks && (
+        {magicLinks ? (
           <input
-            name="passcode"
-            type="password"
+            name="email"
+            type="email"
             required
-            inputMode="numeric"
-            placeholder="Passcode"
+            autoComplete="email"
+            placeholder="Email"
             className="input"
           />
+        ) : (
+          <>
+            <input
+              name="username"
+              type="text"
+              required
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              placeholder="Username"
+              className="input"
+            />
+            <input
+              name="password"
+              type="password"
+              required
+              autoComplete="current-password"
+              placeholder="Password"
+              className="input"
+            />
+          </>
         )}
         <button className="btn btn-primary btn-block">
           {magicLinks ? "Send sign-in link" : "Sign in"}

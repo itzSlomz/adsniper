@@ -6,6 +6,9 @@ const EXPIRED = "http://127.0.0.1:8090";
 const SELF = "cmtl421jv0000884mypsf3kg0";
 const COMP = "cmtl421k90006884mhzvdr47q";
 const WEEK = "2026-08-27";
+// Sign-in is by username + instance password (AUTH_PASSWORD of the toured instance).
+const USERNAME = process.env.TOUR_USERNAME ?? "marketingspy";
+const PASSWORD = process.env.TOUR_PASSWORD ?? "";
 const out = "/home/claude/tour";
 fs.mkdirSync(out, { recursive: true });
 
@@ -44,8 +47,8 @@ const go = async (url) => { await p.goto(url, { waitUntil: "networkidle2", timeo
 
 async function login(base) {
   await go(base + "/login");
-  await p.type('input[name="email"]', "saloom434@gmail.com");
-  await p.type('input[name="passcode"]', "428913");
+  await p.type('input[name="username"]', USERNAME);
+  await p.type('input[name="password"]', PASSWORD);
   await Promise.all([p.waitForNavigation({ waitUntil: "networkidle2", timeout: 30000 }).catch(() => {}), p.click("button")]);
 }
 
@@ -96,8 +99,8 @@ await p.setViewport({ width: 1366, height: 860, deviceScaleFactor: 1 });
 const p2 = await b.newPage();
 await p2.setViewport({ width: 1366, height: 860 });
 await p2.goto(EXPIRED + "/login", { waitUntil: "networkidle2" }).catch(() => {});
-await p2.type('input[name="email"]', "saloom434@gmail.com");
-await p2.type('input[name="passcode"]', "428913");
+await p2.type('input[name="username"]', USERNAME);
+await p2.type('input[name="password"]', PASSWORD);
 await Promise.all([p2.waitForNavigation({ waitUntil: "networkidle2", timeout: 30000 }).catch(() => {}), p2.click("button")]);
 await p2.goto(EXPIRED + "/", { waitUntil: "networkidle2" }).catch(() => {});
 await sleep(700);

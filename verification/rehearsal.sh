@@ -15,12 +15,13 @@ mkdir -p verification/evidence
 # --- rehearsal environment (fresh DB, fresh bucket, no real provider keys) ---
 export DATABASE_URL="postgresql://postgres@127.0.0.1:5433/adsniper_rehearsal"
 export AUTH_SECRET="$(openssl rand -hex 32)"
-export AUTH_PASSCODE="551234"
+export AUTH_PASSWORD="Rehearsal-551234"
 export AUTH_TRUST_HOST="true"
 export AUTH_URL="http://127.0.0.1:8090"
 export APP_URL="http://127.0.0.1:8090"
 export PORT="8090"
 export SEED_ADMIN_EMAIL="saloom434@gmail.com"
+export SEED_ADMIN_USERNAME="rehearsal-admin"
 export LICENSE_EXPIRES_AT="2027-08-15"
 export LICENSE_PLAN="Standard (yearly)"
 export VENDOR_CONTACT_EMAIL="saloom434@gmail.com"
@@ -53,7 +54,7 @@ timed() { # timed "Label" command...
 log "# Provisioning rehearsal — timed log"
 log ""
 log "Run at: $(date -u +%Y-%m-%dT%H:%M:%SZ) · Fresh DB \`adsniper_rehearsal\` · Fresh bucket \`adsniper-rehearsal-media\`"
-log "No real provider keys (fixture pull), no Anthropic key (facts-only briefing), no Resend (passcode)."
+log "No real provider keys (fixture pull), no Anthropic key (facts-only briefing), no Resend (username + password)."
 log ""
 log "| # | Step | Time | Result |"
 log "|---|------|------|--------|"
@@ -81,8 +82,8 @@ timed "Seed admin user" npx tsx prisma/seed.ts
 
 # 4. Boot server (measure time to ready)
 t0=$(now_ms)
-nohup env PORT=8090 DATABASE_URL="$DATABASE_URL" AUTH_SECRET="$AUTH_SECRET" AUTH_PASSCODE="$AUTH_PASSCODE" \
-  AUTH_TRUST_HOST=true AUTH_URL="$AUTH_URL" APP_URL="$APP_URL" SEED_ADMIN_EMAIL="$SEED_ADMIN_EMAIL" \
+nohup env PORT=8090 DATABASE_URL="$DATABASE_URL" AUTH_SECRET="$AUTH_SECRET" AUTH_PASSWORD="$AUTH_PASSWORD" \
+  AUTH_TRUST_HOST=true AUTH_URL="$AUTH_URL" APP_URL="$APP_URL" SEED_ADMIN_EMAIL="$SEED_ADMIN_EMAIL" SEED_ADMIN_USERNAME="$SEED_ADMIN_USERNAME" \
   LICENSE_EXPIRES_AT="$LICENSE_EXPIRES_AT" LICENSE_PLAN="$LICENSE_PLAN" VENDOR_CONTACT_EMAIL="$VENDOR_CONTACT_EMAIL" \
   CUSTOMER_NAME="$CUSTOMER_NAME" MARKET_REGION=SA ADS_PROVIDERS="meta,google" MONTHLY_COST_CEILING_ADS_USD=60 \
   R2_ACCOUNT_ID=rehearsal R2_ACCESS_KEY_ID=adsniperkey R2_SECRET_ACCESS_KEY=adsnipersecret \
@@ -91,13 +92,13 @@ nohup env PORT=8090 DATABASE_URL="$DATABASE_URL" AUTH_SECRET="$AUTH_SECRET" AUTH
 for i in $(seq 1 40); do sleep 0.5; code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8090/login); [ "$code" = "200" ] && break; done
 t1=$(now_ms); STEP_N=$((STEP_N+1)); log "| $STEP_N | Boot server to ready | $(awk "BEGIN{printf \"%.1f\",($t1-$t0)/1000}")s | /login=$code |"
 
-# 5. Login (passcode)
+# 5. Login (username + password)
 JAR=/tmp/rehearsal-jar.txt; rm -f $JAR
 t0=$(now_ms)
 CSRF=$(curl -s -c $JAR http://127.0.0.1:8090/api/auth/csrf | sed -E 's/.*"csrfToken":"([^"]+)".*/\1/')
-LOGIN=$(curl -s -o /dev/null -c $JAR -b $JAR -d "csrfToken=$CSRF" -d "email=saloom434@gmail.com" -d "passcode=551234" -d "callbackUrl=http://127.0.0.1:8090/" -w "%{http_code}" http://127.0.0.1:8090/api/auth/callback/credentials)
+LOGIN=$(curl -s -o /dev/null -c $JAR -b $JAR -d "csrfToken=$CSRF" -d "username=rehearsal-admin" -d "password=Rehearsal-551234" -d "callbackUrl=http://127.0.0.1:8090/" -w "%{http_code}" http://127.0.0.1:8090/api/auth/callback/credentials)
 t1=$(now_ms); grep -q session-token $JAR && S=ok || S=fail
-STEP_N=$((STEP_N+1)); log "| $STEP_N | Passcode login | $(awk "BEGIN{printf \"%.1f\",($t1-$t0)/1000}")s | POST=$LOGIN, session=$S |"
+STEP_N=$((STEP_N+1)); log "| $STEP_N | Password login | $(awk "BEGIN{printf \"%.1f\",($t1-$t0)/1000}")s | POST=$LOGIN, session=$S |"
 
 # 6. Brand setup (customer + competitor)
 timed "Brand setup (self + competitor)" npx tsx verification/rehearsal-brands.ts
@@ -127,7 +128,7 @@ STEP_N=$((STEP_N+1)); log "| $STEP_N | Anonymous /media blocked | <0.1s | HTTP=$
 
 # 12. License expiry lock (restart with an expired date) → app lock + job halt
 kill $(pgrep -f "next-server") 2>/dev/null; sleep 2
-nohup env PORT=8090 DATABASE_URL="$DATABASE_URL" AUTH_SECRET="$AUTH_SECRET" AUTH_PASSCODE="$AUTH_PASSCODE" \
+nohup env PORT=8090 DATABASE_URL="$DATABASE_URL" AUTH_SECRET="$AUTH_SECRET" AUTH_PASSWORD="$AUTH_PASSWORD" \
   AUTH_TRUST_HOST=true AUTH_URL="$AUTH_URL" LICENSE_EXPIRES_AT="2020-01-01" VENDOR_CONTACT_EMAIL="$VENDOR_CONTACT_EMAIL" \
   MARKET_REGION=SA ADS_PROVIDERS="meta,google" DISABLE_CRON=1 npm start > /tmp/rehearsal-server2.log 2>&1 &
 for i in $(seq 1 30); do sleep 0.5; code=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8090/login); [ "$code" = "200" ] && break; done

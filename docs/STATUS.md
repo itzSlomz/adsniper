@@ -60,7 +60,7 @@ along with all other P0 controls in `SAAS_FOUNDATION_READINESS_AR.md`.
 | Preview instance | https://adsniper-production.up.railway.app |
 | Railway project | `marketingspy`, service `marketingspy` (repo `itzSlomz/marketingspy`) |
 | Database | Railway Postgres, service name `Postgres` |
-| Auth | Allowlisted email + shared passcode (Resend not configured) |
+| Auth | Username + instance password (`AUTH_PASSWORD`), live since 2026-09-22 and verified on the deployed build (the handle signs in; the email and the retired `AUTH_PASSCODE` do not); Resend not configured |
 | Data shown | **Synthetic sample set** — no provider keys on this instance |
 | Verification | 21 of 22 automated checks passed against the deployed build |
 | Media storage | Railway bucket `marketingspy-demo-media` — wired by variable references, no secret ever left Railway |
@@ -103,7 +103,7 @@ after a forced container replacement.
 | Per-instance licensing | `LICENSE_EXPIRES_AT` etc.; 30-day banner, then app lock + job halt (`stopped_license`) |
 | Feature entitlements | LICENSE_FEATURES comma list; middleware + runner (skipped_entitlement) + job visibility + nav; unconfigured license = all on, real expiry without the key = off; mentions-retention is exempt (alwaysRun) |
 | Mentions pipeline | poll/classify manual-only, retention nightly; cost groups mentions + ai with model-aware rates; ensureBudget("ai") before every Anthropic call; per-brand daily caps; takedown tombstones; fixture-verified |
-| Full auth lockdown | Every surface requires login; viewer/admin roles |
+| Full auth lockdown | Every surface requires login; viewer/admin roles; password sign-in identifies a person by username, never by email |
 | Startup preflight | `scripts/check-env.mjs` refuses to boot with a named missing variable; warns on unusable configs |
 | Cost guard | Per-call logging + monthly ceilings per group; hard stop at ceiling (`stopped_budget`) |
 | Storage health panel | Shows bucket/path; "Test storage" does a real write→read→delete round trip |
@@ -133,7 +133,7 @@ not resolve the live-environment blockers below.
 |---|---|---|
 | Live paid pull / real cost reconciliation | Funded Apify token on a pilot instance | Cost stays *modeled* (see cost model) until the pilot invoice lands |
 | AI-written briefings | `ANTHROPIC_API_KEY` | Briefing falls back to the deterministic **bilingual** facts summary (verified working) |
-| Email sign-in links | Resend API key + sending domain | Sign-in uses a shared passcode (verified working) |
+| Email sign-in links | Resend API key + sending domain | Sign-in uses a username + one shared instance password (verified working); readiness item IAM-01 (no shared credential) stays open |
 | LinkedIn impressions enrichment | A sample XLS export from the customer's own page | Engagement rate stays null for LinkedIn |
 | Pricing sign-off | Commercial decision by the operator | Recommendation is ready (`DECISIONS.md`); the final number is the operator's |
 | Paid Kaito mentions pull on a real brand | X_PROVIDER_API_KEY + operator go-ahead (pilot.md step) | since_time/until_time and the 20-per-term floor proven only in fixture mode |
