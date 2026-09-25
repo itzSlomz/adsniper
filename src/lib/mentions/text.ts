@@ -87,6 +87,26 @@ export function maskHandlesForDisplay(text: string, trackedHandles: Set<string>)
   );
 }
 
+// What a reader sees: handles masked as above, plus the contact and account
+// details deidentify() hides from the model (email, IBAN, phone, long digit
+// runs) — a member of the public's phone number or IBAN is an identifier on
+// a product surface whatever R6 literally lists (DECISIONS 2026-09-25).
+// Links stay: they are the post's evidence. The stored text and the content
+// hash are untouched; this is a rendering rule.
+export function maskForDisplay(text: string, trackedHandles: Set<string>): string {
+  const scrub = (s: string) =>
+    maskHandlesForDisplay(s.replace(EMAIL_RE, "[email]"), trackedHandles)
+      .replace(IBAN_RE, "[iban]")
+      .replace(SAUDI_PHONE_RE, "[phone]")
+      .replace(INTL_PHONE_RE, "[phone]")
+      .replace(LONG_DIGITS_RE, "[number]");
+  // Digits are normalised only so an Arabic-Indic phone number is found;
+  // when nothing matched, the quote keeps the digits as written.
+  const normalised = normalizeDigits(text);
+  const masked = scrub(normalised);
+  return masked === maskHandlesForDisplay(normalised, trackedHandles) ? maskHandlesForDisplay(text, trackedHandles) : masked;
+}
+
 // A provider record is kept verbatim, but one pathological payload must not
 // bloat a row past what Postgres and the admin views handle comfortably.
 // Same guard as adsPoll's (kept local there; consolidation is in IDEAS).

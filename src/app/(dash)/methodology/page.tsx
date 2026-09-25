@@ -199,13 +199,13 @@ export default function MethodologyPage() {
             <tbody>
               <tr>
                 <td className="font-semibold">Pull limits</td>
-                <td className="num">
+                <td className="tnum">
                   ≤{mentionsMaxItemsPerCall()} posts per brand per pull,
                   ≤{mentionsMaxCallsPerBrandPerDay()} pulls and
                   ≤{mentionsMaxItemsPerBrandPerDay()} posts per brand per day;
                   each pull billed ≥{KAITO_PAGE_MIN} items at ${KAITO_COST_PER_ITEM_USD}/item
                 </td>
-                <td className="num">window ≤{MENTIONS_BACKFILL_DAYS} days, overlap {MENTIONS_OVERLAP_MINUTES} min</td>
+                <td className="tnum">window ≤{MENTIONS_BACKFILL_DAYS} days, overlap {MENTIONS_OVERLAP_MINUTES} min</td>
               </tr>
               <tr>
                 <td className="font-semibold">Author type (modeled, rule-based)</td>
@@ -235,12 +235,12 @@ export default function MethodologyPage() {
               </tr>
               <tr>
                 <td className="font-semibold">Unusual volume (modeled)</td>
-                <td className="num">
+                <td className="tnum">
                   ≥{SPIKE_MIN_POSTS} posts in {SPIKE_WINDOW_DAYS} days AND ≥{SPIKE_FACTOR}× the
                   trailing {SPIKE_BASELINE_WEEKS}-week weekly average (baseline
                   ≥{SPIKE_MIN_BASELINE_PER_WEEK}/week)
                 </td>
-                <td className="num">one flag per {SPIKE_COOLDOWN_DAYS} days, aggregate per brand</td>
+                <td className="tnum">one flag per {SPIKE_COOLDOWN_DAYS} days, aggregate per brand</td>
               </tr>
               <tr>
                 <td className="font-semibold">Topic &amp; sentiment (modeled)</td>
@@ -270,7 +270,7 @@ export default function MethodologyPage() {
               </tr>
               <tr>
                 <td className="font-semibold">AI rates</td>
-                <td className="num">snapshot {AI_RATES_SNAPSHOT_DATE}, USD per million tokens</td>
+                <td className="tnum">snapshot {AI_RATES_SNAPSHOT_DATE}, USD per million tokens</td>
                 <td>
                   unknown models charged at the fallback rate (${AI_RATE_FALLBACK.input} in / ${AI_RATE_FALLBACK.output} out);
                   stopped by MONTHLY_COST_CEILING_AI_USD

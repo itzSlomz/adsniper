@@ -37,11 +37,28 @@ claude-sonnet-4-6); the brief default is unchanged. Surfaces: Intel → Conversa
 Pull now, removal), /mentions, "What did people say?" on the dashboard and
 brand pages, a Methodology section rendering the live constants, coverage
 panel everywhere. With the flag off nothing visible changes (the nightly
-retention job records a hidden one-count run). Verified: typecheck, zero-warning lint, 498/498 tests,
+retention job records a hidden one-count run). Verified: typecheck, zero-warning lint, 506/506 tests,
 production build, dependency audit, and verification/mentions-checks.ts
 against a real Postgres with the fixture provider and fixture classifier
-(no paid call) — 81/81 checks, plus the flag-off smoke on a running server
+(no paid call) — 85/85 checks, plus the flag-off smoke on a running server
 (`docs/VERIFICATION.md`, Gate 6).
+
+Review fixes folded in on 2026-09-25 (DECISIONS, same date): quoted post
+text masks a third party's email, IBAN, phone and long digit runs on every
+surface (`maskForDisplay`); the brief row stores sample links but never
+post text (`factsForStorage`), so nothing in `WeeklyBrief.factsJson`
+outlives the 90-day erasure; a failed or license-stopped pull is disclosed
+in one section-level callout instead of reading as a quiet market, and
+"Other brands are up to date" is claimed only when exactly one brand failed
+and the others are shown; the spike badge prints the 7-day count the rule
+evaluated (`BrandConversation.spikeRecent`) against a rounded weekly
+baseline; relative post times and the badge use the real clock, not the
+dashboard's window end; count sentences and rule prose keep the body face
+(new `.tnum` token — tabular digits without the mono stack, which has no
+Arabic glyphs). Intel's ingestion-health table reads one latest run per
+visible job through the `(job, startedAt)` index instead of an in-memory
+`distinct` over the whole JobRun table; a job whose last run fell outside
+the old 30-row window now shows its real last run. Harness: 85/85.
 
 ## 2026-09-21
 

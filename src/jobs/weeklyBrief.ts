@@ -38,6 +38,39 @@ export interface WeeklyFacts {
 
 type MentionBrandFacts = WeeklyMentionsFacts["brands"][number];
 
+// The stored form of the facts: the model reads each sample's de-identified
+// excerpt once, but a WeeklyBrief row outlives the erasure of post text
+// (§5.5), so the persisted copy keeps only what retention keeps on the
+// Mention row itself — URL, date, kind, label, linked ad — and never the
+// words (DECISIONS 2026-09-25). Everything else is stored as computed.
+export type StoredWeeklyFacts = Omit<WeeklyFacts, "mentions"> & {
+  mentions?: Omit<WeeklyMentionsFacts, "brands"> & {
+    brands: Array<
+      Omit<MentionBrandFacts, "samples"> & { samples: Array<Omit<MentionBrandFacts["samples"][number], "excerpt">> }
+    >;
+  };
+};
+
+export function factsForStorage(facts: WeeklyFacts): StoredWeeklyFacts {
+  if (!facts.mentions) return facts;
+  return {
+    ...facts,
+    mentions: {
+      ...facts.mentions,
+      brands: facts.mentions.brands.map((b) => ({
+        ...b,
+        samples: b.samples.map((s) => ({
+          url: s.url,
+          postedAt: s.postedAt,
+          kind: s.kind,
+          sentiment: s.sentiment,
+          linkedAd: s.linkedAd,
+        })),
+      })),
+    },
+  };
+}
+
 // Brands worth a bullet: flagged (unusual volume or a campaign burst in the
 // same window) first, then the loudest; at most four so the fallback stays
 // a summary.
@@ -241,12 +274,13 @@ export async function runWeeklyBrief(ctx: JobContext): Promise<void> {
     narrative = fallbackNarrative(facts);
   }
 
+  const stored = factsForStorage(facts) as unknown as object;
   await prisma.weeklyBrief.upsert({
     where: { weekStart },
     update: {
       contentEn: narrative.en,
       contentAr: narrative.ar,
-      factsJson: facts as unknown as object,
+      factsJson: stored,
       generatedAt: new Date(),
       status: "draft",
     },
@@ -254,7 +288,7 @@ export async function runWeeklyBrief(ctx: JobContext): Promise<void> {
       weekStart,
       contentEn: narrative.en,
       contentAr: narrative.ar,
-      factsJson: facts as unknown as object,
+      factsJson: stored,
       status: "draft",
     },
   });

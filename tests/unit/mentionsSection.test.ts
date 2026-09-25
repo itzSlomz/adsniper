@@ -60,6 +60,7 @@ function brand(over: Partial<BrandConversation> & { brandId: string }): BrandCon
     topTopics: null,
     links: { direct: 0, topical: 0, temporal: 0 },
     spike: false,
+    spikeRecent: 0,
     baselinePerWeek: null,
     coOccursWithBurst: false,
     lastPollStatus: "success",
@@ -82,7 +83,10 @@ const LOUD = brand({
   topTopics: [{ key: "digital_app", labelEn: "Digital app", labelAr: "التطبيق الرقمي", count: 5 }],
   links: { direct: 1, topical: 0, temporal: 2 },
   spike: true,
-  baselinePerWeek: 4,
+  // Fewer than `posts`: the badge must print the 7-day count the rule
+  // evaluated, not the surface's window count.
+  spikeRecent: 10,
+  baselinePerWeek: 4.125,
   coOccursWithBurst: true,
   samples: [
     card({
@@ -146,6 +150,12 @@ describe("MentionsSection — wording rules", () => {
   const html = render(result([LOUD, QUIET]), "page", true);
   const text = decode(html);
 
+  it("keeps prose in the body face: the count sentences use .tnum, never .num", () => {
+    expect(html).toContain('<p class="text-sm tnum" style="margin:0">12 posts matched');
+    expect(html).toContain('<p class="text-sm tnum" dir="rtl" style="margin:0">12 منشورًا');
+    expect(html).not.toMatch(/<p class="[^"]*\bnum\b[^"]*"/);
+  });
+
   it("R1: renders one count sentence per language, and no arrow between the dates", () => {
     expect(text).toContain('12 posts matched "@fixtureco, FixtureCo" on X from 2026-09-15 to 2026-09-21 — a sample, not a total.');
     expect(html).toContain("12 منشورًا طابقت");
@@ -183,7 +193,9 @@ describe("MentionsSection — wording rules", () => {
     expect(text).toContain("في نفس فترة إعلان فيكستشر «Open an account in minutes with the new …»");
     expect(text).toContain("in the same window as FixtureCo's campaign burst");
     expect(html).toContain(SECTION.burst.en);
-    expect(html).toContain("Unusual volume (modeled): 12 posts vs ~4/week");
+    expect(html).toContain("Unusual volume (modeled): 10 posts in 7 days vs ~4.1/week");
+    expect(html).not.toContain("12 posts in 7 days");
+    expect(html).toContain("حجم غير معتاد (نموذجي): 10 منشورات في ٧ أيام مقابل ~4.1 أسبوعيًا");
   });
 
   it("R6: identifier-free links open in a new tab; handles only on brand/media cards", () => {
@@ -278,8 +290,47 @@ describe("MentionsSection — degraded states (first match wins)", () => {
       true
     );
     expect(html).toContain("The last pull failed for FixtureCo: Apify 429. Other brands are up to date.");
-    expect(html).toContain("فشل آخر سحب لـفيكستشر: Apify 429.");
+    expect(html).toContain("فشل آخر سحب لـفيكستشر: Apify 429. بقية العلامات محدّثة.");
     expect(html).not.toContain("The last pull failed for QuietCo");
+  });
+
+  it("state 4: when every brand failed (missing key, outage) no brand is said to be up to date", () => {
+    const msg = "X_PROVIDER_API_KEY is not set";
+    const html = render(
+      result([
+        { ...LOUD, lastPollStatus: "partial", lastPollError: msg },
+        { ...QUIET, lastPollStatus: "partial", lastPollError: msg },
+      ]),
+      "page",
+      true
+    );
+    expect(html).toContain(`The last pull failed for FixtureCo: ${msg}.`);
+    expect(html).toContain(`The last pull failed for QuietCo: ${msg}.`);
+    expect(html).not.toContain("Other brands are up to date");
+    expect(html).not.toContain("بقية العلامات محدّثة");
+    // A single brand in the result (the brand page) cannot vouch for the others either.
+    const alone = render(result([{ ...LOUD, lastPollStatus: "partial", lastPollError: msg }]), "brand");
+    expect(alone).toContain(`The last pull failed for FixtureCo: ${msg}.`);
+    expect(alone).not.toContain("Other brands are up to date");
+  });
+
+  it("a failed or license-stopped run is disclosed and never rendered as a quiet market", () => {
+    for (const status of ["failed", "stopped_license"] as const) {
+      const html = render(
+        result([{ ...QUIET, lastPollStatus: status, lastPollError: "connect ECONNREFUSED 127.0.0.1:5432" }]),
+        "page",
+        true
+      );
+      expect(html).toContain("The last pull failed: connect ECONNREFUSED 127.0.0.1:5432. Counts below may be stale.");
+      expect(html).toContain("فشل آخر سحب: connect ECONNREFUSED 127.0.0.1:5432. قد تكون الأعداد أدناه قديمة.");
+      expect(html).not.toContain(STATES.nothingInWindow.en);
+      expect(html).not.toContain(STATES.noPulls.en);
+      // The R1 sentence with n=0 is still the count.
+      expect(html).toContain("لا منشورات طابقت");
+    }
+    // Without an error line the status itself is the message — never silence.
+    const bare = render(result([{ ...QUIET, lastPollStatus: "stopped_license" }]), "page", true);
+    expect(bare).toContain("The last pull failed: stopped_license.");
   });
 
   it("state 6: classification off → one dash chip carrying the off reason, no sentiment counts", () => {

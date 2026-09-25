@@ -28,7 +28,7 @@ import { marketEstimates } from "@/lib/estimation";
 import { callAnthropic } from "@/jobs/dailyBrief";
 import { weeklyMentionsFacts } from "@/lib/mentions/queries";
 import type { MentionCard, WeeklyMentionsFacts } from "@/lib/mentions/queries";
-import { fallbackNarrative, runWeeklyBrief, type WeeklyFacts } from "@/jobs/weeklyBrief";
+import { factsForStorage, fallbackNarrative, runWeeklyBrief, type WeeklyFacts } from "@/jobs/weeklyBrief";
 import { assertIdentifierFree } from "@/lib/mentions/text";
 import { FORBIDDEN_CAUSAL, allCopyStrings, arMatched, arPosts, relTimeFor } from "@/lib/mentions/copy";
 import type { JobContext } from "@/jobs/runner";
@@ -442,8 +442,29 @@ describe("runWeeklyBrief", () => {
     // The facts JSON is inserted by a function replacer, so `$&` / `$'` /
     // `$1` inside a quoted post survive as typed.
     expect(prompt).toContain('"excerpt": "costs $& and $\' or $1"');
+    // Stored without the excerpts (factsForStorage): the row outlives the
+    // 90-day erasure of post text, so it never carries the words.
     const facts = briefUpsertMock.mock.calls[0][0].create.factsJson as WeeklyFacts;
-    expect(facts.mentions).toEqual(withPatterns);
+    expect(facts.mentions).toEqual(factsForStorage({ ...baseFacts(), mentions: withPatterns }).mentions);
+    expect(facts.mentions!.brands[0].samples[0]).toEqual({
+      url: withPatterns.brands[0].samples[0].url,
+      postedAt: withPatterns.brands[0].samples[0].postedAt,
+      kind: withPatterns.brands[0].samples[0].kind,
+      sentiment: withPatterns.brands[0].samples[0].sentiment,
+      linkedAd: withPatterns.brands[0].samples[0].linkedAd,
+    });
+    expect(JSON.stringify(facts)).not.toContain("excerpt");
+    expect(briefUpsertMock.mock.calls[0][0].update.factsJson).toEqual(facts);
+  });
+
+  test("factsForStorage: excerpts are the only thing dropped; facts without mentions pass through", () => {
+    const facts = mentionFacts([mentionBrand()]);
+    const stored = factsForStorage({ ...baseFacts(), mentions: facts });
+    expect(stored.mentions!.brands[0].samples).toHaveLength(facts.brands[0].samples.length);
+    expect(stored.mentions!.brands[0].samples.every((s) => !("excerpt" in s))).toBe(true);
+    expect({ ...stored.mentions, brands: undefined }).toEqual({ ...facts, brands: undefined });
+    expect({ ...stored.mentions!.brands[0], samples: undefined }).toEqual({ ...facts.brands[0], samples: undefined });
+    expect(factsForStorage(baseFacts())).toEqual(baseFacts());
   });
 
   test("entitled but nothing to report (switched off / never pulled): no mentions key, no instructions", async () => {

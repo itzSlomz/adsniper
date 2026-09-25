@@ -168,10 +168,16 @@ function BrandBlock({
   b,
   days,
   showAll,
+  othersOk,
+  runFailed,
 }: {
   b: BrandConversation;
   days: 7 | 30;
   showAll: boolean;
+  // Whether this brand is the only one the last (partial) pull failed for.
+  othersOk: boolean;
+  // The last run never completed for any brand (section-level callout).
+  runFailed: boolean;
 }) {
   const sentence = countSentence(b.posts, b.terms, b.window.from, b.window.to);
   const flagged = b.spike || b.coOccursWithBurst;
@@ -188,7 +194,7 @@ function BrandBlock({
         </span>
         {b.spike && (
           <span className="callout">
-            <Pair s={SECTION.spike({ posts: b.posts, baselinePerWeek: b.baselinePerWeek })} />
+            <Pair s={SECTION.spike({ recent: b.spikeRecent, baselinePerWeek: b.baselinePerWeek })} />
           </span>
         )}
         {b.coOccursWithBurst && (
@@ -206,15 +212,16 @@ function BrandBlock({
             brandName: b.brandName,
             brandNameAr: b.brandNameAr,
             message: b.lastPollError,
+            othersOk,
           })}
         />
       )}
 
       <div>
-        <p className="text-sm num" style={{ margin: 0 }}>
+        <p className="text-sm tnum" style={{ margin: 0 }}>
           {sentence.en}
         </p>
-        <p className="text-sm num" dir="rtl" style={{ margin: 0 }}>
+        <p className="text-sm tnum" dir="rtl" style={{ margin: 0 }}>
           {sentence.ar}
         </p>
         {b.posts > 0 && b.distinctPosts < b.posts && (
@@ -225,9 +232,13 @@ function BrandBlock({
       </div>
 
       {b.posts === 0 ? (
-        <p className="text-sm text-muted" style={{ margin: 0 }}>
-          <Pair s={STATES.nothingInWindow} />
-        </p>
+        // A zero after a run that never completed is not a quiet market;
+        // the section-level callout has already said what happened.
+        !runFailed && (
+          <p className="text-sm text-muted" style={{ margin: 0 }}>
+            <Pair s={STATES.nothingInWindow} />
+          </p>
+        )
       ) : (
         <>
           <div className="space-y-2">
@@ -299,7 +310,7 @@ function BrandBlock({
 
           {anyLinks && (
             <p className="flex flex-wrap items-center gap-2 text-xs" style={{ margin: 0 }}>
-              <span className="num">
+              <span className="tnum">
                 <Pair s={SECTION.links(b.links)} />
               </span>
               <ModeledTag />
@@ -349,6 +360,13 @@ export default function MentionsSection({ result, variant, showAll = false }: Me
   // An unknown ?brand= yields no brands at all; that is not "never pulled".
   const noPulls = brands.length > 0 && status === "never" && !hasRows;
   const budgetStopped = !noPulls && status === "stopped_budget";
+  // Not in the §1.5 table, but a run that threw before any brand was pulled
+  // (or was stopped by the license) must not read as a quiet market.
+  const runFailed = !noPulls && (status === "failed" || status === "stopped_license");
+  // §1.5 state 4 promises the other brands are current only when this
+  // result shows them all and exactly one carries a failure line.
+  const failedBrands = brands.filter((b) => b.lastPollStatus === "partial" && b.lastPollError).length;
+  const othersOk = failedBrands === 1 && brands.length > 1;
 
   return (
     <section className="card elev-sm space-y-5">
@@ -369,8 +387,12 @@ export default function MentionsSection({ result, variant, showAll = false }: Me
 
       {noPulls && <Callout s={STATES.noPulls} />}
       {budgetStopped && <Callout s={STATES.budgetStopped} />}
+      {runFailed && <Callout s={STATES.lastPullFailedAll({ message: brands[0].lastPollError ?? status })} />}
 
-      {!noPulls && brands.map((b) => <BrandBlock key={b.brandId} b={b} days={result.days} showAll={showAll} />)}
+      {!noPulls &&
+        brands.map((b) => (
+          <BrandBlock key={b.brandId} b={b} days={result.days} showAll={showAll} othersOk={othersOk} runFailed={runFailed} />
+        ))}
     </section>
   );
 }

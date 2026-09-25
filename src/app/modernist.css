@@ -83,6 +83,10 @@ h1, h2, h3, h4 { font-family: var(--font-heading); font-weight: var(--font-headi
 /* Numerals: every count, date and money figure sets in the mono face with
    tabular figures, so columns of numbers always align. */
 .num { font-family: var(--font-numeric); font-variant-numeric: tabular-nums; }
+/* Prose that carries figures (a count sentence, a rule, a date line) keeps
+   the body face — the mono stack has no Arabic glyphs — and only aligns
+   its digits. */
+.tnum { font-variant-numeric: tabular-nums; }
 
 /* The wordmark — brand rule: Chakra Petch 700, tracking -0.01em, and this
    face appears nowhere else in the interface. */

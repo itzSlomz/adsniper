@@ -4,6 +4,7 @@ import {
   contentHash,
   deidentify,
   extractUrls,
+  maskForDisplay,
   maskHandlesForDisplay,
   mentionQueryFor,
   mentionQueryTerms,
@@ -159,6 +160,31 @@ describe("maskHandlesForDisplay", () => {
 
   test("does not touch emails", () => {
     expect(maskHandlesForDisplay("a.b@example.invalid", new Set())).toBe("a.b@example.invalid");
+  });
+});
+
+describe("maskForDisplay", () => {
+  const tracked = new Set(["fixtureco"]);
+
+  test("fixture X-5: a third party's phone, IBAN and email never reach a reader", () => {
+    expect(maskForDisplay(X5, tracked)).toBe("anyone tried FixtureCo transfers? call me [phone] or [iban] or [email]");
+  });
+
+  test("handles are masked as for display (tracked kept), links and short numbers stay", () => {
+    expect(maskForDisplay("@bob_pub says hi to @FixtureCo, ring +966 512345678 or card 4111 1111 1111 1111", tracked)).toBe(
+      "@… says hi to @FixtureCo, ring [phone] or card [number]"
+    );
+    expect(maskForDisplay(X1, tracked)).toBe(X1);
+    expect(maskForDisplay("waited 3 days for 2 cards, branch 12", tracked)).toBe("waited 3 days for 2 cards, branch 12");
+  });
+
+  test("Arabic-Indic digits: a phone is found, ordinary numerals are shown as written", () => {
+    expect(maskForDisplay("اتصل ٠٥١٢٣٤٥٦٧٨", tracked)).toBe("اتصل [phone]");
+    expect(maskForDisplay("انتظرت ٣ أيام @bob", tracked)).toBe("انتظرت ٣ أيام @…");
+  });
+
+  test("the stored text is what is hashed: masking does not change contentHash's input", () => {
+    expect(contentHash(X5)).toBe(contentHash(maskForDisplay(X5, tracked)));
   });
 });
 

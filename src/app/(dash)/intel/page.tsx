@@ -24,11 +24,8 @@ export default async function IntelPage(
   if ((session?.user as { role?: string } | undefined)?.role !== "admin") redirect("/");
 
   const mentionsEntitled = hasFeature("mentions");
-  // One latest row per job: a fixed `take` can miss a job entirely once
-  // hourly polls and a nightly run share the table.
-  const [budget, runs, adCount, postCount, sampleLoaded, mentionRows] = await Promise.all([
+  const [budget, adCount, postCount, sampleLoaded, mentionRows] = await Promise.all([
     budgetStatus(),
-    prisma.jobRun.findMany({ distinct: ["job"], orderBy: { startedAt: "desc" } }),
     prisma.ad.count(),
     prisma.post.count(),
     sampleDataLoaded(),
@@ -37,15 +34,22 @@ export default async function IntelPage(
     // instances list it regardless, so the count is not needed.
     mentionsEntitled ? Promise.resolve(0) : prisma.mention.count(),
   ]);
+  const health = visibleJobs({ mentionRows });
+  // One latest row per visible job, each an indexed point read on
+  // (job, startedAt): a fixed `take` can miss a job entirely once hourly
+  // polls and a nightly run share the table, and `distinct` is applied in
+  // memory by Prisma 5, which would scan the whole ever-growing table.
+  const runs = await Promise.all(
+    Object.keys(health).map((job) => prisma.jobRun.findFirst({ where: { job }, orderBy: { startedAt: "desc" } }))
+  );
   const storage = storageTarget();
-  const lastByJob = new Map<string, (typeof runs)[number]>();
-  for (const r of runs) if (!lastByJob.has(r.job)) lastByJob.set(r.job, r);
+  const lastByJob = new Map<string, NonNullable<(typeof runs)[number]>>();
+  for (const r of runs) if (r) lastByJob.set(r.job, r);
   const ceilingHit = budget.filter((b) => Number.isFinite(b.ceilingUsd) && b.spentUsd >= b.ceilingUsd);
   // With the add-on unlicensed the grid is byte-identical to before the
   // "mentions" and "ai" groups existed; the ceiling banner above is
   // untouched because a configured ceiling is an explicit operator act.
   const shownBudget = budget.filter((b) => COST_GROUPS_LEGACY.includes(b.group) || mentionsEntitled);
-  const health = visibleJobs({ mentionRows });
 
   return (
     <main className="space-y-6">

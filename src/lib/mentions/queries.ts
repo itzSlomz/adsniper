@@ -21,7 +21,7 @@ import { prisma } from "@/lib/db";
 import { campaignBurstBrandIds } from "@/jobs/adsPoll";
 import { spikeDecision } from "@/jobs/mentions";
 import { getMentionsSettings, getStamp, mentionTermsFor } from "@/lib/settings";
-import { deidentify, maskHandlesForDisplay, mentionQueryFor } from "@/lib/mentions/text";
+import { deidentify, maskForDisplay, mentionQueryFor } from "@/lib/mentions/text";
 import { relTimeFor } from "@/lib/mentions/copy";
 import {
   PROMPT_VERSION,
@@ -118,6 +118,10 @@ export interface BrandConversation {
   topTopics: { key: string; labelEn: string; labelAr: string; count: number }[] | null;
   links: { direct: number; topical: number; temporal: number };
   spike: boolean;
+  // The 7-day count the spike rule evaluated (§5.6) — the badge compares
+  // this, never `posts`, against the weekly baseline, because `posts` is
+  // the surface's window (30 days on the brand page).
+  spikeRecent: number;
   baselinePerWeek: number | null;
   coOccursWithBurst: boolean;
   lastPollStatus: LastPollStatus;
@@ -234,7 +238,7 @@ function toCard(row: MentionRow, trackedHandles: Set<string>, now: Date): Mentio
     url: row.url,
     postedAt: row.postedAt.toISOString(),
     postedAtRel: relTimeFor(row.postedAt.toISOString(), now),
-    displayText: maskHandlesForDisplay(row.text, trackedHandles),
+    displayText: maskForDisplay(row.text, trackedHandles),
     erased: row.removedAt ? "removed" : row.erasedAt ? "retention" : "none",
     kind: row.kind,
     authorHandleShown: handleShown,
@@ -370,6 +374,10 @@ function pollErrorFor(poll: LastPoll, brandName: string): string | null {
 interface ConversationOpts {
   from: Date;
   to: Date;
+  // The clock the relative times and the spike badge are measured against —
+  // never the window end: a dashboard reviewing a past week still says how
+  // long ago a post was made, and the badge answers whether the brand is
+  // unusually loud now (the stamp the job set is dated by the real clock).
   now: Date;
   brandId?: string;
   sampleLimit: number;
@@ -475,6 +483,7 @@ async function conversation(opts: ConversationOpts): Promise<BrandBundle[]> {
         topTopics: labelled > 0 ? topTopics : null,
         links,
         spike: spike.spike,
+        spikeRecent: spike.recent,
         baselinePerWeek: spike.baselinePerWeek,
         coOccursWithBurst: burst.has(brand.id) && mine.length >= 1,
         lastPollStatus: poll.status,
@@ -504,10 +513,12 @@ export async function brandConversations(opts: {
   now?: Date;
 }): Promise<ConversationResult> {
   const w = windowFor(opts.days, opts.now);
+  // `opts.now` is only the window end (the dashboard passes the midnight
+  // after the selected day); the display clock is the real one.
   const bundles = await conversation({
     from: w.from,
     to: w.to,
-    now: w.to,
+    now: new Date(),
     brandId: opts.brandId,
     sampleLimit: opts.sampleLimit ?? DEFAULT_SAMPLE_LIMIT,
     skipErasedSamples: false,

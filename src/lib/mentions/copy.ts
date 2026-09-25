@@ -176,8 +176,8 @@ export const ADMIN = {
     title: { en: "Retention & removal", ar: "الاحتفاظ والإزالة" } as Bilingual,
     retention(days: number): Bilingual {
       return {
-        en: `Post text, evidence spans and author identifiers are erased ${days} days after the post date (job mentions-retention, nightly). Counts, author type, labels and ad links are kept without identifiers.`,
-        ar: `يُمسح نص المنشور ومقاطع الدليل ومعرّفات الكاتب بعد ${days} يومًا من تاريخ النشر (مهمة mentions-retention، ليليًا). تبقى الأعداد ونوع الكاتب والتصنيفات وروابط الإعلانات بلا معرّفات.`,
+        en: `Post text, evidence spans and author identifiers are erased ${days} days after the post date (job mentions-retention, nightly). Counts, author type, labels and ad links are kept without identifiers. The Monday brief stores post links, never post text.`,
+        ar: `يُمسح نص المنشور ومقاطع الدليل ومعرّفات الكاتب بعد ${days} يومًا من تاريخ النشر (مهمة mentions-retention، ليليًا). تبقى الأعداد ونوع الكاتب والتصنيفات وروابط الإعلانات بلا معرّفات. يحفظ تقرير الاثنين روابط المنشورات لا نصوصها.`,
       };
     },
     recentPosts: { en: "Recent posts (last 50)", ar: "آخر المنشورات" } as Bilingual,
@@ -223,11 +223,14 @@ export const SECTION = {
   daysWindow(days: 7 | 30): Bilingual {
     return days === 7 ? { en: "7 days", ar: "٧ أيام" } : { en: "30 days", ar: "٣٠ يومًا" };
   },
-  spike(o: { posts: number; baselinePerWeek: number | null }): Bilingual {
-    const base = o.baselinePerWeek === null ? "—" : `~${o.baselinePerWeek}`;
+  // `recent` is the 7-day count the rule evaluated (§5.6), stated with its
+  // period so it is never read against the surface's own window; the
+  // baseline is an average and is shown to one decimal.
+  spike(o: { recent: number; baselinePerWeek: number | null }): Bilingual {
+    const base = o.baselinePerWeek === null ? "—" : `~${Number(o.baselinePerWeek.toFixed(1))}`;
     return {
-      en: `Unusual volume (modeled): ${o.posts} posts vs ${base}/week`,
-      ar: "حجم غير معتاد (نموذجي)",
+      en: `Unusual volume (modeled): ${o.recent} posts in 7 days vs ${base}/week`,
+      ar: `حجم غير معتاد (نموذجي): ${arPosts(o.recent)} في ٧ أيام مقابل ${base} أسبوعيًا`,
     };
   },
   burst: {
@@ -296,10 +299,21 @@ export const STATES = {
     en: 'Monthly ceiling for "mentions" reached — no new posts until it is raised or the month rolls over.',
     ar: 'بلغ السقف الشهري لمجموعة "mentions" — لا منشورات جديدة حتى رفعه أو بداية الشهر.',
   } as Bilingual,
-  lastPullFailed(o: { brandName: string; brandNameAr: string; message: string }): Bilingual {
+  // "Other brands are up to date" is a claim about the run, so the caller
+  // asserts it only when it can see the other brands and exactly this one
+  // failed (§1.5 state 4 wording, narrowed — DECISIONS 2026-09-25).
+  lastPullFailed(o: { brandName: string; brandNameAr: string; message: string; othersOk: boolean }): Bilingual {
     return {
-      en: `The last pull failed for ${o.brandName}: ${o.message}. Other brands are up to date.`,
-      ar: `فشل آخر سحب لـ${o.brandNameAr || o.brandName}: ${o.message}. بقية العلامات محدّثة.`,
+      en: `The last pull failed for ${o.brandName}: ${o.message}.${o.othersOk ? " Other brands are up to date." : ""}`,
+      ar: `فشل آخر سحب لـ${o.brandNameAr || o.brandName}: ${o.message}.${o.othersOk ? " بقية العلامات محدّثة." : ""}`,
+    };
+  },
+  // The whole run failed or was stopped: no brand was pulled, so a zero in
+  // the window is not a quiet market and every count may be stale.
+  lastPullFailedAll(o: { message: string }): Bilingual {
+    return {
+      en: `The last pull failed: ${o.message}. Counts below may be stale.`,
+      ar: `فشل آخر سحب: ${o.message}. قد تكون الأعداد أدناه قديمة.`,
     };
   },
   nothingInWindow: {
@@ -378,7 +392,7 @@ export function allCopyStrings(): string[] {
     SECTION.dashboardWindow("2026-09-01"),
     SECTION.daysWindow(7),
     SECTION.daysWindow(30),
-    SECTION.spike({ posts: 12, baselinePerWeek: 4 }),
+    SECTION.spike({ recent: 12, baselinePerWeek: 4 }),
     SECTION.burst,
     SECTION.distinct(5),
     SECTION.authorTypeNote,
@@ -398,7 +412,8 @@ export function allCopyStrings(): string[] {
     STATES.switchedOff,
     STATES.noPulls,
     STATES.budgetStopped,
-    STATES.lastPullFailed({ brandName: "B", brandNameAr: "ب", message: "m" }),
+    STATES.lastPullFailed({ brandName: "B", brandNameAr: "ب", message: "m", othersOk: true }),
+    STATES.lastPullFailedAll({ message: "m" }),
     STATES.nothingInWindow,
   ]);
   push(exportFooter(100));

@@ -157,7 +157,8 @@ Harness: `verification/mentions-checks.ts` (runs the real `mentions-poll`,
 `mentions-classify`, `mentions-retention` and `weekly-brief` jobs via
 `triggerJob` with the verification-only fixture provider
 `mentions:fixture-x` and the fixture classifier `ai:fixture-classifier`),
-`verification/evidence/mentions.json`. **81/81 checks passed** against a
+`verification/evidence/mentions.json`. **85/85 checks passed** (81 on
+2026-09-22; four added with the 2026-09-25 review fixes) against a
 real Postgres 16 (`adsniper_verify`, migrated, carrying the 9-brand sample
 set — the fixture provider answers those brands with nothing). No paid
 provider call and no model call was made; `ai:anthropic` log rows are
@@ -182,11 +183,12 @@ asserted to be zero.
 | Whole-batch refusal (`not json {`): `partial`, "refused", 0 labels stored | ✅ |
 | `MONTHLY_COST_CEILING_AI_USD=0` → classify `stopped_budget`; `anthropicMessages()` rejects `CostCeilingError` with `fetch` never called | ✅ |
 | Read model (7 d): posts 7 / distinct 6, byKind {4,1,1,1}, links {direct 2, topical 2, temporal 0}, terms `["@fixtureco","FixtureCo"]`, count sentence "a sample, not a total" / "عيّنة", linked samples first, no `topic` on a card, `unclear` rendered as a label | ✅ |
-| Weekly facts: `assertIdentifierFree` passes and is non-vacuous (terms keep `@fixtureco`, X-2 excerpt keeps `@user`); X-5 excerpt `[phone]`/`[iban]`/`[email]`, no 8-digit run; ≤3 samples, no per-post topic; `fallbackNarrative` EN/AR free of causal words; AR bullets carry isolated dates, no `→` | ✅ |
+| Weekly facts: `assertIdentifierFree` passes and is non-vacuous (terms keep `@fixtureco`, X-2 excerpt keeps `@user`); X-5 excerpt `[phone]`/`[iban]`/`[email]`, no 8-digit run; ≤3 samples, no per-post topic; `factsForStorage` keeps the three sample links and drops every excerpt; `fallbackNarrative` EN/AR free of causal words; AR bullets carry isolated dates, no `→` | ✅ |
+| Read models: X-5 card text shows `[phone]`/`[iban]`/`[email]` to readers (`maskForDisplay`); with the dashboard's window end (tomorrow midnight) a card's relative time still equals `relTimeFor(postedAt, now)` | ✅ |
 | Takedown: tombstone (removedAt, text/raw/metrics/authors cleared), counts drop to 6, `resolveMentionRef` by X link / bare id / unknown; a real re-pull does not re-create it | ✅ |
 | Retention 10 d erases X-9 only (metrics kept, evidence cleared, labels and counts unchanged); 1 d erases every older row, keeps X-8; a real re-pull leaves erased rows erased and updates X-8's metrics | ✅ |
 | Spike: no history → no stamp, baseline `null`; 8 × 4 baseline + 12 recent → stamp, `spike: true`, baseline 4; cooldown keeps the stamp; recent rows removed → badge off | ✅ |
-| `weekly-brief` end to end (no AI key): `factsJson.mentions.brands` stored, identifier-free; EN "X sample" + "Conversation counts are a sample"; AR "عيّنة"; no causal words | ✅ |
+| `weekly-brief` end to end (no AI key): `factsJson.mentions.brands` stored, identifier-free, with no `excerpt` key anywhere; EN "X sample" + "Conversation counts are a sample"; AR "عيّنة"; no causal words | ✅ |
 | Erasure is a duty: un-entitled → retention not `skipped_entitlement`, visible only via `mentionRows`; expired → retention runs, poll `stopped_license` | ✅ |
 
 **Flag-off zero-change smoke** (`docs`-level check of §7.6): a dev server
@@ -232,7 +234,7 @@ mention/pull rows before its brand delete (the brand FKs are RESTRICT).
 | 3. Operating cost | Modeled and sourced; reconcile against the first real invoice |
 | 4. Pricing | Recommendation ready; operator decision + beta validation |
 | 5. Provisioning | Software path proven; time one real infra provisioning |
-| 6. Audience conversation (add-on) | Mechanics proven (81/81) + flag-off zero-change smoke; run one paid Kaito pull and one `MENTIONS_LLM=on` classify |
+| 6. Audience conversation (add-on) | Mechanics proven (85/85) + flag-off zero-change smoke; run one paid Kaito pull and one `MENTIONS_LLM=on` classify |
 
 Three of five gates are as done as they can be without spending money or
 standing up cloud infrastructure. The two paid steps (a Cloudflare bucket, a

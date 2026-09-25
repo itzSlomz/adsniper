@@ -13,7 +13,7 @@ remains — a real pilot pull — is a runbook, not a script: `pilot.md`.
 |---|---|
 | `storage-check.ts` | Gate 1 — the product's own `checkStorage()` write→read→delete against real object storage |
 | `ingestion-checks.ts` | Gate 2 — the real `ads-poll` job: create, dedup, first/last-seen, status transitions, raw retention, creative archival, cost logging, honest degradation, budget stop (22 assertions) |
-| `mentions-checks.ts` | Gate 6 — Phase 2 audience conversation through the real `mentions-poll` / `mentions-classify` / `mentions-retention` / `weekly-brief` jobs: entitlement, fixture poll, dedup, author kind, links, cap, failure, ceilings, strict classify, refusal, retention, takedown, spike, brief facts (81 assertions) |
+| `mentions-checks.ts` | Gate 6 — Phase 2 audience conversation through the real `mentions-poll` / `mentions-classify` / `mentions-retention` / `weekly-brief` jobs: entitlement, fixture poll, dedup, author kind, links, cap, failure, ceilings, strict classify, refusal, retention, takedown, spike, brief facts, display masking, brief storage without post text (85 assertions) |
 | `rehearsal.sh` | Gate 5 — a timed, fresh-DB run of the whole provisioning runbook |
 | `rehearsal-brands.ts` | seeds the two brands the rehearsal uses |
 | `media-server.mjs` | serves real PNGs so the media pipeline archives a real creative |

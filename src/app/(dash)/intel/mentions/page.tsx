@@ -174,10 +174,10 @@ export default async function MentionsAdminPage(props: { searchParams: Promise<{
         <h2 style={{ margin: 0, fontSize: 16 }}>
           {ADMIN.cardPull.title.en} <span dir="rtl" className="text-muted">{ADMIN.cardPull.title.ar}</span>
         </h2>
-        <p className="text-sm text-muted num" style={{ margin: 0 }}>{pullHelp.en}</p>
-        <p className="text-sm text-muted num" dir="rtl" style={{ margin: 0 }}>{pullHelp.ar}</p>
-        <p className="text-sm num" style={{ margin: 0 }}>{lastPullLine.en}</p>
-        <p className="text-sm num" dir="rtl" style={{ margin: 0 }}>{lastPullLine.ar}</p>
+        <p className="text-sm text-muted tnum" style={{ margin: 0 }}>{pullHelp.en}</p>
+        <p className="text-sm text-muted tnum" dir="rtl" style={{ margin: 0 }}>{pullHelp.ar}</p>
+        <p className="text-sm tnum" style={{ margin: 0 }}>{lastPullLine.en}</p>
+        <p className="text-sm tnum" dir="rtl" style={{ margin: 0 }}>{lastPullLine.ar}</p>
         <p className="text-sm" style={{ margin: 0 }}>{aiLine.en}</p>
         <p className="text-sm" dir="rtl" style={{ margin: 0 }}>{aiLine.ar}</p>
         {settings.enabled ? (
@@ -198,8 +198,8 @@ export default async function MentionsAdminPage(props: { searchParams: Promise<{
         <h2 style={{ margin: 0, fontSize: 16 }}>
           {ADMIN.cardRetention.title.en} <span dir="rtl" className="text-muted">{ADMIN.cardRetention.title.ar}</span>
         </h2>
-        <p className="text-sm text-muted num" style={{ margin: 0 }}>{retentionLine.en}</p>
-        <p className="text-sm text-muted num" dir="rtl" style={{ margin: 0 }}>{retentionLine.ar}</p>
+        <p className="text-sm text-muted tnum" style={{ margin: 0 }}>{retentionLine.en}</p>
+        <p className="text-sm text-muted tnum" dir="rtl" style={{ margin: 0 }}>{retentionLine.ar}</p>
 
         <h3 className="text-sm" style={{ margin: 0, fontWeight: 600 }}>
           {ADMIN.cardRetention.recentPosts.en} <span dir="rtl" className="text-muted">{ADMIN.cardRetention.recentPosts.ar}</span>

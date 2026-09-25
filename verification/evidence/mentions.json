@@ -1,7 +1,7 @@
 {
-  "at": "2026-09-22T14:31:24.524Z",
-  "passed": 81,
-  "total": 81,
+  "at": "2026-09-25T16:10:14.646Z",
+  "passed": 85,
+  "total": 85,
   "checks": [
     {
       "name": "01 entitlement off: mentions-poll is skipped_entitlement",
@@ -71,7 +71,7 @@
     {
       "name": "05 X-1 has one author: handle alice_pub, externalAuthorId 9001, displayName null",
       "pass": true,
-      "detail": "{\"id\":\"cmucrv9yo000f1s0g4fxgiqtf\",\"mentionId\":\"cmucrv9yn000e1s0g2c60zrtd\",\"handle\":\"alice_pub\",\"externalAuthorId\":\"9001\",\"displayName\":null,\"followers\":null,\"createdAt\":\"2026-09-22T14:31:23.184Z\"}"
+      "detail": "{\"id\":\"cmuh5pxxt000fe3q6mqp2kq77\",\"mentionId\":\"cmuh5pxxt000ee3q6p9g44zn1\",\"handle\":\"alice_pub\",\"externalAuthorId\":\"9001\",\"displayName\":null,\"followers\":null,\"createdAt\":\"2026-09-25T16:10:13.650Z\"}"
     },
     {
       "name": "05 every Mention.url is the identifier-free /i/status/ form",
@@ -216,7 +216,7 @@
     {
       "name": "17 window from < to",
       "pass": true,
-      "detail": "2026-09-15 → 2026-09-22"
+      "detail": "2026-09-18 → 2026-09-25"
     },
     {
       "name": "17 FixtureCo posts 7 (X-9 outside), distinct 6",
@@ -241,7 +241,7 @@
     {
       "name": "17 count sentence says sample / عيّنة",
       "pass": true,
-      "detail": "7 posts matched \"@fixtureco, FixtureCo\" on X from 2026-09-15 to 2026-09-22 — a sample, not a total."
+      "detail": "7 posts matched \"@fixtureco, FixtureCo\" on X from 2026-09-18 to 2026-09-25 — a sample, not a total."
     },
     {
       "name": "17 samples: linked first; no third-party @handle shown; no topic key; relative time in both languages",
@@ -252,6 +252,16 @@
       "name": "17 X-5 card carries the label unclear (not null)",
       "pass": true,
       "detail": "sentiment=unclear"
+    },
+    {
+      "name": "17 X-5 card text masks the third party's phone, IBAN and email for readers",
+      "pass": true,
+      "detail": "anyone tried FixtureCo transfers? call me [phone] or [iban] or [email]"
+    },
+    {
+      "name": "17 window end ≠ display clock: a card's relative time is measured from now, not from tomorrow midnight",
+      "pass": true,
+      "detail": "rel=12 h ago expected=12 h ago"
     },
     {
       "name": "17 RivalCo posts 1",
@@ -289,6 +299,11 @@
       "detail": "clean"
     },
     {
+      "name": "18 factsForStorage keeps the sample links and drops every excerpt (a brief outlives retention)",
+      "pass": true,
+      "detail": "samples=3 keys=[\"url\",\"postedAt\",\"kind\",\"sentiment\",\"linkedAd\"]"
+    },
+    {
       "name": "18 fallbackNarrative EN/AR: no FORBIDDEN_CAUSAL match",
       "pass": true,
       "detail": " "
@@ -296,12 +311,12 @@
     {
       "name": "18 AR conversation bullets present and free of →",
       "pass": true,
-      "detail": "- ماذا قال الناس (عيّنة من X، من ⁦2026-09-15⁩ إلى ⁦2026-09-22⁩): شركة التجربة — 7 منشورات طابقت «@fixtureco, FixtureCo»، 6 مميّزًا (الفترة السابقة: 0)؛ المشاعر (نموذجي) لـ 7 منشورًا مصنّفًا: 2 إيجابي، 2 سلبي، 2 محايد، 1 غير واضح؛ الموضوع الأبرز (نموذجي): البطاقات الائتمانية؛ 4 منشورًا في نفس فترة إعلانات شركة التجربة (تزامن وليس سببية). مثال: https://x.com/i/status/FIXTURE-X-8"
+      "detail": "- ماذا قال الناس (عيّنة من X، من ⁦2026-09-18⁩ إلى ⁦2026-09-25⁩): شركة التجربة — 7 منشورات طابقت «@fixtureco, FixtureCo»، 6 مميّزًا (الفترة السابقة: 0)؛ المشاعر (نموذجي) لـ 7 منشورًا مصنّفًا: 2 إيجابي، 2 سلبي، 2 محايد، 1 غير واضح؛ الموضوع الأبرز (نموذجي): البطاقات الائتمانية؛ 4 منشورًا في نفس فترة إعلانات شركة التجربة (تزامن وليس سببية). مثال: https://x.com/i/status/FIXTURE-X-8"
     },
     {
       "name": "18 EN bullet names the brand as an X sample with a cited example URL",
       "pass": true,
-      "detail": "- What people said (X sample, 2026-09-15 to 2026-09-22): FixtureCo — 7 posts matched \"@fixtureco, FixtureCo\", 6 distinct (prior window: 0); modeled sentiment of 7 labelled posts: 2 positive, 2 negative, 2 neutral, 1 unclear; top modeled topic: Credit cards; 4 posts in the same window as FixtureCo's ads (co-occurrence, not causation). Example: https://x.com/i/status/FIXTURE-X-8"
+      "detail": "- What people said (X sample, 2026-09-18 to 2026-09-25): FixtureCo — 7 posts matched \"@fixtureco, FixtureCo\", 6 distinct (prior window: 0); modeled sentiment of 7 labelled posts: 2 positive, 2 negative, 2 neutral, 1 unclear; top modeled topic: Credit cards; 4 posts in the same window as FixtureCo's ads (co-occurrence, not causation). Example: https://x.com/i/status/FIXTURE-X-8"
     },
     {
       "name": "19 takedown: removedAt set, text '', rawJson {}, publicMetrics {}, authors 0",
@@ -384,9 +399,14 @@
       "detail": "clean"
     },
     {
+      "name": "22 stored factsJson carries no post text (no excerpt key anywhere in factsJson.mentions)",
+      "pass": true,
+      "detail": "brands=11"
+    },
+    {
       "name": "22 contentEn carries the sample wording; contentAr says عيّنة",
       "pass": true,
-      "detail": "- What people said (X sample, 2026-09-15 to 2026-09-21): FixtureCo — 5 posts matched \"@fixtureco, FixtureCo\", 4 distinct (prior window: 0); modeled sentiment of 5 labelled posts: 2 positive, 1 negative, 1 neutral, 1 unclear; top modeled topic: Credit cards; 3 posts in the same window as FixtureCo's ads (co-occurrence, not causation)."
+      "detail": "- What people said (X sample, 2026-09-18 to 2026-09-24): FixtureCo — 5 posts matched \"@fixtureco, FixtureCo\", 4 distinct (prior window: 0); modeled sentiment of 5 labelled posts: 2 positive, 1 negative, 1 neutral, 1 unclear; top modeled topic: Credit cards; 3 posts in the same window as FixtureCo's ads (co-occurrence, not causation)."
     },
     {
       "name": "22 neither narrative contains a forbidden causal word",

@@ -34,9 +34,9 @@ import {
   weeklyMentionsFacts,
 } from "../src/lib/mentions/queries";
 import { assertIdentifierFree, contentHash, deidentify } from "../src/lib/mentions/text";
-import { FORBIDDEN_CAUSAL, countSentence } from "../src/lib/mentions/copy";
+import { FORBIDDEN_CAUSAL, countSentence, relTimeFor } from "../src/lib/mentions/copy";
 import { PROMPT_VERSION, TAXONOMY_VERSION } from "../src/lib/mentions/config";
-import { fallbackNarrative, type WeeklyFacts } from "../src/jobs/weeklyBrief";
+import { factsForStorage, fallbackNarrative, type WeeklyFacts } from "../src/jobs/weeklyBrief";
 import { buildWeeklyReport } from "../src/lib/weeklyReport";
 import { mkdirSync, writeFileSync } from "fs";
 
@@ -385,6 +385,17 @@ async function main() {
     `first=${fc.samples[0]?.linkType} rel=${JSON.stringify(fc.samples[0]?.postedAtRel)}`);
   const c5 = fc.samples.find((s) => s.url.endsWith(X(5)));
   assert("17 X-5 card carries the label unclear (not null)", c5?.sentiment === "unclear", `sentiment=${c5?.sentiment}`);
+  assert("17 X-5 card text masks the third party's phone, IBAN and email for readers",
+    !!c5 && c5.displayText.includes("[phone]") && c5.displayText.includes("[iban]") && c5.displayText.includes("[email]") &&
+      !/\d{8,}/.test(c5.displayText) && c5.displayText.includes("FixtureCo transfers"),
+    c5?.displayText);
+  // The dashboard passes the midnight after the selected day as the window
+  // end; relative times must still be measured from the real clock.
+  const rDash = await brandConversations({ days: 7, sampleLimit: 50, now: new Date(new Date().setUTCHours(24, 0, 0, 0)) });
+  const dashSample = rDash.brands.find((b) => b.brandName === SELF)?.samples[0];
+  assert("17 window end ≠ display clock: a card's relative time is measured from now, not from tomorrow midnight",
+    !!dashSample && dashSample.postedAtRel.en === relTimeFor(dashSample.postedAt, new Date()).en,
+    `rel=${dashSample?.postedAtRel.en} expected=${dashSample ? relTimeFor(dashSample.postedAt, new Date()).en : "—"}`);
   assert("17 RivalCo posts 1", rc?.posts === 1, `posts=${rc?.posts}`);
 
   // ---- 18. Weekly facts ---------------------------------------------------
@@ -425,6 +436,15 @@ async function main() {
   const yesterday = new Date(now18.getTime() - DAY).toISOString().slice(0, 10);
   const wf: WeeklyFacts = { report: await buildWeeklyReport(yesterday), estimates: [], mentions: facts ?? undefined };
   const narrative = fallbackNarrative(wf);
+  // What the brief row stores (proven here, where samples still carry text;
+  // by step 22 retention has erased them): links kept, excerpts gone.
+  const storedBrands = factsForStorage({ ...wf, mentions: factsNarrow ?? undefined }).mentions?.brands ?? [];
+  const storedFc = storedBrands.find((b) => b.brandName === SELF);
+  assert("18 factsForStorage keeps the sample links and drops every excerpt (a brief outlives retention)",
+    !!storedFc && storedFc.samples.length === (nfc?.samples.length ?? -1) && storedFc.samples.length >= 3 &&
+      storedFc.samples.every((s) => !("excerpt" in s) && s.url.startsWith("https://x.com/i/status/")) &&
+      !JSON.stringify(storedBrands).includes("excerpt") && (ex5.length > 0),
+    `samples=${storedFc?.samples.length} keys=${JSON.stringify(Object.keys(storedFc?.samples[0] ?? {}))}`);
   const causalHit = (s: string) => FORBIDDEN_CAUSAL.find((re) => re.test(s))?.source ?? "";
   assert("18 fallbackNarrative EN/AR: no FORBIDDEN_CAUSAL match",
     causalHit(narrative.en) === "" && causalHit(narrative.ar) === "", `${causalHit(narrative.en)} ${causalHit(narrative.ar)}`);
@@ -552,6 +572,8 @@ async function main() {
     briefScan = (err as Error).message;
   }
   assert("22 stored factsJson.mentions is identifier-free", briefScan === "" && !!bf.mentions, briefScan || "clean");
+  assert("22 stored factsJson carries no post text (no excerpt key anywhere in factsJson.mentions)",
+    !!bf.mentions && !JSON.stringify(bf.mentions).includes('"excerpt"'), `brands=${bf.mentions?.brands?.length}`);
   const en = brief?.contentEn ?? "";
   const ar = brief?.contentAr ?? "";
   assert("22 contentEn carries the sample wording; contentAr says عيّنة",

@@ -6,6 +6,46 @@ new information.
 
 ---
 
+## 2026-09-25 · Conversation surfaces: mask contact details, store no post text in the brief, never claim more than the run proved
+**Decided:** four review findings on the in-flight Phase 2 branch changed
+the spec's letter, each because a product law wins over the spec:
+1. Quoted post text on every surface (cards, `/mentions`, the admin list)
+   is rendered through `maskForDisplay`, which masks a third party's
+   email, IBAN, phone number and long digit runs as well as handles
+   (spec R6 lists handles only). The stored `Mention.text` and the content
+   hash are untouched; links stay, because they are the post's evidence.
+2. `WeeklyBrief.factsJson` is written through `factsForStorage`: the model
+   reads each sample's de-identified excerpt once, but the stored copy
+   keeps only what retention keeps on the `Mention` row (URL, date, kind,
+   label, linked ad). Spec §9.1 said "persisted in factsJson and sent to
+   the model"; persisting the words would have outlived the 90-day erasure
+   the admin page and the coverage panel state as a fact.
+3. State 4's "Other brands are up to date." is appended only when the
+   result shows every brand and exactly one carries a failure line; a
+   run that threw before any brand was pulled (`failed`) or was stopped
+   by the license renders one section-level callout and suppresses the
+   "quiet market" line — a zero after a run that never completed is not
+   an observation.
+4. The spike badge prints the 7-day count the rule evaluated
+   (`spikeRecent`, "N posts in 7 days vs ~B/week"), never the surface's
+   own window count; relative times and the badge are measured from the
+   real clock even when the dashboard's window ends on a selected day.
+**Why:** law 1 (an observed timestamp shown 14 hours wrong, a 30-day
+count compared with a weekly baseline), law 3 (a failed pull rendered as
+a quiet market, "other brands are up to date" asserted when all failed),
+and the retention promise (post text erased after N days) would each have
+been false statements on a customer surface.
+**Rejected:** scrubbing brief rows nightly instead of storing a scrubbed
+copy (a second erasure path to keep in step, and the brief never needed
+the words after generation); showing an absolute date on past-date
+dashboards ("24 d ago" is true and reads the same everywhere); masking
+URLs in quoted text (they are what a reader clicks to verify).
+**Also:** the Intel ingestion-health table reads one latest run per
+visible job with an indexed `findFirst` each (the spec's `distinct` query
+is applied in memory by Prisma 5 and would scan the whole JobRun table on
+every admin view); a job whose latest run fell outside the old top-30 rows
+(weekly-brief most days) now shows its real last run instead of "never".
+
 ## 2026-09-22 · Mentions as a licensed add-on with fail-closed entitlement
 **Decided:** `LICENSE_FEATURES` (env, vendor-set) lists licensed add-ons;
 "mentions" is the first. Unset `LICENSE_EXPIRES_AT` keeps dev/demo fully

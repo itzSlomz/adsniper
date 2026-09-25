@@ -45,7 +45,7 @@ S3-compatible object store. Full evidence in `VERIFICATION.md`; harness in
 | 3. Operating cost | **Modeled + sourced** — $750–$2,490/yr fully loaded per instance | Reconcile against the first real Apify invoice (#3) |
 | 4. Pricing | **Recommendation ready** (Standard SAR 96k list / 75k target) | Operator sign-off + beta willingness-to-pay (#4) |
 | 5. Provisioning | Software path **proven end-to-end**, zero code defects, real 53 KB PDF | Time one real Railway provisioning (#5) |
-| 6. Audience conversation (add-on, 2026-09-22) | Mechanics **proven, 81/81**, through the real jobs with a fixture provider + fixture classifier; flag-off zero-change smoke on a running server | One paid Kaito mentions pull; one `MENTIONS_LLM=on` classify run |
+| 6. Audience conversation (add-on, 2026-09-22) | Mechanics **proven, 85/85**, through the real jobs with a fixture provider + fixture classifier; flag-off zero-change smoke on a running server | One paid Kaito mentions pull; one `MENTIONS_LLM=on` classify run |
 
 Previous recommendation was to proceed to a controlled beta after #1 and #2.
 The 2026-09-03 SaaS-foundation review supersedes it: #1 and #2 remain required,
