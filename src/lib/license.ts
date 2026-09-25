@@ -6,6 +6,9 @@
 //                        dev/demo mode: fully open, no banner.
 //   LICENSE_PLAN         Optional plan label shown to admins.
 //   VENDOR_CONTACT_EMAIL Renewal contact shown when the license expires.
+//   LICENSE_FEATURES     Comma list of licensed add-ons (e.g. "mentions").
+//                        Ignored while LICENSE_EXPIRES_AT is unset/malformed
+//                        (dev/demo: everything on).
 //
 // Enforcement is two-layer: HTTP requests are gated in middleware (edge —
 // this module must stay Prisma-free), and cron jobs check assertLicensed()
@@ -54,4 +57,26 @@ export class LicenseExpiredError extends Error {
 
 export function assertLicensed(): void {
   if (getLicense().state === "expired") throw new LicenseExpiredError();
+}
+
+// Add-on entitlements. Expiry is evaluated before features everywhere
+// (middleware, runner): an expired instance is locked whatever it licensed.
+// A configured license with no LICENSE_FEATURES fails closed — every add-on
+// off — because a paying customer's instance must never show a surface the
+// vendor did not sell; only the unconfigured dev/demo state opens them all.
+export type Feature = "mentions";
+export const FEATURES: readonly Feature[] = ["mentions"] as const;
+
+export function licensedFeatures(): ReadonlySet<Feature> | "all" {
+  if (getLicense().state === "unconfigured") return "all";
+  const keys = (process.env.LICENSE_FEATURES ?? "")
+    .split(",")
+    .map((k) => k.trim().toLowerCase())
+    .filter((k): k is Feature => (FEATURES as readonly string[]).includes(k));
+  return new Set(keys);
+}
+
+export function hasFeature(feature: Feature): boolean {
+  const licensed = licensedFeatures();
+  return licensed === "all" || licensed.has(feature);
 }

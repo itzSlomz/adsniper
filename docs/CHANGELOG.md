@@ -10,6 +10,39 @@ continues on `main`, which carries the identical history.
 
 ---
 
+## 2026-09-22
+
+**Audience conversation add-on (Phase 2), gated by LICENSE_FEATURES=mentions**
+(in flight on `feature/campaign-reaction`, cut from `main` @ 32b8a00)
+Public X posts mentioning each tracked brand can now be pulled (Apify Kaito
+through a new MentionsProvider adapter, one search per brand from the
+brand's aliases and @handle, UNIX since_time/until_time windows, 20-item
+billing floor, per-call MentionPull audit), stored as observed records with
+author identifiers in a separate erasable table and identifier-free
+/i/status/ URLs, marked as repeated text by content hash, labelled by a
+frozen, versioned, strictly validated classifier (classifier/v1, banking-v1
+taxonomy seeded from the offer categories, a real "unclear" class,
+whole-batch refusal on invalid output, off unless MENTIONS_LLM=on), linked
+to ads seen in the same window (direct / topical / temporal — co-occurrence
+only) and folded into the Monday briefing with mandatory sample / modeled /
+cited-URL wording in both languages. New cost groups "mentions" and "ai"
+with their own ceilings; providerGroup() rejects unknown prefixes; every
+Anthropic call now passes ensureBudget("ai") and is priced from a per-model
+rate table instead of a hard-coded $3/$15. Per-brand daily pull caps,
+90-day erasure of text and identifiers (nightly on every instance — a duty,
+not a feature; a one-count no-op without mention rows), admin takedown with a
+tombstone (by list entry or by pasted X link). The classifier defaults to
+claude-sonnet-5 (structured outputs are not accepted on the brief default
+claude-sonnet-4-6); the brief default is unchanged. Surfaces: Intel → Conversation (settings,
+Pull now, removal), /mentions, "What did people say?" on the dashboard and
+brand pages, a Methodology section rendering the live constants, coverage
+panel everywhere. With the flag off nothing visible changes (the nightly
+retention job records a hidden one-count run). Verified: typecheck, zero-warning lint, 498/498 tests,
+production build, dependency audit, and verification/mentions-checks.ts
+against a real Postgres with the fixture provider and fixture classifier
+(no paid call) — 81/81 checks, plus the flag-off smoke on a running server
+(`docs/VERIFICATION.md`, Gate 6).
+
 ## 2026-09-21
 
 **Repository, Railway project and service renamed; references follow**

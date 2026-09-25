@@ -20,7 +20,7 @@ asks:
 Organic X/LinkedIn tracking is included as a secondary module, shown in
 its own box below the ads view.
 
-Stack: Next.js 14 App Router · TypeScript · Tailwind (layout utilities;
+Stack: Next.js 16 App Router · TypeScript · Tailwind (layout utilities;
 visual system is hand-written CSS) · Prisma + Postgres · single
 persistent Node service, in-process cron (`instrumentation.ts`). Forked
 from the Watchtower internal dashboard — the ingestion pipeline, media
@@ -84,6 +84,16 @@ commit as the work it describes: a feature is done when `STATUS.md` and
   Expired → middleware locks every surface to `/license-expired` AND the
   job runner refuses to run (status `stopped_license`), so a lapsed
   customer costs nothing. 30-day renewal banner ahead of expiry.
+- **Feature entitlements**: LICENSE_FEATURES (comma list, vendor-set)
+  gates add-ons at the middleware, the job runner (skipped_entitlement),
+  job visibility (API route, CLI, Intel) and the navigation; the nightly
+  mentions-retention erasure runs regardless. Unset LICENSE_EXPIRES_AT
+  (dev/demo) turns every feature on; a real expiry without the key turns
+  them off.
+- **Audience conversation (add-on)**: LICENSE_FEATURES=mentions unlocks
+  public X mentions (adapter in src/lib/providers/mentions),
+  classification (off unless MENTIONS_LLM=on), and the weekly "What people
+  said" section. Cost groups: x, linkedin, ads, mentions, ai.
 - **Auth**: everything requires login (allowlisted emails, magic links
   via Resend or passcode fallback). Viewer role for executives, admin
   for the marketing/product operators.
@@ -105,6 +115,11 @@ One sale = one Railway project. ~30 minutes.
 2. **Set env vars** from `.env.example`. Per customer:
    - `LICENSE_EXPIRES_AT` (contract end date), `LICENSE_PLAN`,
      `VENDOR_CONTACT_EMAIL`, `CUSTOMER_NAME`, `MARKET_REGION`
+   - `LICENSE_FEATURES` (if sold — e.g. `mentions`), and for that add-on
+     `MONTHLY_COST_CEILING_MENTIONS_USD`, `MONTHLY_COST_CEILING_AI_USD`,
+     `MENTIONS_LLM` (`on` to label posts; needs `ANTHROPIC_API_KEY`),
+     `MENTIONS_LLM_MODEL` (optional; must accept structured outputs),
+     `MENTIONS_RETENTION_DAYS` (default 90)
    - `SEED_ADMIN_EMAIL` = the customer admin's email
    - fresh `AUTH_SECRET` + `AUTH_PASSCODE` (until Resend is configured)
    - provider keys (one Apify token serves all adapters) and cost
@@ -136,6 +151,9 @@ One sale = one Railway project. ~30 minutes.
      offer categories for their vertical (defaults fit banking).
    - Intel → Run now `ads-poll` for the first pull; check the ingestion
      health panel.
+   - (add-on) Intel → Conversation: tick "Track public conversation on X",
+     review the seeded search terms, Save, "Pull now"; the "What did
+     people say?" section appears on the Ads page and in Monday's brief.
 5. **Verify**: login on a phone, `/media/...` anonymous → redirect,
    weekly PDF renders Arabic correctly.
 
@@ -161,6 +179,8 @@ refused once real ads or posts exist). CLI twins:
 | weekly-brief | `0 7 * * 1` | **The flagship**: weekly competitor-ads briefing |
 | brief-auto-publish | `0 8 * * *` | Publishes untouched daily + weekly drafts |
 | media-migrate / resolve-identities | manual | Volume→R2 copy; advertiser-ID resolution |
+| mentions-poll / mentions-classify | manual | Public X mentions pull; AI labelling (add-on) |
+| mentions-retention | `20 3 * * *` | Erases post text + author identifiers after MENTIONS_RETENTION_DAYS — on every instance, licensed or not (a no-op without mention rows) |
 
 All triggerable from Intel → "Run now", or `npx tsx scripts/run-job.ts <job>`.
 
@@ -212,7 +232,12 @@ checks are release gates. The
 unit tests protect the exact public-route boundary and authorization of the
 current admin mutations; they are not an end-to-end suite. Behaviour-changing
 work still needs verification against a real Postgres database or running
-server as described in [`AGENTS.md`](AGENTS.md).
+server as described in [`AGENTS.md`](AGENTS.md). The re-runnable harness
+under [`verification/`](verification/) is that proof for the launch gates:
+`ingestion-checks.ts` for the ad pipeline and `mentions-checks.ts` for the
+audience-conversation add-on (both through the real jobs with fixture
+providers, no paid call); results are recorded in
+[`docs/VERIFICATION.md`](docs/VERIFICATION.md).
 
 ## Operational learnings (inherited from Watchtower, still true)
 

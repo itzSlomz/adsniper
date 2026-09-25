@@ -13,10 +13,18 @@ jest.mock("@/lib/storage", () => ({
 }));
 jest.mock("@/lib/sharpOptional", () => ({ makeThumbnail: jest.fn() }));
 jest.mock("@/lib/settings", () => ({
+  getMentionsSettings: jest.fn(),
   saveInstanceSettings: jest.fn(),
+  saveMentionsSettings: jest.fn(),
   saveOfferCategories: jest.fn(),
   savePullSettings: jest.fn(),
 }));
+jest.mock("@/jobs/mentions", () => ({ eraseMention: jest.fn() }));
+jest.mock("@/lib/mentions/config", () => ({
+  MENTIONS_MAX_TERMS_PER_BRAND: 8,
+  classifierMode: jest.fn(),
+}));
+jest.mock("@/lib/mentions/queries", () => ({ resolveMentionRef: jest.fn() }));
 jest.mock("@/lib/db", () => ({
   prisma: {
     ad: { create: jest.fn() },
@@ -57,6 +65,11 @@ import {
   save as saveDaily,
 } from "@/app/(dash)/intel/brief/actions";
 import { logAd } from "@/app/(dash)/intel/log-ad/actions";
+import {
+  pullNow,
+  removeMention,
+  saveMentionSettings,
+} from "@/app/(dash)/intel/mentions/actions";
 import { addPost } from "@/app/(dash)/intel/quick-add-post/actions";
 import {
   save as savePull,
@@ -69,11 +82,16 @@ import {
   save as saveWeekly,
 } from "@/app/(dash)/intel/weekly-brief/actions";
 import { triggerJob } from "@/jobs/index";
+import { eraseMention } from "@/jobs/mentions";
 import { prisma } from "@/lib/db";
+import { classifierMode } from "@/lib/mentions/config";
+import { resolveMentionRef } from "@/lib/mentions/queries";
 import { clearSampleData, loadSampleData } from "@/lib/sampleData";
 import { makeThumbnail } from "@/lib/sharpOptional";
 import {
+  getMentionsSettings,
   saveInstanceSettings,
+  saveMentionsSettings,
   saveOfferCategories,
   savePullSettings,
 } from "@/lib/settings";
@@ -91,6 +109,11 @@ const makeThumbnailMock = makeThumbnail as jest.Mock;
 const saveInstanceSettingsMock = saveInstanceSettings as jest.Mock;
 const saveOfferCategoriesMock = saveOfferCategories as jest.Mock;
 const savePullSettingsMock = savePullSettings as jest.Mock;
+const getMentionsSettingsMock = getMentionsSettings as jest.Mock;
+const saveMentionsSettingsMock = saveMentionsSettings as jest.Mock;
+const eraseMentionMock = eraseMention as jest.Mock;
+const classifierModeMock = classifierMode as jest.Mock;
+const resolveMentionRefMock = resolveMentionRef as jest.Mock;
 
 const dbMocks = {
   adCreate: prisma.ad.create as jest.Mock,
@@ -120,6 +143,11 @@ const sideEffectMocks: jest.Mock[] = [
   saveInstanceSettingsMock,
   saveOfferCategoriesMock,
   savePullSettingsMock,
+  getMentionsSettingsMock,
+  saveMentionsSettingsMock,
+  eraseMentionMock,
+  classifierModeMock,
+  resolveMentionRefMock,
   revalidatePathMock,
   redirectMock,
 ];
@@ -211,6 +239,22 @@ const ACTIONS: readonly ActionCase[] = [
     name: "users/removeUser",
     invoke: () => removeUser(form({ id: "user-2" })),
   },
+  {
+    name: "mentions/saveMentionSettings",
+    invoke: () =>
+      saveMentionSettings(
+        form({
+          enabled: "1",
+          "terms_brand-1": "Acme, @acme,acme, Acme Bank",
+          mediaHandles: "@Argaam, spagov, argaam",
+        })
+      ),
+  },
+  { name: "mentions/pullNow", invoke: () => pullNow() },
+  {
+    name: "mentions/removeMention",
+    invoke: () => removeMention(form({ id: "mention-1" })),
+  },
 ];
 
 beforeEach(() => {
@@ -235,7 +279,10 @@ beforeEach(() => {
   });
   getStorageMock.mockReturnValue({ put: storagePutMock });
   makeThumbnailMock.mockResolvedValue(null);
-  triggerJobMock.mockResolvedValue({ status: "success", items: 0, errors: [] });
+  triggerJobMock.mockResolvedValue({ status: "success", itemsIngested: 0, errors: [] });
+  getMentionsSettingsMock.mockResolvedValue({ enabled: true, terms: {}, mediaHandles: [] });
+  classifierModeMock.mockReturnValue("off");
+  resolveMentionRefMock.mockResolvedValue("mention-9");
 });
 
 describe.each([
@@ -364,6 +411,43 @@ const POSITIVE_CASES: readonly PositiveCase[] = [
       expect(dbMocks.userDelete).toHaveBeenCalledWith({ where: { id: "user-2" } });
     },
   },
+  {
+    ...ACTIONS[19],
+    verify: () => {
+      // Terms are split, trimmed and deduped case-insensitively; handles
+      // lose their "@" and are lowercased; nothing is defaulted.
+      expect(saveMentionsSettingsMock).toHaveBeenCalledWith({
+        enabled: true,
+        terms: { "brand-1": ["Acme", "@acme", "Acme Bank"] },
+        mediaHandles: ["argaam", "spagov"],
+      });
+      expect(revalidatePathMock.mock.calls.map((c) => c[0])).toEqual([
+        "/intel/mentions",
+        "/mentions",
+        "/",
+      ]);
+    },
+  },
+  {
+    ...ACTIONS[20],
+    verify: () => {
+      // Classifier off: only the poll runs, and the outcome is fed back
+      // through an encoded ?run=ok:… redirect.
+      expect(triggerJobMock.mock.calls).toEqual([["mentions-poll"]]);
+      expect(redirectMock).toHaveBeenCalledTimes(1);
+      expect(redirectMock.mock.calls[0][0]).toBe(
+        `/intel/mentions?run=${encodeURIComponent("ok:0 new posts, 0 labelled (success)")}`
+      );
+    },
+  },
+  {
+    ...ACTIONS[21],
+    verify: () => {
+      expect(resolveMentionRefMock).not.toHaveBeenCalled();
+      expect(eraseMentionMock).toHaveBeenCalledWith("mention-1", "removed");
+      expect(redirectMock).not.toHaveBeenCalled();
+    },
+  },
 ];
 
 describe("admin action positive controls", () => {
@@ -376,5 +460,104 @@ describe("admin action positive controls", () => {
 
     expect(authMock).toHaveBeenCalledTimes(1);
     verify();
+  });
+});
+
+describe("mentions admin actions", () => {
+  beforeEach(() => {
+    authMock.mockResolvedValue({
+      user: { email: "admin@example.com", role: "admin" },
+    });
+  });
+
+  test("pullNow with tracking switched off never reaches triggerJob", async () => {
+    getMentionsSettingsMock.mockResolvedValue({ enabled: false, terms: {}, mediaHandles: [] });
+
+    await pullNow();
+
+    expect(triggerJobMock).not.toHaveBeenCalled();
+    expect(revalidatePathMock).not.toHaveBeenCalled();
+    expect(redirectMock).toHaveBeenCalledTimes(1);
+    expect(redirectMock.mock.calls[0][0]).toBe(
+      `/intel/mentions?run=${encodeURIComponent("no:switch tracking on first")}`
+    );
+  });
+
+  test("pullNow runs mentions-classify only when the classifier is configured", async () => {
+    classifierModeMock.mockReturnValue("on");
+    triggerJobMock
+      .mockResolvedValueOnce({ status: "success", itemsIngested: 12, errors: [] })
+      .mockResolvedValueOnce({ status: "success", itemsIngested: 7, errors: [] });
+
+    await pullNow();
+
+    expect(triggerJobMock.mock.calls).toEqual([["mentions-poll"], ["mentions-classify"]]);
+    expect(redirectMock.mock.calls[0][0]).toBe(
+      `/intel/mentions?run=${encodeURIComponent("ok:12 new posts, 7 labelled (success)")}`
+    );
+  });
+
+  test("pullNow reports a stopped or failed poll with its first non-info error, encoded", async () => {
+    triggerJobMock.mockResolvedValueOnce({
+      status: "stopped_budget",
+      itemsIngested: 0,
+      errors: ["(info) Acme: no search terms — skipped", 'Monthly ceiling for "mentions" & more #1'],
+    });
+
+    await pullNow();
+
+    expect(triggerJobMock.mock.calls).toEqual([["mentions-poll"]]);
+    const target = redirectMock.mock.calls[0][0] as string;
+    expect(target).toBe(
+      `/intel/mentions?run=${encodeURIComponent('no:Monthly ceiling for "mentions" & more #1')}`
+    );
+    expect(target).not.toContain("#1");
+  });
+
+  test("pullNow falls back to the status when a skipped run carries only info lines", async () => {
+    triggerJobMock.mockResolvedValueOnce({
+      status: "skipped_entitlement",
+      itemsIngested: 0,
+      errors: ['(info) feature "mentions" is not included in this instance\'s license (LICENSE_FEATURES) — skipped'],
+    });
+
+    await pullNow();
+
+    expect(redirectMock.mock.calls[0][0]).toBe(
+      `/intel/mentions?run=${encodeURIComponent("no:skipped_entitlement")}`
+    );
+  });
+
+  test("removeMention by X link resolves the reference before erasing", async () => {
+    await removeMention(form({ ref: "https://x.com/someone/status/123" }));
+
+    expect(resolveMentionRefMock).toHaveBeenCalledWith("https://x.com/someone/status/123");
+    expect(eraseMentionMock).toHaveBeenCalledWith("mention-9", "removed");
+    expect(redirectMock).not.toHaveBeenCalled();
+    expect(revalidatePathMock).toHaveBeenCalledTimes(3);
+  });
+
+  test("removeMention with an unknown link erases nothing and reports it", async () => {
+    resolveMentionRefMock.mockResolvedValue(null);
+
+    await removeMention(form({ ref: "https://x.com/someone/status/999" }));
+
+    expect(eraseMentionMock).not.toHaveBeenCalled();
+    expect(revalidatePathMock).not.toHaveBeenCalled();
+    expect(redirectMock.mock.calls[0][0]).toBe(
+      `/intel/mentions?run=${encodeURIComponent("no:no stored post matches that link")}`
+    );
+  });
+
+  test("saveMentionSettings caps terms at eight of sixty characters and stores the switch off", async () => {
+    const terms = Array.from({ length: 10 }, (_, i) => `term-${i}-${"x".repeat(70)}`).join("\n");
+
+    await saveMentionSettings(form({ "terms_brand-1": terms, mediaHandles: "" }));
+
+    const saved = saveMentionsSettingsMock.mock.calls[0][0];
+    expect(saved.enabled).toBe(false);
+    expect(saved.terms["brand-1"]).toHaveLength(8);
+    for (const t of saved.terms["brand-1"]) expect(t.length).toBeLessThanOrEqual(60);
+    expect(saved.mediaHandles).toEqual([]);
   });
 });

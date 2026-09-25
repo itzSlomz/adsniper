@@ -2,8 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
-import { budgetStatus } from "@/lib/costs";
-import { jobs } from "@/jobs/index";
+import { COST_GROUPS_LEGACY, budgetStatus } from "@/lib/costs";
+import { visibleJobs } from "@/jobs/index";
+import { hasFeature } from "@/lib/license";
 import { sampleDataLoaded } from "@/lib/sampleData";
 import { storageTarget } from "@/lib/storage";
 import { clearSamples, loadSamples, runNow, testStorage } from "./actions";
@@ -22,17 +23,29 @@ export default async function IntelPage(
   const session = await auth();
   if ((session?.user as { role?: string } | undefined)?.role !== "admin") redirect("/");
 
-  const [budget, runs, adCount, postCount, sampleLoaded] = await Promise.all([
+  const mentionsEntitled = hasFeature("mentions");
+  // One latest row per job: a fixed `take` can miss a job entirely once
+  // hourly polls and a nightly run share the table.
+  const [budget, runs, adCount, postCount, sampleLoaded, mentionRows] = await Promise.all([
     budgetStatus(),
-    prisma.jobRun.findMany({ orderBy: { startedAt: "desc" }, take: 30 }),
+    prisma.jobRun.findMany({ distinct: ["job"], orderBy: { startedAt: "desc" } }),
     prisma.ad.count(),
     prisma.post.count(),
     sampleDataLoaded(),
+    // An un-entitled instance lists mentions-retention only while it still
+    // holds mention rows (the erasure duty outlives the add-on); entitled
+    // instances list it regardless, so the count is not needed.
+    mentionsEntitled ? Promise.resolve(0) : prisma.mention.count(),
   ]);
   const storage = storageTarget();
   const lastByJob = new Map<string, (typeof runs)[number]>();
   for (const r of runs) if (!lastByJob.has(r.job)) lastByJob.set(r.job, r);
   const ceilingHit = budget.filter((b) => Number.isFinite(b.ceilingUsd) && b.spentUsd >= b.ceilingUsd);
+  // With the add-on unlicensed the grid is byte-identical to before the
+  // "mentions" and "ai" groups existed; the ceiling banner above is
+  // untouched because a configured ceiling is an explicit operator act.
+  const shownBudget = budget.filter((b) => COST_GROUPS_LEGACY.includes(b.group) || mentionsEntitled);
+  const health = visibleJobs({ mentionRows });
 
   return (
     <main className="space-y-6">
@@ -67,6 +80,11 @@ export default async function IntelPage(
         <Link href="/intel/settings" className="btn btn-secondary">
           ⏱ Data pulling
         </Link>
+        {mentionsEntitled && (
+          <Link href="/intel/mentions" className="btn btn-secondary">
+            💬 Conversation
+          </Link>
+        )}
       </div>
 
       <section className="card elev-sm space-y-2">
@@ -142,8 +160,8 @@ export default async function IntelPage(
 
       <section className="card elev-sm">
         <h2 className="mb-2 text-base font-semibold">Provider spend (this month)</h2>
-        <div className="grid grid-cols-3 gap-3 text-sm">
-          {budget.map((b) => (
+        <div className={mentionsEntitled ? "grid grid-cols-2 gap-3 text-sm sm:grid-cols-5" : "grid grid-cols-3 gap-3 text-sm"}>
+          {shownBudget.map((b) => (
             <div key={b.group} className="rounded border p-2">
               <p className="text-xs uppercase text-gray-500">{b.group}</p>
               <p className="font-semibold">
@@ -171,9 +189,12 @@ export default async function IntelPage(
             </tr>
           </thead>
           <tbody>
-            {Object.keys(jobs).map((job) => {
+            {Object.entries(health).map(([job, def]) => {
               const r = lastByJob.get(job);
               const errs = ((r?.errorsJson as string[]) ?? []).filter((e) => !e.startsWith("(info)"));
+              // A duty row (mentions-retention with leftover rows) is shown
+              // to an un-entitled admin but not runnable from here.
+              const runnable = !def.feature || hasFeature(def.feature);
               return (
                 <tr key={job} className="border-t">
                   <td className="py-2 font-medium">{job}</td>
@@ -181,13 +202,16 @@ export default async function IntelPage(
                     {r ? new Date(r.startedAt).toLocaleString() : "never"}
                   </td>
                   <td className="py-2">
-                    <span className={
-                      r?.status === "success" ? "text-emerald-600" :
-                      r?.status === "partial" ? "text-amber-600" :
-                      r?.status === "stopped_budget" ? "text-red-600" :
-                      r?.status === "stopped_license" ? "text-red-600" :
-                      r?.status === "failed" ? "text-red-600" : "text-gray-400"
-                    }>
+                    <span
+                      className={
+                        r?.status === "success" ? "text-emerald-600" :
+                        r?.status === "partial" ? "text-amber-600" :
+                        r?.status === "stopped_budget" ? "text-red-600" :
+                        r?.status === "stopped_license" ? "text-red-600" :
+                        r?.status === "failed" ? "text-red-600" : "text-gray-400"
+                      }
+                      title={r?.status === "skipped_entitlement" ? "Feature not licensed" : undefined}
+                    >
                       {r?.status ?? "—"}
                     </span>
                   </td>
@@ -196,10 +220,12 @@ export default async function IntelPage(
                     {errs.length}
                   </td>
                   <td className="py-2 text-end">
-                    <form action={runNow}>
-                      <input type="hidden" name="job" value={job} />
-                      <button className="btn btn-secondary" style={{ fontSize: 12, padding: "4px 10px" }}>Run now</button>
-                    </form>
+                    {runnable && (
+                      <form action={runNow}>
+                        <input type="hidden" name="job" value={job} />
+                        <button className="btn btn-secondary" style={{ fontSize: 12, padding: "4px 10px" }}>Run now</button>
+                      </form>
+                    )}
                   </td>
                 </tr>
               );

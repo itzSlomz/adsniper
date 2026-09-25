@@ -50,7 +50,7 @@ export interface WeeklyReport {
 // Offer themes come from the instance's admin-editable categories
 // (Intel → Settings), so non-banking customers get sensible labels.
 // First matching category wins — order them most-specific first.
-function classifyOffer(text: string | null, categories: OfferCategory[]): string | null {
+export function classifyOffer(text: string | null, categories: OfferCategory[]): string | null {
   if (!text) return null;
   const lower = text.toLowerCase();
   for (const c of categories) {

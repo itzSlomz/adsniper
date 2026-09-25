@@ -94,6 +94,8 @@ model Brand {
   posts             Post[]
   followerSnapshots FollowerSnapshot[]
   ads               Ad[]
+  mentions          Mention[]
+  mentionPulls      MentionPull[]
 }
 
 model Post {
@@ -181,7 +183,8 @@ model Ad {
   loggedBy          String?
   createdAt         DateTime     @default(now())
 
-  brand Brand @relation(fields: [brandId], references: [id])
+  brand    Brand     @relation(fields: [brandId], references: [id])
+  mentions Mention[]
 
   @@unique([platform, libraryId])
   @@index([brandId, status])
@@ -244,6 +247,161 @@ model Setting {
   key       String   @id
   value     Json
   updatedAt DateTime @updatedAt
+}
+
+// --- Audience conversation (Phase 2). Observed fields only on Mention;
+// author identifiers live in MentionAuthor so they can be erased on their
+// own; every label is an append-only MentionLabel row (human beats model,
+// then newest) so a re-run with a new prompt never overwrites history.
+// Retention erases in place (text "", authors deleted, evidence "") so the
+// identifier-free counts, kinds, labels and ad links survive.
+
+enum MentionPlatform {
+  x
+}
+
+// Decided by rule at ingest (authorKindFor): brand_own = the queried brand's
+// own @handle; media = a handle on the admin media list; unclear = no author
+// in the payload; public = everything else (another tracked brand included).
+enum MentionKind {
+  public
+  brand_own
+  media
+  unclear
+}
+
+// How a post was tied to a tracked ad. Co-occurrence only — never causal.
+enum MentionLinkType {
+  direct
+  topical
+  temporal
+  none
+}
+
+enum MentionRelevance {
+  relevant
+  irrelevant
+  unclear
+}
+
+enum MentionSentiment {
+  positive
+  negative
+  neutral
+  unclear
+}
+
+enum MentionLabelSource {
+  model
+  copied
+  human
+}
+
+model Mention {
+  id            String          @id @default(cuid())
+  brandId       String
+  platform      MentionPlatform @default(x)
+  externalId    String
+  // Always the identifier-free form https://x.com/i/status/{externalId};
+  // the provider's handle-bearing URL stays in rawJson until erasure.
+  url           String
+  postedAt      DateTime
+  // Erased to "" by mentions-retention / removeMention; erasedAt is set.
+  text          String          @default("")
+  // { likes, reposts, replies, views, quotes, bookmarks } — observed counts;
+  // absent keys mean "not disclosed", never zero.
+  publicMetrics Json            @default("{}")
+  matchedQuery  String          @default("")
+  kind          MentionKind     @default(unclear)
+  // sha256 of the normalised, de-identified text (src/lib/mentions/text.ts).
+  contentHash   String
+  // Set when an earlier row of the same brand shares contentHash within
+  // MENTION_DUP_WINDOW_DAYS; duplicates are counted but classified once.
+  duplicateOfId String?
+  // Provider payload verbatim, same size guard as Ad.raw.
+  rawJson       Json            @default("{}")
+  fetchedAt     DateTime        @default(now())
+  linkType      MentionLinkType @default(none)
+  adId          String?
+  erasedAt      DateTime?
+  // Admin takedown (X 24h rule): excluded from every surface and count,
+  // kept as a tombstone so the post is never re-ingested or re-billed.
+  removedAt     DateTime?
+  createdAt     DateTime        @default(now())
+
+  brand   Brand           @relation(fields: [brandId], references: [id])
+  ad      Ad?             @relation(fields: [adId], references: [id], onDelete: SetNull)
+  authors MentionAuthor[]
+  labels  MentionLabel[]
+
+  @@unique([platform, externalId])
+  @@index([contentHash])
+  @@index([brandId, postedAt])
+  @@index([duplicateOfId])
+}
+
+// Author identifiers, 1:n to Mention, nullable on purpose: any of them may
+// be absent or erased. displayName exists per the Phase 2 decision but the
+// v1 adapter leaves it null (data minimisation — no surface renders it).
+model MentionAuthor {
+  id               String   @id @default(cuid())
+  mentionId        String
+  handle           String?
+  externalAuthorId String?
+  displayName      String?
+  followers        Int?
+  createdAt        DateTime @default(now())
+
+  mention Mention @relation(fields: [mentionId], references: [id], onDelete: Cascade)
+
+  @@index([mentionId])
+  @@index([handle])
+}
+
+model MentionLabel {
+  id              String             @id @default(cuid())
+  mentionId       String
+  taxonomyVersion String
+  promptVersion   String
+  modelId         String?
+  source          MentionLabelSource @default(model)
+  relevance       MentionRelevance
+  // TAXONOMY key (src/lib/mentions/config.ts) or "other"; null unless relevant.
+  topic           String?
+  sentiment       MentionSentiment
+  // Verbatim substring of the de-identified text the model saw (≤ 120 chars);
+  // erased with the post text.
+  evidenceSpan    String             @default("")
+  humanOverride   Boolean            @default(false)
+  overriddenBy    String?
+  overrideNote    String?
+  createdAt       DateTime           @default(now())
+
+  mention Mention @relation(fields: [mentionId], references: [id], onDelete: Cascade)
+
+  @@index([mentionId, createdAt])
+  @@index([taxonomyVersion, promptVersion])
+}
+
+// One row per provider call: window continuity, the per-brand daily cap
+// (rows since UTC midnight) and an identifier-free audit of what was asked.
+model MentionPull {
+  id         String   @id @default(cuid())
+  brandId    String
+  query      String
+  sinceTime  DateTime
+  untilTime  DateTime
+  items      Int      @default(0)
+  units      Int      @default(0)
+  estCostUsd Float    @default(0)
+  // maxItems was hit — the window is a sample even of the search itself.
+  truncated  Boolean  @default(false)
+  jobRunId   String?
+  calledAt   DateTime @default(now())
+
+  brand Brand @relation(fields: [brandId], references: [id])
+
+  @@index([brandId, calledAt])
 }
 
 // --- Auth.js models (magic-link verification requires the adapter) ---

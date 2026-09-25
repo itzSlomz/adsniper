@@ -85,3 +85,13 @@
   background: var(--color-accent); color: var(--color-bg); padding: 3px 8px;
 }
 .section-kicker.neutral { background: var(--color-text); }
+
+/* Quoted public post on the conversation surfaces. Posts keep their own
+   line breaks and often carry unbroken runs (URLs, hashtags, Arabic
+   without spaces), so the quote wraps anywhere rather than overflowing
+   the card. Direction comes from the markup (dir="auto"), never from CSS. */
+.mention-text {
+  white-space: pre-wrap; overflow-wrap: anywhere;
+  margin: 0; padding-inline-start: var(--space-2);
+  border-inline-start: 2px solid var(--color-divider);
+}

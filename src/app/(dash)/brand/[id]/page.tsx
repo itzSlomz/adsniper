@@ -2,8 +2,12 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { engagementOf, adWatch } from "@/lib/dashboard";
 import type { PostCardData } from "@/lib/dashboard";
+import { hasFeature } from "@/lib/license";
+import { getMentionsSettings } from "@/lib/settings";
+import { brandConversations } from "@/lib/mentions/queries";
 import PostGrid from "@/components/PostGrid";
 import AdWatchGallery from "@/components/AdWatchGallery";
+import MentionsSection from "@/components/MentionsSection";
 import { SeriesLineChart } from "@/components/charts";
 
 export const dynamic = "force-dynamic";
@@ -88,6 +92,13 @@ export default async function BrandDeepDive(props: { params: Promise<{ id: strin
 
   const top = cards.slice().sort((a, b) => b.engagement - a.engagement).slice(0, 4);
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  // Entitlement and the customer switch are checked here, not inside the
+  // component, so an un-entitled instance never runs a mention query (§7.5).
+  const mentionsOn = hasFeature("mentions") && (await getMentionsSettings()).enabled;
+  const conversation = mentionsOn
+    ? await brandConversations({ days: 30, brandId: brand.id, sampleLimit: 6 })
+    : null;
 
   return (
     <main className="space-y-8">
@@ -177,6 +188,8 @@ export default async function BrandDeepDive(props: { params: Promise<{ id: strin
           </table>
         </div>
       </section>
+
+      {conversation && <MentionsSection variant="brand" result={conversation} />}
     </main>
   );
 }

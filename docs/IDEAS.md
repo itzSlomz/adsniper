@@ -11,6 +11,34 @@ call made) · `deferred` (good, not now) · `rejected` (with reason).
 
 ## Accepted — agreed, not yet built
 
+### Consolidate the Kaito constants and rawForStorage
+`accepted` · raised 2026-09-22 while adding the mentions adapter
+`src/lib/providers/x/apifyKaito.ts` and `src/jobs/adsPoll.ts` keep local
+copies of the actor id / page-minimum / cost constants and of the 120 kB
+raw-payload guard that `src/lib/mentions/config.ts` and
+`src/lib/mentions/text.ts` now export. Pure cleanup once the paid pilot has
+confirmed the constants; the posts adapter was deliberately not touched.
+
+### Schedule mentions-poll once the paid pilot lands
+`accepted` · raised 2026-09-22
+Pulls are manual-only in v1 because every pull bills ≥20 items per brand.
+After the pilot invoice confirms the real per-pull cost, give the job a
+cron (daily is the likely cadence) behind the existing per-brand daily caps.
+
+### Weekly export header still hard-codes "BANK ALBILAD"
+`accepted` · raised 2026-09-22
+`src/app/export/weekly/[date]/page.tsx` prints "BANK ALBILAD · COMPETITIVE
+INTELLIGENCE" in its header regardless of `CUSTOMER_NAME`. Pre-existing;
+out of scope for the mentions change, must be fixed before a non-Albilad
+customer receives a PDF.
+
+### RTL date range in the existing fallbackNarrative header
+`accepted` · raised 2026-09-22
+The Arabic header `**موجز إعلانات المنافسين — ${weekStart} → ${weekEnd}**`
+reorders inside RTL text (the arrow between two Latin dates). The new
+conversation bullets isolate each date instead; the header is untouched
+for now because the flag-off output must stay byte-identical.
+
 ### Storage config cleanup for endpoint-style buckets
 `accepted` · raised 2026-09-20 while wiring the Railway bucket
 `getStorage()` should treat `R2_ENDPOINT` as sufficient on its own —
@@ -41,6 +69,27 @@ result that reads as "no ads".
 
 ## Undecided — raised, no call made
 
+### Show the "ai" spend card on Intel regardless of entitlement
+`undecided` · proposed 2026-09-22
+The daily and weekly briefs already spend `ai:anthropic` with no spend
+visibility unless the instance is entitled to "mentions". Showing the `ai`
+card on every instance would be one visible change with the flag off;
+blocked on the operator accepting that — the current decision (see
+`DECISIONS.md`, 2026-09-22 entitlement entry) is zero visible change.
+
+### Instagram/TikTok comment coverage
+`undecided` · raised 2026-09-22
+There is no lawful public API for Instagram or TikTok comments in this
+market. Kept disclosed as "not covered" on every conversation surface; no
+call made on whether a vendor route is worth the exposure.
+
+### Reply-to-brand support-desk threads as a separate kind
+`undecided` · raised 2026-09-22
+Replies to the brand's own posts are complaints and support threads more
+than public conversation. Today they are `public`; a separate author/post
+kind would let the count sentence separate them. Needs a labelled sample
+first.
+
 ### MCP server interface
 `undecided` · raised 2026-09-01
 Expose the archive to AI agents over MCP, so a customer's own assistant can
@@ -70,6 +119,47 @@ comparable to a dedicated instance).
 
 ## Deferred — good, not now
 
+### Human override UI for mention labels
+`deferred` · raised 2026-09-22
+The `humanOverride` / `overriddenBy` / `overrideNote` columns exist on
+`MentionLabel` and `latestLabel()` already prefers a human row; there is no
+review screen yet. Build one when a customer asks to correct a label.
+
+### Anthropic Message Batches for mention classification
+`deferred` · raised 2026-09-22
+The Batches API halves the per-token cost and `buildClassifyRequest` is
+already pure and deterministic per batch. Not worth the async plumbing
+until real volume exists.
+
+### Sentiment/topic chart on /mentions
+`deferred` · raised 2026-09-22
+Counts are rendered as numbers only in v1. A chart must use the validated
+`CATEGORICAL` palette, label every colour and never map sentiment to
+red/green.
+
+### Human-labelled evaluation set for classifier/v1
+`deferred` · raised 2026-09-22
+200 posts, two Arabic-speaking labellers, agreement measured, before any
+classifier/v2. Until then the prompt version is frozen and quality on Saudi
+dialect is stated as unverified (`STATUS.md`).
+
+### Per-brand exclusion terms
+`deferred` · raised 2026-09-22
+Homonym control beyond the relevance gate (e.g. a negative term list per
+brand for الأهلي / الرياض). Today the mitigation is "matched" wording, the
+relevance gate when the LLM is on, editable seeded terms and the caps.
+
+### Hashed author suppression + "erase author" path
+`deferred` · raised 2026-09-22
+A one-way hash tombstone so a removed author's future posts are dropped at
+ingest. v1 has per-post takedown only.
+
+### Sample mentions in the demo dataset
+`deferred` · raised 2026-09-22
+The demo instance has no conversation data; the add-on is not licensed
+there. If a demo needs it, the rows must be watermarked like the sample
+creatives and never look like real public posts.
+
 ### Alerting and notification screens
 `deferred` · parked by the operator during Watchtower
 Mid-week alerts for significant competitor moves. The weekly briefing is
@@ -89,6 +179,11 @@ Own-page only, so it never applies to competitors.
 ---
 
 ## Rejected
+
+### Keyword-only sentiment when the LLM is off
+`rejected` 2026-09-22 — an undisclosed weaker model presented as a label.
+When `MENTIONS_LLM` is off, posts stay unlabelled and every surface shows
+`—` with the reason. See `DECISIONS.md` (2026-09-22, "Unclear" entry).
 
 ### Multi-tenant shared database
 `rejected` 2026-08-15 — the operator chose dedicated instances. Cheaper to

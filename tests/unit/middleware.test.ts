@@ -13,6 +13,7 @@ import {
 } from "@/middleware";
 
 const originalExpiry = process.env.LICENSE_EXPIRES_AT;
+const originalFeatures = process.env.LICENSE_FEATURES;
 
 function request(pathname: string, authenticated = false): AccessRequest {
   const req = new NextRequest(`https://adsniper.test${pathname}`);
@@ -45,11 +46,14 @@ function expectRedirect(
 describe("access middleware handler", () => {
   beforeEach(() => {
     delete process.env.LICENSE_EXPIRES_AT;
+    delete process.env.LICENSE_FEATURES;
   });
 
   afterAll(() => {
     if (originalExpiry === undefined) delete process.env.LICENSE_EXPIRES_AT;
     else process.env.LICENSE_EXPIRES_AT = originalExpiry;
+    if (originalFeatures === undefined) delete process.env.LICENSE_FEATURES;
+    else process.env.LICENSE_FEATURES = originalFeatures;
   });
 
   test("keeps only framework assets, favicon and robots outside the matcher", () => {
@@ -116,4 +120,45 @@ describe("access middleware handler", () => {
       expectNext(handleAccessRequest(request(pathname, authenticated)));
     }
   );
+
+  describe("feature gate", () => {
+    test("lets an entitled authenticated request reach /mentions", () => {
+      process.env.LICENSE_EXPIRES_AT = "2099-01-01";
+      process.env.LICENSE_FEATURES = "mentions";
+      expectNext(handleAccessRequest(request("/mentions", true)));
+      expectNext(handleAccessRequest(request("/intel/mentions", true)));
+    });
+
+    test("lets an unconfigured (dev/demo) instance reach /mentions", () => {
+      expectNext(handleAccessRequest(request("/mentions", true)));
+    });
+
+    test.each(["/mentions", "/intel/mentions", "/mentions/anything"])(
+      "sends an un-entitled authenticated request for %s home",
+      (pathname) => {
+        process.env.LICENSE_EXPIRES_AT = "2099-01-01";
+        const response = handleAccessRequest(request(pathname, true));
+        expectRedirect(response, "/");
+      }
+    );
+
+    test("does not touch ungated surfaces when the feature is off", () => {
+      process.env.LICENSE_EXPIRES_AT = "2099-01-01";
+      expectNext(handleAccessRequest(request("/compare", true)));
+      expectNext(handleAccessRequest(request("/intel", true)));
+    });
+
+    test("checks authentication before the feature gate", () => {
+      process.env.LICENSE_EXPIRES_AT = "2099-01-01";
+      const response = handleAccessRequest(request("/mentions"));
+      expectRedirect(response, "/login", "/mentions");
+    });
+
+    test("checks expiry before the feature gate", () => {
+      process.env.LICENSE_EXPIRES_AT = "2000-01-01";
+      process.env.LICENSE_FEATURES = "mentions";
+      const response = handleAccessRequest(request("/mentions", true));
+      expectRedirect(response, "/license-expired");
+    });
+  });
 });

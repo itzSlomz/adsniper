@@ -6,6 +6,126 @@ new information.
 
 ---
 
+## 2026-09-22 · Mentions as a licensed add-on with fail-closed entitlement
+**Decided:** `LICENSE_FEATURES` (env, vendor-set) lists licensed add-ons;
+"mentions" is the first. Unset `LICENSE_EXPIRES_AT` keeps dev/demo fully
+open; a real expiry with the key missing fails closed at middleware, runner,
+job visibility (route, CLI, Intel) and navigation; the only exemption is the
+`alwaysRun` erasure duty.
+**Why:** the add-on spends real provider and AI money per pull and carries
+personal-data obligations; it must be impossible to reach by accident and
+trivial for the vendor to switch per plan; licensing already lives in env
+vars the customer cannot edit (2026-08-15).
+**Rejected:** a DB toggle (the customer could enable it themselves); a
+separate deploy per plan.
+**Consequence:** with the flag off nothing visible changes — the Intel spend
+grid hides both new groups (`mentions`, `ai`) unless entitled, while
+`budgetStatus()` still returns them and an `ai` ceiling the operator sets
+still applies. Showing the `ai` card unconditionally is an open item in
+IDEAS, not part of this change.
+
+## 2026-09-22 · Manual-only mention pulls, scheduled erasure on every instance
+**Decided:** `mentions-poll`/`mentions-classify` are manual-only;
+`mentions-retention` is `alwaysRun` — exempt from the entitlement skip and
+from `assertLicensed()`, nightly on every instance, a one-count no-op
+without mention rows, hidden from Intel unless entitled or rows exist.
+**Why:** the erasure promise must hold exactly when the customer stops
+paying — removing `mentions` from `LICENSE_FEATURES` or letting the license
+lapse must not turn stored text and author identifiers into a permanent
+archive; the admin page and `/methodology` state the retention period as a
+fact.
+**Rejected:** hourly cron for pulls (every pull bills ≥20 items per brand);
+click-driven erasure (a duty must not depend on someone remembering);
+gating erasure by entitlement or expiry (retains personal data precisely
+when the obligation is least attended).
+**Consequence:** the one behavioural change with the flag off is a nightly
+`JobRun` row (`partial`, `(info) no mention rows`) that Intel does not list.
+
+## 2026-09-22 · Per-post topic is stored for aggregation only, never rendered beside a post
+**Decided:** `MentionLabel.topic` (the product or service discussed, never
+the author's situation — a hard rule in the frozen prompt) is stored per
+post because the per-brand topic counts and the `none → topical` ad link
+need it, but it is rendered nowhere a post URL or handle is shown: not on
+cards, not in the admin takedown list, not in
+`WeeklyMentionsFacts.samples[]`. Per-post sentiment (stance toward the
+bank) is shown.
+**Why:** X's developer terms restrict deriving sensitive categories —
+including negative financial status — about a person; a stored
+`MentionLabel` is one join away from `MentionAuthor`, so the schema is not
+a barrier, and the operator's rule is "financial topics only as aggregate
+identifier-free counts".
+**Rejected:** rendering per-post topic (option (a) — the join to the author
+makes it a per-person financial label on every surface); dropping per-post
+topic from storage entirely (loses the aggregate and the topical link).
+
+## 2026-09-22 · "—" means no label; "unclear" is a label
+**Decided:** a card renders `—` (with the `off`/`not_run` reason) only when
+it has no effective label; an `unclear` label renders the word with
+`UNCLEAR_TITLE`.
+**Rejected:** an `undecided` unlabelled-reason (made `labelled` counts
+disagree with what cards showed).
+
+## 2026-09-22 · Weekly brief on an AI ceiling: store the fallback, then stop
+**Decided:** `runWeeklyBrief` stores the deterministic fallback narrative
+with the facts and then rethrows `CostCeilingError`, so the run is
+`stopped_budget` like the daily brief.
+**Rejected:** swallowing the error into `partial` (Intel would under-report
+the ceiling); failing before the upsert (Monday without a brief).
+
+## 2026-09-22 · Brand FKs stay RESTRICT; harnesses tear down their own rows
+**Decided:** `Mention.brand` and `MentionPull.brand` are `ON DELETE
+RESTRICT`; `mentions-checks.ts` tears down in `finally` and
+`ingestion-checks.ts` deletes fixture mention/pull rows before its brand
+delete.
+**Rejected:** `onDelete: Cascade` (a brand delete would silently destroy an
+audit trail of paid pulls).
+
+## 2026-09-22 · "Unclear" is a first-class label, unlabelled is a dash with a reason, classification is append-only and off by default
+**Decided:** the classifier has a real `unclear` class for relevance and
+sentiment; a post with no effective label renders `—` with its reason; a
+label row is never updated or deleted (a new prompt or taxonomy version
+appends); nothing is labelled unless `MENTIONS_LLM=on` (or the
+verification-only fixture).
+**Rejected:** defaulting failed or missing items to neutral (an invented
+number); keyword sentiment fallback when the model is off (an undisclosed
+weaker model); lenient JSON extraction reuse; per-author labels.
+
+## 2026-09-22 · Co-occurrence, never causation, for ad↔conversation links
+**Decided:** a post is linked to an ad only as `direct` (URL match),
+`topical` (shared offer category within the link window) or `temporal`
+(posted during a detected burst), and every surface and the brief describe
+the link as "in the same window as".
+**Rejected:** uplift/attribution metrics; hiding the link (the
+co-occurrence is the Monday story).
+
+## 2026-09-22 · Author identifiers in their own table; erase in place; tombstone on takedown
+**Decided:** handles and author ids live in `MentionAuthor`, never on
+`Mention`; retention and takedown erase in place (text, raw payload,
+evidence spans, authors) and keep the row so counts, kinds, labels and
+links survive; a takedown additionally sets `removedAt` and clears the
+metrics, leaving a tombstone under the unique `(platform, externalId)`.
+**Rejected:** storing handles on Mention (cannot be erased without losing
+the count); deleting the row on takedown (would be re-ingested and
+re-billed); a separate aggregate table (in-place erasure keeps counts,
+kinds, labels and links without one).
+
+## 2026-09-22 · Raw fetch for Anthropic kept; per-model rate table; brief default unchanged; classifier default decoupled
+**Decided:** the classifier defaults to `MENTIONS_DEFAULT_MODEL =
+"claude-sonnet-5"` (in `STRUCTURED_OUTPUT_MODELS`), not to
+`ANTHROPIC_MODEL`, because structured outputs (`output_config.format`) are
+not accepted on the brief default `claude-sonnet-4-6` and the raw-fetch path
+has no SDK to strip unsupported schema keywords — the schema carries no
+string/number constraints, and the 120-char evidence rule is validated
+client-side. Rate lookup is exact-id only (Anthropic ids never take a date
+suffix). The system-block `cache_control` is inert below the minimum
+cacheable prefix; no saving is claimed.
+**Rejected:** adding `@anthropic-ai/sdk` (dependency-audit surface for a
+two-call integration; revisit if the Batches API is adopted); changing the
+brief default model (a cost/behaviour change on every instance — the vendor
+picks per instance); one shared default for both calls; prefix/date-suffix
+matching in the rate table (two matching rules between `aiRateFor` and
+check-env).
+
 ## 2026-09-21 · MarketingSpy, dark-first, with Noto Sans Arabic as the Arabic peer
 **Decided:** the product is renamed MarketingSpy and themed dark-first
 from the supplied brand package; Arabic sets in Noto Sans Arabic at the

@@ -3,7 +3,7 @@ import path from "path";
 import { prisma } from "@/lib/db";
 import { engagementOf } from "@/lib/dashboard";
 import { campaignBurstBrandIds } from "@/jobs/adsPoll";
-import { logProviderCall } from "@/lib/costs";
+import { anthropicMessages } from "@/lib/ai";
 import type { JobContext } from "@/jobs/runner";
 
 const DAY = 86400000;
@@ -79,35 +79,16 @@ async function gatherBriefData() {
   };
 }
 
-export async function callAnthropic(prompt: string): Promise<{ en: string; ar: string }> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error("ANTHROPIC_API_KEY is not set");
-  const model = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
-
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: 3000,
-      messages: [{ role: "user", content: prompt }],
-    }),
-    signal: AbortSignal.timeout(120_000),
-  });
-  if (!res.ok) throw new Error(`Anthropic API ${res.status}: ${(await res.text()).slice(0, 300)}`);
-  const data = (await res.json()) as {
-    content: { type: string; text?: string }[];
-    usage?: { input_tokens: number; output_tokens: number };
-  };
-  const text = data.content.find((c) => c.type === "text")?.text ?? "";
-  // Rough spend log (Sonnet-tier pricing); not part of the data-provider ceilings.
-  const est =
-    ((data.usage?.input_tokens ?? 0) * 3 + (data.usage?.output_tokens ?? 0) * 15) / 1_000_000;
-  await logProviderCall("ai:anthropic", 1, est);
+// The transport (key check, "ai" ceiling, model-aware spend log) lives in
+// src/lib/ai.ts; this keeps only the brief's lenient JSON extraction.
+export async function callAnthropic(
+  prompt: string,
+  jobRunId?: string
+): Promise<{ en: string; ar: string }> {
+  const { text } = await anthropicMessages(
+    { messages: [{ role: "user", content: prompt }], max_tokens: 3000 },
+    { jobRunId }
+  );
 
   const jsonStart = text.indexOf("{");
   const jsonEnd = text.lastIndexOf("}");
@@ -131,7 +112,7 @@ export async function runDailyBrief(ctx: JobContext): Promise<void> {
     .replace("{{DATE}}", date.toISOString().slice(0, 10))
     .replace("{{DATA_JSON}}", JSON.stringify(data, null, 1));
 
-  const { en, ar } = await callAnthropic(prompt);
+  const { en, ar } = await callAnthropic(prompt, ctx.jobRunId);
 
   // Regeneration overwrites an unedited draft; an edited or published brief
   // for the day is left alone.

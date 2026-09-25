@@ -13,6 +13,7 @@ remains — a real pilot pull — is a runbook, not a script: `pilot.md`.
 |---|---|
 | `storage-check.ts` | Gate 1 — the product's own `checkStorage()` write→read→delete against real object storage |
 | `ingestion-checks.ts` | Gate 2 — the real `ads-poll` job: create, dedup, first/last-seen, status transitions, raw retention, creative archival, cost logging, honest degradation, budget stop (22 assertions) |
+| `mentions-checks.ts` | Gate 6 — Phase 2 audience conversation through the real `mentions-poll` / `mentions-classify` / `mentions-retention` / `weekly-brief` jobs: entitlement, fixture poll, dedup, author kind, links, cap, failure, ceilings, strict classify, refusal, retention, takedown, spike, brief facts (81 assertions) |
 | `rehearsal.sh` | Gate 5 — a timed, fresh-DB run of the whole provisioning runbook |
 | `rehearsal-brands.ts` | seeds the two brands the rehearsal uses |
 | `media-server.mjs` | serves real PNGs so the media pipeline archives a real creative |
@@ -38,8 +39,17 @@ npx tsx verification/ingestion-checks.ts
 
 # Gate 5 — timed provisioning rehearsal (fresh DB)
 bash verification/rehearsal.sh
+
+# Gate 6 — audience conversation (fixture provider + fixture classifier; no paid call)
+export MENTIONS_FIXTURE=1 MENTIONS_LLM=fixture DISABLE_CRON=1
+npx tsx verification/mentions-checks.ts
+unset MENTIONS_FIXTURE MENTIONS_LLM
 ```
 
-The `ADS_FIXTURE=1` flag must be set **in the environment before the process
-starts** (the provider registry reads it at import time). Unset, every job
-uses the real Apify adapters.
+The `ADS_FIXTURE=1` and `MENTIONS_FIXTURE=1` flags must be set **in the
+environment before the process starts** (the provider registries read them
+at import time). Unset, every job uses the real Apify adapters.
+`mentions-checks.ts` also needs `LICENSE_EXPIRES_AT` unset in the shell (it
+sets and clears the licensing variables itself), seeds and removes its own
+`FixtureCo` / `RivalCo` brands, and tears down in `finally` even on failure;
+it may run before or after `ingestion-checks.ts`.

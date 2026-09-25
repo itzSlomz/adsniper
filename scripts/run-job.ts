@@ -1,10 +1,12 @@
 // CLI runner for ingestion jobs: `npx tsx scripts/run-job.ts x-poll`.
-// Same code path as cron and the admin "Run now" API.
-import { triggerJob, jobs } from "../src/jobs/index";
+// Same code path as cron and the admin "Run now" API. Only jobs the
+// instance is entitled to are listed or accepted, like the API.
+import { triggerJob, visibleJobs } from "../src/jobs/index";
 
 const name = process.argv[2];
-if (!name || !jobs[name]) {
-  console.error(`Usage: tsx scripts/run-job.ts <${Object.keys(jobs).join("|")}>`);
+const visible = visibleJobs();
+if (!name || !visible[name]) {
+  console.error(`Usage: tsx scripts/run-job.ts <${Object.keys(visible).join("|")}>`);
   process.exit(1);
 }
 

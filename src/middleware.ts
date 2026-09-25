@@ -1,14 +1,20 @@
 import NextAuth from "next-auth";
 import { NextResponse, type NextRequest } from "next/server";
 import { authConfig } from "@/auth.config";
-import { isLicenseExemptPath, isPublicPath } from "@/lib/accessPolicy";
-import { getLicense } from "@/lib/license";
+import {
+  featureForPath,
+  isLicenseExemptPath,
+  isPublicPath,
+} from "@/lib/accessPolicy";
+import { getLicense, hasFeature } from "@/lib/license";
 
 // MarketingSpy is a per-customer SaaS instance: every surface requires login,
 // reversing Watchtower's public-viewer posture. On top of auth, an
-// expired license locks the whole instance to /license-expired;
-// in-process cron is gated separately in the job runner, since it never
-// passes through middleware.
+// expired license locks the whole instance to /license-expired, and an
+// add-on surface the instance is not entitled to sends the user home
+// (order: auth → expiry → feature, so the layers always name the same
+// reason); in-process cron is gated separately in the job runner, since
+// it never passes through middleware.
 //
 // IMPORTANT: when Auth.js wraps a custom middleware function, it skips
 // its own "redirect unauthenticated users to sign-in" behavior (the
@@ -28,6 +34,10 @@ export function handleAccessRequest(req: AccessRequest) {
   }
   if (getLicense().state === "expired" && !isLicenseExemptPath(pathname)) {
     return NextResponse.redirect(new URL("/license-expired", req.nextUrl));
+  }
+  const feature = featureForPath(pathname);
+  if (feature && !hasFeature(feature)) {
+    return NextResponse.redirect(new URL("/", req.nextUrl));
   }
   return NextResponse.next();
 }

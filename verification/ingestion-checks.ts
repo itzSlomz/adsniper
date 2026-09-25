@@ -37,6 +37,12 @@ async function resetFixtureState() {
   for (const nameEn of [SELF, RIVAL]) {
     const b = await prisma.brand.findFirst({ where: { nameEn } });
     if (b) {
+      // Mention/MentionPull → Brand are ON DELETE RESTRICT (a brand delete
+      // must never silently destroy an audit trail of paid pulls), so rows
+      // left by verification/mentions-checks.ts go first; the two harnesses
+      // then work in either order.
+      await prisma.mention.deleteMany({ where: { brandId: b.id } });
+      await prisma.mentionPull.deleteMany({ where: { brandId: b.id } });
       await prisma.ad.deleteMany({ where: { brandId: b.id } });
       await prisma.brand.delete({ where: { id: b.id } });
     }

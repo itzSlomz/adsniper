@@ -1,6 +1,6 @@
 # Status
 
-Last updated: 2026-09-21 · Branch: `main`
+Last updated: 2026-09-22 · Branch: `feature/campaign-reaction` (cut from `main` @ 32b8a00)
 
 Legend: **Shipped** = built, verified, on the branch · **In progress** =
 started, not finished · **Blocked** = cannot proceed without something
@@ -45,6 +45,7 @@ S3-compatible object store. Full evidence in `VERIFICATION.md`; harness in
 | 3. Operating cost | **Modeled + sourced** — $750–$2,490/yr fully loaded per instance | Reconcile against the first real Apify invoice (#3) |
 | 4. Pricing | **Recommendation ready** (Standard SAR 96k list / 75k target) | Operator sign-off + beta willingness-to-pay (#4) |
 | 5. Provisioning | Software path **proven end-to-end**, zero code defects, real 53 KB PDF | Time one real Railway provisioning (#5) |
+| 6. Audience conversation (add-on, 2026-09-22) | Mechanics **proven, 81/81**, through the real jobs with a fixture provider + fixture classifier; flag-off zero-change smoke on a running server | One paid Kaito mentions pull; one `MENTIONS_LLM=on` classify run |
 
 Previous recommendation was to proceed to a controlled beta after #1 and #2.
 The 2026-09-03 SaaS-foundation review supersedes it: #1 and #2 remain required,
@@ -63,7 +64,7 @@ along with all other P0 controls in `SAAS_FOUNDATION_READINESS_AR.md`.
 | Data shown | **Synthetic sample set** — no provider keys on this instance |
 | Verification | 21 of 22 automated checks passed against the deployed build |
 | Media storage | Railway bucket `marketingspy-demo-media` — wired by variable references, no secret ever left Railway |
-| Cost ceilings | ads $40 · X $10 · LinkedIn $10 per month |
+| Cost ceilings | ads $40 · X $10 · LinkedIn $10 per month · mentions — · AI — (`MONTHLY_COST_CEILING_MENTIONS_USD` / `MONTHLY_COST_CEILING_AI_USD` unset; the add-on is not licensed on the preview instance) |
 
 **Do not demo this instance to a customer as a real market reading.**
 Every figure is synthetic and every creative is watermarked
@@ -94,11 +95,14 @@ after a forced container replacement.
 | Brand management | Your brand + up to 8 competitors (cap enforced), aliases, Facebook page URL, in-app advertiser-ID resolution with reviewable output |
 | Manual ad logging | For X/Snapchat/TikTok, which have no usable public library |
 | Sample dataset | One-click load/remove for demos; refuses to load once real ads exist |
+| Audience conversation (/mentions, dashboard, brand page, brief paragraph) | Entitlement "mentions"; off = no change; sample counts + quoted posts; labels modeled and tagged; "—" with a reason when unlabelled; coverage panel on every surface |
 
 ### Platform
 | Feature | Notes |
 |---|---|
 | Per-instance licensing | `LICENSE_EXPIRES_AT` etc.; 30-day banner, then app lock + job halt (`stopped_license`) |
+| Feature entitlements | LICENSE_FEATURES comma list; middleware + runner (skipped_entitlement) + job visibility + nav; unconfigured license = all on, real expiry without the key = off; mentions-retention is exempt (alwaysRun) |
+| Mentions pipeline | poll/classify manual-only, retention nightly; cost groups mentions + ai with model-aware rates; ensureBudget("ai") before every Anthropic call; per-brand daily caps; takedown tombstones; fixture-verified |
 | Full auth lockdown | Every surface requires login; viewer/admin roles |
 | Startup preflight | `scripts/check-env.mjs` refuses to boot with a named missing variable; warns on unusable configs |
 | Cost guard | Per-call logging + monthly ceilings per group; hard stop at ceiling (`stopped_budget`) |
@@ -132,6 +136,8 @@ not resolve the live-environment blockers below.
 | Email sign-in links | Resend API key + sending domain | Sign-in uses a shared passcode (verified working) |
 | LinkedIn impressions enrichment | A sample XLS export from the customer's own page | Engagement rate stays null for LinkedIn |
 | Pricing sign-off | Commercial decision by the operator | Recommendation is ready (`DECISIONS.md`); the final number is the operator's |
+| Paid Kaito mentions pull on a real brand | X_PROVIDER_API_KEY + operator go-ahead (pilot.md step) | since_time/until_time and the 20-per-term floor proven only in fixture mode |
+| MENTIONS_LLM=on run / classifier quality on Saudi dialect | ANTHROPIC_API_KEY + operator go-ahead + a labelled sample | Posts stay unlabelled ("—") |
 
 ---
 

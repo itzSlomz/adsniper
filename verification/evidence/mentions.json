@@ -1,0 +1,412 @@
+{
+  "at": "2026-09-22T14:31:24.524Z",
+  "passed": 81,
+  "total": 81,
+  "checks": [
+    {
+      "name": "01 entitlement off: mentions-poll is skipped_entitlement",
+      "pass": true,
+      "detail": "status=skipped_entitlement items=0 errors=[]"
+    },
+    {
+      "name": "01 entitlement off: no mentions: log rows, no Mention rows",
+      "pass": true,
+      "detail": "logs=0 mentions=0"
+    },
+    {
+      "name": "01 entitlement off: visibleJobs() has 9 keys",
+      "pass": true,
+      "detail": "x-poll,x-metrics-refresh,linkedin-poll,ads-poll,daily-brief,weekly-brief,brief-auto-publish,media-migrate,resolve-identities"
+    },
+    {
+      "name": "01 entitled: visibleJobs() has 12 keys",
+      "pass": true,
+      "detail": "x-poll,x-metrics-refresh,linkedin-poll,ads-poll,daily-brief,weekly-brief,brief-auto-publish,media-migrate,resolve-identities,mentions-poll,mentions-classify,mentions-retention"
+    },
+    {
+      "name": "02 entitled + switch off: poll runs (not skipped) and is partial with the switched-off line",
+      "pass": true,
+      "detail": "status=partial items=0 errors=[]"
+    },
+    {
+      "name": "02 switch off: 0 rows",
+      "pass": true,
+      "detail": "0 rows"
+    },
+    {
+      "name": "03 phase1 run ok",
+      "pass": true,
+      "detail": "status=partial items=8 errors=[]"
+    },
+    {
+      "name": "03 phase1 ingested 8 (X-1…X-7, X-9)",
+      "pass": true,
+      "detail": "itemsIngested=8"
+    },
+    {
+      "name": "03 one mentions:fixture-x log row per brand, units ≥ 20, cost > 0, jobRunId set",
+      "pass": true,
+      "detail": "20u $0.0036 run=set; 20u $0.0036 run=set"
+    },
+    {
+      "name": "03 MentionPull rows = 2 (fixture brands)",
+      "pass": true,
+      "detail": "2 rows"
+    },
+    {
+      "name": "03 monthlySpend(mentions) > 0",
+      "pass": true,
+      "detail": "$0.0072"
+    },
+    {
+      "name": "04 author kinds: X-3 brand_own, X-4 media, X-5 unclear, X-1/X-2 public",
+      "pass": true,
+      "detail": "X-3=brand_own X-4=media X-5=unclear X-1=public X-2=public"
+    },
+    {
+      "name": "05 X-5 has 0 MentionAuthor rows",
+      "pass": true,
+      "detail": "0"
+    },
+    {
+      "name": "05 X-1 has one author: handle alice_pub, externalAuthorId 9001, displayName null",
+      "pass": true,
+      "detail": "{\"id\":\"cmucrv9yo000f1s0g4fxgiqtf\",\"mentionId\":\"cmucrv9yn000e1s0g2c60zrtd\",\"handle\":\"alice_pub\",\"externalAuthorId\":\"9001\",\"displayName\":null,\"followers\":null,\"createdAt\":\"2026-09-22T14:31:23.184Z\"}"
+    },
+    {
+      "name": "05 every Mention.url is the identifier-free /i/status/ form",
+      "pass": true,
+      "detail": "https://x.com/i/status/FIXTURE-X-1 https://x.com/i/status/FIXTURE-X-2 https://x.com/i/status/FIXTURE-X-3 https://x.com/i/status/FIXTURE-X-4 https://x.com/i/status/FIXTURE-X-5 https://x.com/i/status/FIXTURE-X-6 https://x.com/i/status/FIXTURE-X-9 https://x.com/i/status/FIXTURE-X-7"
+    },
+    {
+      "name": "06 X-1 direct → AD-1 (utm stripped)",
+      "pass": true,
+      "detail": "direct ad=true"
+    },
+    {
+      "name": "06 X-2 topical → AD-2 (digital_app)",
+      "pass": true,
+      "detail": "topical ad=true"
+    },
+    {
+      "name": "06 X-7 none",
+      "pass": true,
+      "detail": "none"
+    },
+    {
+      "name": "06 matchedQuery names the brand and excludes retweets",
+      "pass": true,
+      "detail": "(@fixtureco OR FixtureCo) -filter:retweets | (RivalCo) -filter:retweets"
+    },
+    {
+      "name": "07 X-6 duplicateOfId = X-1; same contentHash; X-1 is an original",
+      "pass": true,
+      "detail": "dupOf=true hash=2ad3b1bb5a9c"
+    },
+    {
+      "name": "08 rawJson._fixture === true",
+      "pass": true,
+      "detail": "{\"id\":\"FIXTURE-X-1\",\"brand\":\"FixtureCo\",\"phase\":1,\"_fixture\":true,\"unmappedField"
+    },
+    {
+      "name": "08 text stored unchanged (de-identification is model input only)",
+      "pass": true,
+      "detail": "anyone tried FixtureCo transfers? call me 0512345678 or SA0380000000608010167519 or a.b@example.invalid"
+    },
+    {
+      "name": "09 phase2 run ok, ingested exactly 1 (X-8)",
+      "pass": true,
+      "detail": "status=partial items=1 errors=[]"
+    },
+    {
+      "name": "09 Mention count +1",
+      "pass": true,
+      "detail": "8 → 9"
+    },
+    {
+      "name": "09 X-1 fetchedAt unchanged, publicMetrics updated",
+      "pass": true,
+      "detail": "fetchedAt same=true likes 1 → 2"
+    },
+    {
+      "name": "09 MentionPull rows = 4",
+      "pass": true,
+      "detail": "4 rows"
+    },
+    {
+      "name": "10 third pull under a cap of 2: partial, both brands report daily cap reached",
+      "pass": true,
+      "detail": "(info) Bank Albilad: daily cap reached (calls 5/2, items 0/200) — skipped | (info) FixtureCo: daily cap reached (calls 2/2, items 15/200) — skipped | (info) Al Rajhi Bank: daily cap reached (calls 5/2, items 0/200) — skipped | (info) SNB (Saudi National Bank): daily cap reached (calls 5/2, items 0/200) — skipped | (info) Riyad Bank: daily cap reached (calls 5/2, items 0/200) — skipped | (info) Alinma Bank: daily cap reached (calls 5/2, items 0/200) — skipped | (info) SAB: daily cap reached (calls 5/2, items 0/200) — skipped | (info) ANB (Arab National Bank): daily cap reached (calls 5/2, items 0/200) — skipped | (info) D360 Bank: daily cap reached (calls 5/2, items 0/200) — skipped | (info) STC Bank: daily cap reached (calls 5/2, items 0/200) — skipped | (info) RivalCo: daily cap reached (calls 2/2, items 2/200) — skipped"
+    },
+    {
+      "name": "10 cap: no new log rows or MentionPull rows",
+      "pass": true,
+      "detail": "logs 4→4 pulls 4→4"
+    },
+    {
+      "name": "11 provider failure isolated: partial with the RivalCo error, FixtureCo still logged",
+      "pass": true,
+      "detail": "status=partial items=0 errors=[\"RivalCo/x: simulated provider failure (mentions fixture)\"] logs 4→5"
+    },
+    {
+      "name": "12 mentions ceiling: stopped_budget, log rows unchanged",
+      "pass": true,
+      "detail": "status=stopped_budget items=0 errors=[\"Monthly cost ceiling reached for \\\"mentions\\\": spent ~$0.02 of $0.00. Ingestion stopped.\"] logs=5"
+    },
+    {
+      "name": "13 classifier off: partial with the off line, 0 labels",
+      "pass": true,
+      "detail": "status=partial items=0 errors=[]"
+    },
+    {
+      "name": "13 brandConversations: FixtureCo sentiment null, labelled 0, unlabelledReason off, every sample sentiment null",
+      "pass": true,
+      "detail": "sentiment=null labelled=0 reason=off samples=7"
+    },
+    {
+      "name": "14 classify run ok",
+      "pass": true,
+      "detail": "status=partial items=9 errors=[]"
+    },
+    {
+      "name": "14 8 model labels (X-1,2,3,4,5,7,8,9) + 1 copied (X-6)",
+      "pass": true,
+      "detail": "model=8 copied=1"
+    },
+    {
+      "name": "14 X-2 negative / digital_app with evidence from the de-identified text",
+      "pass": true,
+      "detail": "{\"sentiment\":\"negative\",\"topic\":\"digital_app\",\"evidence\":\"يعلق\"}"
+    },
+    {
+      "name": "14 X-5 relevance unclear, topic null, sentiment unclear, evidence empty",
+      "pass": true,
+      "detail": "{\"relevance\":\"unclear\",\"topic\":null,\"sentiment\":\"unclear\",\"evidence\":\"\"}"
+    },
+    {
+      "name": "14 every label: modelId fixture, versions equal the constants",
+      "pass": true,
+      "detail": "9 labels"
+    },
+    {
+      "name": "14 no ai:anthropic rows; ai:fixture-classifier ≥ 1; monthlySpend(ai) > 0",
+      "pass": true,
+      "detail": "anthropic=0 fixture=1 $0.0010"
+    },
+    {
+      "name": "15 invalid batch refused whole: partial, 'refused' error, 0 labels stored",
+      "pass": true,
+      "detail": "status=partial items=0 errors=[\"classify: batch 1/1 refused — reply is not valid JSON (8 posts left unlabelled)\"]"
+    },
+    {
+      "name": "16 ai ceiling: classify stopped_budget, no new ai: rows",
+      "pass": true,
+      "detail": "status=stopped_budget items=0 errors=[\"Monthly cost ceiling reached for \\\"ai\\\": spent ~$0.00 of $0.00. Ingestion stopped.\"]"
+    },
+    {
+      "name": "16 anthropicMessages rejects with CostCeilingError before any network call",
+      "pass": true,
+      "detail": "name=CostCeilingError fetchCalls=0"
+    },
+    {
+      "name": "16 classify re-run ok; labels exist again (8 model + 1 copied)",
+      "pass": true,
+      "detail": "status=partial items=9 errors=[]"
+    },
+    {
+      "name": "17 window from < to",
+      "pass": true,
+      "detail": "2026-09-15 → 2026-09-22"
+    },
+    {
+      "name": "17 FixtureCo posts 7 (X-9 outside), distinct 6",
+      "pass": true,
+      "detail": "posts=7 distinct=6"
+    },
+    {
+      "name": "17 byKind {public 4, brand_own 1, media 1, unclear 1}",
+      "pass": true,
+      "detail": "{\"public\":4,\"brand_own\":1,\"media\":1,\"unclear\":1}"
+    },
+    {
+      "name": "17 links {direct 2, topical 2, temporal 0} (duplicates count)",
+      "pass": true,
+      "detail": "{\"direct\":2,\"topical\":2,\"temporal\":0}"
+    },
+    {
+      "name": "17 terms = [@fixtureco, FixtureCo]",
+      "pass": true,
+      "detail": "[\"@fixtureco\",\"FixtureCo\"]"
+    },
+    {
+      "name": "17 count sentence says sample / عيّنة",
+      "pass": true,
+      "detail": "7 posts matched \"@fixtureco, FixtureCo\" on X from 2026-09-15 to 2026-09-22 — a sample, not a total."
+    },
+    {
+      "name": "17 samples: linked first; no third-party @handle shown; no topic key; relative time in both languages",
+      "pass": true,
+      "detail": "first=topical rel={\"en\":\"12 h ago\",\"ar\":\"قبل 12 ساعة\"}"
+    },
+    {
+      "name": "17 X-5 card carries the label unclear (not null)",
+      "pass": true,
+      "detail": "sentiment=unclear"
+    },
+    {
+      "name": "17 RivalCo posts 1",
+      "pass": true,
+      "detail": "posts=1"
+    },
+    {
+      "name": "18 weeklyMentionsFacts: brands with posts, sampleNote, linkNote",
+      "pass": true,
+      "detail": "brands=11 posts=7"
+    },
+    {
+      "name": "18 ≤ 3 samples per brand, none with a topic key",
+      "pass": true,
+      "detail": "3 samples"
+    },
+    {
+      "name": "18 assertIdentifierFree(facts) passes",
+      "pass": true,
+      "detail": "clean"
+    },
+    {
+      "name": "18 X-5 excerpt is de-identified: [phone], [iban], [email], no 8+ digit run",
+      "pass": true,
+      "detail": "anyone tried FixtureCo transfers? call me [phone] or [iban] or [email]"
+    },
+    {
+      "name": "18 scan non-vacuous: terms still equal [@fixtureco, FixtureCo] and the X-2 excerpt still holds @user",
+      "pass": true,
+      "detail": "terms=[\"@fixtureco\",\"FixtureCo\"] ex2=بنك FixtureCo التطبيق يعلق كل مرة @user"
+    },
+    {
+      "name": "18 assertIdentifierFree passes on the narrow window too",
+      "pass": true,
+      "detail": "clean"
+    },
+    {
+      "name": "18 fallbackNarrative EN/AR: no FORBIDDEN_CAUSAL match",
+      "pass": true,
+      "detail": " "
+    },
+    {
+      "name": "18 AR conversation bullets present and free of →",
+      "pass": true,
+      "detail": "- ماذا قال الناس (عيّنة من X، من ⁦2026-09-15⁩ إلى ⁦2026-09-22⁩): شركة التجربة — 7 منشورات طابقت «@fixtureco, FixtureCo»، 6 مميّزًا (الفترة السابقة: 0)؛ المشاعر (نموذجي) لـ 7 منشورًا مصنّفًا: 2 إيجابي، 2 سلبي، 2 محايد، 1 غير واضح؛ الموضوع الأبرز (نموذجي): البطاقات الائتمانية؛ 4 منشورًا في نفس فترة إعلانات شركة التجربة (تزامن وليس سببية). مثال: https://x.com/i/status/FIXTURE-X-8"
+    },
+    {
+      "name": "18 EN bullet names the brand as an X sample with a cited example URL",
+      "pass": true,
+      "detail": "- What people said (X sample, 2026-09-15 to 2026-09-22): FixtureCo — 7 posts matched \"@fixtureco, FixtureCo\", 6 distinct (prior window: 0); modeled sentiment of 7 labelled posts: 2 positive, 2 negative, 2 neutral, 1 unclear; top modeled topic: Credit cards; 4 posts in the same window as FixtureCo's ads (co-occurrence, not causation). Example: https://x.com/i/status/FIXTURE-X-8"
+    },
+    {
+      "name": "19 takedown: removedAt set, text '', rawJson {}, publicMetrics {}, authors 0",
+      "pass": true,
+      "detail": "removedAt=true text='' raw={} metrics={} authors=0"
+    },
+    {
+      "name": "19 removed post leaves every count: posts 6",
+      "pass": true,
+      "detail": "posts=6"
+    },
+    {
+      "name": "19 resolveMentionRef: X link → X-4, bare id → X-4, unknown → null",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "19 phase-1 re-pull actually runs (ok, no daily cap line, pulls +2)",
+      "pass": true,
+      "detail": "status=partial items=0 errors=[] pulls 5→7"
+    },
+    {
+      "name": "19 tombstone not re-created or re-populated",
+      "pass": true,
+      "detail": "text='' metrics={} authors=0"
+    },
+    {
+      "name": "20 retention(10d) erases X-9 only: erasedAt, authors 0, text '', metrics kept, evidence ''",
+      "pass": true,
+      "detail": "status=partial items=1 errors=[] X-9 erased=true metrics={\"likes\":9,\"replies\":0,\"reposts\":0} X-1 intact=true"
+    },
+    {
+      "name": "20 label count and posts count unchanged",
+      "pass": true,
+      "detail": "labels 9→9 posts=6"
+    },
+    {
+      "name": "20 retention(1d): every row older than 1 day erased, X-8 (−0.5d) not",
+      "pass": true,
+      "detail": "status=partial items=6 errors=[] older=8 X-8 intact=true"
+    },
+    {
+      "name": "20 phase-2 re-pull actually runs (ok, no daily cap line, pulls +2)",
+      "pass": true,
+      "detail": "status=partial items=0 errors=[] pulls 7→9"
+    },
+    {
+      "name": "20 erased rows not re-populated (text '', authors 0); X-8 metrics updated",
+      "pass": true,
+      "detail": "X-1 text='' authors=0 X-8 likes=9 (erased-row metrics observed: {\"likes\":1,\"replies\":1,\"reposts\":0})"
+    },
+    {
+      "name": "21 no baseline history: no stamp, spike false, baselinePerWeek null",
+      "pass": true,
+      "detail": "recent=13 baseline=null"
+    },
+    {
+      "name": "21 with baseline: stamp set, spikeStatus spike true, baselinePerWeek 4",
+      "pass": true,
+      "detail": "recent=13 baseline=4 stamped=true"
+    },
+    {
+      "name": "21 immediate re-evaluation: stamp unchanged (cooldown)",
+      "pass": true,
+      "detail": "stamped=false same=true"
+    },
+    {
+      "name": "21 recent rows gone: badge follows the condition (spike false)",
+      "pass": true,
+      "detail": "recent=1 baseline=4"
+    },
+    {
+      "name": "22 weekly-brief ran (no AI key) and stored facts.mentions.brands",
+      "pass": true,
+      "detail": "status=partial items=1 errors=[] brands=11"
+    },
+    {
+      "name": "22 stored factsJson.mentions is identifier-free",
+      "pass": true,
+      "detail": "clean"
+    },
+    {
+      "name": "22 contentEn carries the sample wording; contentAr says عيّنة",
+      "pass": true,
+      "detail": "- What people said (X sample, 2026-09-15 to 2026-09-21): FixtureCo — 5 posts matched \"@fixtureco, FixtureCo\", 4 distinct (prior window: 0); modeled sentiment of 5 labelled posts: 2 positive, 1 negative, 1 neutral, 1 unclear; top modeled topic: Credit cards; 3 posts in the same window as FixtureCo's ads (co-occurrence, not causation)."
+    },
+    {
+      "name": "22 neither narrative contains a forbidden causal word",
+      "pass": true,
+      "detail": " "
+    },
+    {
+      "name": "23 un-entitled: mentions-retention is not skipped_entitlement",
+      "pass": true,
+      "detail": "status=partial items=0 errors=[]"
+    },
+    {
+      "name": "23 un-entitled: visibleJobs({mentionRows}) lists mentions-retention, visibleJobs() does not",
+      "pass": true,
+      "detail": "mentionRows=42"
+    },
+    {
+      "name": "23 expired license: retention still runs (not stopped_license); poll is stopped_license",
+      "pass": true,
+      "detail": "retention=partial poll=stopped_license"
+    }
+  ]
+}
