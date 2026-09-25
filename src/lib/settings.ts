@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db";
+import { brandAliases } from "@/lib/brandMatch";
+import { MEDIA_HANDLES_DEFAULT } from "@/lib/mentions/config";
 
 // DB-backed runtime settings (admin-editable, no redeploy needed).
 
@@ -131,4 +133,86 @@ export async function isDue(stampKey: string, hours: number): Promise<boolean> {
   const last = await getStamp(stampKey);
   // Small grace (5 min) so an hourly tick isn't skipped by clock jitter.
   return !last || Date.now() - last.getTime() >= hours * 3600_000 - 300_000;
+}
+
+// Audience conversation (Phase 2): the customer's switch, the per-brand
+// search terms and the media-handle list. Stored under one key so a save is
+// atomic; read back defensively because the value is admin-edited JSON.
+export interface MentionsSettings {
+  enabled: boolean; // customer switch, default false
+  terms: Record<string, string[]>; // brandId -> search terms; absent/empty = seeded
+  mediaHandles: string[]; // lowercased, no "@"
+}
+
+const MENTIONS_SETTINGS_KEY = "mentions_settings";
+
+export function defaultMentionsSettings(): MentionsSettings {
+  return { enabled: false, terms: {}, mediaHandles: [...MEDIA_HANDLES_DEFAULT] };
+}
+
+// Handles are compared by lowercased equality everywhere (author kind,
+// display masking), so they are stored that way and never with an "@".
+function normaliseHandle(h: unknown): string | null {
+  if (typeof h !== "string") return null;
+  const cleaned = h.trim().replace(/^@+/, "").toLowerCase();
+  return cleaned.length > 0 ? cleaned : null;
+}
+
+function dedupe(values: string[]): string[] {
+  const seen = new Set<string>();
+  return values.filter((v) => {
+    const key = v.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+// Coerces whatever is stored into the exact shape: unknown keys dropped,
+// non-string terms dropped, empty term lists removed (= seeded), handles
+// normalised. A missing mediaHandles key means "never edited" and gets the
+// default list; an explicitly empty list is honoured.
+function normaliseMentionsSettings(input: unknown): MentionsSettings {
+  const d = defaultMentionsSettings();
+  if (!input || typeof input !== "object" || Array.isArray(input)) return d;
+  const s = input as Record<string, unknown>;
+
+  const terms: Record<string, string[]> = {};
+  if (s.terms && typeof s.terms === "object" && !Array.isArray(s.terms)) {
+    for (const [brandId, list] of Object.entries(s.terms as Record<string, unknown>)) {
+      if (!Array.isArray(list)) continue;
+      const clean = dedupe(
+        list.filter((t): t is string => typeof t === "string").map((t) => t.trim()).filter(Boolean)
+      );
+      if (clean.length > 0) terms[brandId] = clean;
+    }
+  }
+
+  const mediaHandles = Array.isArray(s.mediaHandles)
+    ? dedupe(s.mediaHandles.map(normaliseHandle).filter((h): h is string => h !== null))
+    : d.mediaHandles;
+
+  return { enabled: s.enabled === true, terms, mediaHandles };
+}
+
+export async function getMentionsSettings(): Promise<MentionsSettings> {
+  return normaliseMentionsSettings(await getSetting<unknown>(MENTIONS_SETTINGS_KEY, null));
+}
+
+export async function saveMentionsSettings(s: MentionsSettings): Promise<void> {
+  await setSetting(MENTIONS_SETTINGS_KEY, normaliseMentionsSettings(s));
+}
+
+// The terms one brand is searched for: what the admin stored, else the
+// brand's @handle and its aliases (Intel → Brands). Terms under three
+// characters match everything on X and are never used.
+export function mentionTermsFor(
+  brand: { id: string; nameEn: string; nameAr: string; aliases?: unknown; xHandle: string | null },
+  s: MentionsSettings
+): string[] {
+  const usable = (list: string[]) => dedupe(list.map((t) => t.trim()).filter((t) => t.length >= 3));
+  const stored = usable(s.terms[brand.id] ?? []);
+  if (stored.length > 0) return stored;
+  const handle = brand.xHandle?.trim().replace(/^@+/, "") ?? "";
+  return usable([...(handle ? [`@${handle}`] : []), ...brandAliases(brand)]);
 }

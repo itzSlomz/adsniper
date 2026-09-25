@@ -4,7 +4,11 @@ import { prisma } from "@/lib/db";
 import { adOverview, adPressure, adWatch, kpisForDay, postsForDay } from "@/lib/dashboard";
 import type { RangeDays } from "@/lib/dashboard";
 import { marketEstimates } from "@/lib/estimation";
+import { hasFeature } from "@/lib/license";
+import { getMentionsSettings } from "@/lib/settings";
+import { brandConversations } from "@/lib/mentions/queries";
 import SpendPressureBoard from "@/components/SpendPressureBoard";
+import MentionsSection from "@/components/MentionsSection";
 import PostGrid from "@/components/PostGrid";
 import AdWatchGallery from "@/components/AdWatchGallery";
 import AdOverviewHero from "@/components/AdOverviewHero";
@@ -35,7 +39,7 @@ export default async function CommandView(
 
   const session = await auth();
   const isAdmin = (session?.user as { role?: string } | undefined)?.role === "admin";
-  const [posts, kpis, ads, pressure, brands, brief, overview, estimates] = await Promise.all([
+  const [posts, kpis, ads, pressure, brands, brief, overview, estimates, mentionsSettings] = await Promise.all([
     postsForDay(date, days),
     kpisForDay(date, days),
     adWatch(),
@@ -44,7 +48,21 @@ export default async function CommandView(
     prisma.dailyBrief.findUnique({ where: { date: new Date(`${date}T00:00:00Z`) } }),
     adOverview(),
     marketEstimates(),
+    // Entitlement is checked here, not inside the component, so an
+    // un-entitled instance never runs a mention query (§7.5).
+    hasFeature("mentions") ? getMentionsSettings() : Promise.resolve(null),
   ]);
+  // Always the 7 days ending on the selected date, whatever the Day/Week
+  // toggle says: a reader reviewing a past week sees that week's
+  // conversation under that week's ads (§1.4). The window's exclusive end
+  // is the midnight after the selected day.
+  const conversation = mentionsSettings?.enabled
+    ? await brandConversations({
+        days: 7,
+        sampleLimit: 3,
+        now: new Date(new Date(`${date}T00:00:00Z`).getTime() + 86400000),
+      })
+    : null;
   const visibleBrief = brief && (brief.status === "published" || isAdmin) ? brief : null;
   // The flagship weekly ad briefing, shown on the weekly view: the latest
   // one covering (or preceding) the selected date.
@@ -149,6 +167,8 @@ export default async function CommandView(
       </section>
 
       <SpendPressureBoard estimates={estimates} />
+
+      {conversation && <MentionsSection variant="dashboard" result={conversation} />}
 
       <section className="card elev-sm">
         <span className="card-kicker">Market analytics</span>

@@ -1,6 +1,7 @@
 # Launch-readiness verification
 
-Date: 2026-09-02 · Branch: `claude/adsniper-fork-baqjyb`
+Date: 2026-09-02 (gates 1–5, branch `claude/adsniper-fork-baqjyb`) ·
+2026-09-22 (gate 6, branch `feature/campaign-reaction`)
 
 This is the evidence record for the five launch gates in
 [`LAUNCH_PLAN.md`](LAUNCH_PLAN.md). Every result below was produced by
@@ -149,6 +150,79 @@ identity-resolution failure is expected and correctly ordered in the runbook
 brands in the UI). The README's "~30 minutes" is plausible but stays an
 **estimate** until a real Railway provisioning is timed (GitHub issue #5).
 
+## Gate 6 — Audience conversation ✅ proven in fixture mode; ⛳ paid Kaito pull + MENTIONS_LLM=on run remain
+
+Added 2026-09-22 with the Phase 2 add-on (`LICENSE_FEATURES=mentions`).
+Harness: `verification/mentions-checks.ts` (runs the real `mentions-poll`,
+`mentions-classify`, `mentions-retention` and `weekly-brief` jobs via
+`triggerJob` with the verification-only fixture provider
+`mentions:fixture-x` and the fixture classifier `ai:fixture-classifier`),
+`verification/evidence/mentions.json`. **85/85 checks passed** (81 on
+2026-09-22; four added with the 2026-09-25 review fixes) against a
+real Postgres 16 (`adsniper_verify`, migrated, carrying the 9-brand sample
+set — the fixture provider answers those brands with nothing). No paid
+provider call and no model call was made; `ai:anthropic` log rows are
+asserted to be zero.
+
+| Property a real pull must satisfy | Result |
+|---|---|
+| Entitlement off (`LICENSE_EXPIRES_AT=2099-01-01`, no features): poll `skipped_entitlement`, no log/mention rows; `visibleJobs()` 9 keys → 12 with `mentions` | ✅ |
+| Customer switch off: poll runs but is `partial` with the switched-off info line, 0 rows | ✅ |
+| Phase-1 pull through the real job: 8 posts, one `mentions:fixture-x` log row per brand (20 units, $0.0036, jobRunId set), 2 `MentionPull` rows, `monthlySpend("mentions")` $0.0072 | ✅ |
+| Author kind (modeled, rule-based): brand account / media / unclear / public | ✅ |
+| Identifiers only in `MentionAuthor` (X-5 none; X-1 `alice_pub`/`9001`, no displayName); every URL is `/i/status/` | ✅ |
+| Campaign links: direct → AD-1 (utm stripped), topical → AD-2, rival none; query names the brand and excludes retweets | ✅ |
+| Repeated text: X-6 `duplicateOfId` = X-1, same content hash | ✅ |
+| Raw payload retained (`_fixture: true`); stored text unchanged (PII intact — de-identification is model input only) | ✅ |
+| Phase-2 pull: exactly 1 new row; known row keeps `fetchedAt`, metrics updated (likes 1 → 2); 4 pull rows | ✅ |
+| Per-brand daily cap (2): third pull `partial`, both brands "daily cap reached", no new log/pull rows | ✅ |
+| Provider failure isolated: `RivalCo/x: simulated provider failure`, FixtureCo still logged | ✅ |
+| `MONTHLY_COST_CEILING_MENTIONS_USD=0` → `stopped_budget`, no provider call | ✅ |
+| Classifier off: `partial`, 0 labels; read model says `sentiment: null`, `unlabelledReason: "off"` on every card | ✅ |
+| Fixture classify: 8 `model` + 1 `copied` label; X-2 negative/digital_app with quoted evidence; X-5 unclear/null/unclear/""; versions `banking-v1` / `classifier/v1`; 0 `ai:anthropic` rows; `monthlySpend("ai")` $0.0010 | ✅ |
+| Whole-batch refusal (`not json {`): `partial`, "refused", 0 labels stored | ✅ |
+| `MONTHLY_COST_CEILING_AI_USD=0` → classify `stopped_budget`; `anthropicMessages()` rejects `CostCeilingError` with `fetch` never called | ✅ |
+| Read model (7 d): posts 7 / distinct 6, byKind {4,1,1,1}, links {direct 2, topical 2, temporal 0}, terms `["@fixtureco","FixtureCo"]`, count sentence "a sample, not a total" / "عيّنة", linked samples first, no `topic` on a card, `unclear` rendered as a label | ✅ |
+| Weekly facts: `assertIdentifierFree` passes and is non-vacuous (terms keep `@fixtureco`, X-2 excerpt keeps `@user`); X-5 excerpt `[phone]`/`[iban]`/`[email]`, no 8-digit run; ≤3 samples, no per-post topic; `factsForStorage` keeps the three sample links and drops every excerpt; `fallbackNarrative` EN/AR free of causal words; AR bullets carry isolated dates, no `→` | ✅ |
+| Read models: X-5 card text shows `[phone]`/`[iban]`/`[email]` to readers (`maskForDisplay`); with the dashboard's window end (tomorrow midnight) a card's relative time still equals `relTimeFor(postedAt, now)` | ✅ |
+| Takedown: tombstone (removedAt, text/raw/metrics/authors cleared), counts drop to 6, `resolveMentionRef` by X link / bare id / unknown; a real re-pull does not re-create it | ✅ |
+| Retention 10 d erases X-9 only (metrics kept, evidence cleared, labels and counts unchanged); 1 d erases every older row, keeps X-8; a real re-pull leaves erased rows erased and updates X-8's metrics | ✅ |
+| Spike: no history → no stamp, baseline `null`; 8 × 4 baseline + 12 recent → stamp, `spike: true`, baseline 4; cooldown keeps the stamp; recent rows removed → badge off | ✅ |
+| `weekly-brief` end to end (no AI key): `factsJson.mentions.brands` stored, identifier-free, with no `excerpt` key anywhere; EN "X sample" + "Conversation counts are a sample"; AR "عيّنة"; no causal words | ✅ |
+| Erasure is a duty: un-entitled → retention not `skipped_entitlement`, visible only via `mentionRows`; expired → retention runs, poll `stopped_license` | ✅ |
+
+**Flag-off zero-change smoke** (`docs`-level check of §7.6): a dev server
+(`next dev`, `DISABLE_CRON=1`, `LICENSE_EXPIRES_AT=2099-01-01`, no
+`LICENSE_FEATURES`) on port 3000 against the same database, passcode login
+as the admin:
+
+| Surface | Result |
+|---|---|
+| Anonymous `GET /mentions` | **307** → `/login?callbackUrl=%2Fmentions` (auth wins) |
+| `GET /` (admin) | **200**; `href="/mentions"` occurs **0** times; no "What did people say" section |
+| `GET /intel` | **200**; no "Conversation" button; ingestion health lists exactly the 9 legacy jobs; spend grid is `grid grid-cols-3` with x / linkedin / ads only |
+| `GET /methodology` | **200**; `id="conversation"` occurs **0** times |
+| `GET /mentions`, `GET /intel/mentions` (admin) | **307** → `/` |
+| `GET /compare` | **200** (pass-through unchanged) |
+| `POST /api/jobs/mentions-poll` (admin) | **404**; `JobRun` rows for `mentions-*` unchanged (20 → 20) |
+| `npx tsx scripts/run-job.ts mentions-poll` | rejected by the usage line (`mentions-*` absent from the list), exit 1 — the CLI resolves through `visibleJobs()`, so an un-entitled instance never records a `JobRun`; the `skipped_entitlement` guard is proven at the runner (harness step 1) |
+| Same CLI with `LICENSE_FEATURES=mentions` (switch off) | `partial`, `(info) audience conversation is switched off …`, 0 rows |
+
+**What this does not prove:** that the live Kaito actor honours
+`since_time`/`until_time` exactly and bills 20 items per term rather than
+per run (`RESEARCH.md`), and how `classifier/v1` performs on real Saudi
+dialect. Both are single paid steps listed as blocked in `STATUS.md`; the
+harness runs the identical code path with `MENTIONS_FIXTURE` unset and
+real keys.
+
+**Harness notes:** counts are scoped to the fixture brands and `FIXTURE-X-`
+ids so the harness is re-runnable in a database that carries other brands;
+the identifier-scan proof uses an extra narrow window (X-1, X-2, X-5 only)
+so the excerpt assertions never depend on ordering among equally ranked
+samples; the harness tears down its brands, rows, logs, settings and its
+own draft brief in `finally`, and `ingestion-checks.ts` now deletes fixture
+mention/pull rows before its brand delete (the brand FKs are RESTRICT).
+
 ---
 
 ## Overall readiness
@@ -160,6 +234,7 @@ brands in the UI). The README's "~30 minutes" is plausible but stays an
 | 3. Operating cost | Modeled and sourced; reconcile against the first real invoice |
 | 4. Pricing | Recommendation ready; operator decision + beta validation |
 | 5. Provisioning | Software path proven; time one real infra provisioning |
+| 6. Audience conversation (add-on) | Mechanics proven (85/85) + flag-off zero-change smoke; run one paid Kaito pull and one `MENTIONS_LLM=on` classify |
 
 Three of five gates are as done as they can be without spending money or
 standing up cloud infrastructure. The two paid steps (a Cloudflare bucket, a

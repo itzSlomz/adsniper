@@ -20,6 +20,8 @@ detected offer themes, longest-running ad), campaign-burst flags ("looks
 like a new campaign"), the market totals, and modeled estimates (an ad
 pressure index and an estimated spend range).
 
+{{MENTIONS_SECTION}}
+
 ```json
 {{DATA_JSON}}
 ```

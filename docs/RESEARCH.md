@@ -6,6 +6,72 @@ changes.
 
 ---
 
+## 2026-09-22 · Kaito X scraper: time windows and billing for search terms
+
+Source: https://apify.com/kaitoeasyapi/twitter-x-data-tweet-scraper-pay-per-result-cheapest
+(actor README and input schema, read 2026-09-22), plus the Phase 0 smoke
+test recorded in `src/lib/providers/x/apifyKaito.ts`.
+
+Findings:
+- `searchTerms` accept full X search syntax (OR groups, quoted phrases,
+  `-filter:retweets`), so one combined query per brand is possible.
+- `since_time` / `until_time` are actor input fields in UNIX seconds and
+  replace the deprecated in-string `since:` / `until:` operators; the
+  mentions adapter sends them as fields and never appends the operators.
+- Empty results are padded with `type: "mock_tweet"` rows, which the
+  adapter drops (same caveat as the posts adapter).
+- ≥20 items are billed per search term, so one combined query per brand is
+  cheaper than one per alias — hence `mentionQueryFor` and the 20-item
+  floor in the cost estimate (`KAITO_PAGE_MIN`).
+
+**Unverified until the paid pilot:** that the window bounds are honoured
+exactly (the adapter drops out-of-window rows defensively and reports the
+count), and that the 20-minimum is per term rather than per run.
+
+## 2026-09-22 · X Developer Policy obligations that shape retention
+
+Source: https://developer.x.com/en/developer-terms/policy and
+https://developer.x.com/en/developer-terms/agreement (read 2026-09-22).
+
+- Content that is deleted or made private must be removed within 24 hours
+  → the admin takedown action, by list entry or by pasted X link.
+- Deriving or storing sensitive categories about a person (health, negative
+  financial status, religion, politics, ethnicity, sexual orientation,
+  alleged crime, union membership) is a restricted use; aggregate analysis
+  is permitted.
+
+Consequence in the product: author identifiers in a separable table
+(`MentionAuthor`), erased on schedule; the takedown action; product-only
+topics (never the author's situation — a hard rule in the frozen prompt);
+financial topics reach every surface only as per-brand aggregate counts,
+never beside a post.
+
+## 2026-09-22 · Anthropic Messages API rates and structured outputs
+
+Source: Anthropic first-party pricing and the Messages API /
+structured-outputs reference (snapshot 2026-06-24, `AI_RATES_SNAPSHOT_DATE`).
+
+- The rate table in `src/lib/ai.ts` (`AI_RATES_USD_PER_MTOK`) holds bare
+  ids only; Anthropic ids never take a date suffix, so lookup is exact and
+  an unknown id is charged at the highest known rate.
+- `output_config.format` (structured outputs) is supported on Claude Fable
+  5 / 5.1, Opus 5, Opus 4.8, Sonnet 5 and Haiku 4.5 (plus legacy Opus 4.5 /
+  4.1) and **not** on `claude-sonnet-4-6` — hence `STRUCTURED_OUTPUT_MODELS`
+  and a classifier default (`claude-sonnet-5`) separate from the brief
+  default.
+- The JSON schema accepts types, `enum`, `const`, `anyOf`, `allOf`, `$ref`
+  and `additionalProperties: false` (required on every object) but
+  **rejects** `minLength`/`maxLength`, `minimum`/`maximum`/`multipleOf`,
+  recursive schemas and any other `additionalProperties` value. The
+  official SDKs strip such keywords client-side and validate locally; the
+  raw `fetch` path does not, so the classifier schema carries none and the
+  120-character evidence rule lives in `validateBatchResponse`.
+- Prompt caching needs a model-dependent minimum prefix (1024–4096 tokens)
+  below which a `cache_control` breakpoint silently does nothing — the
+  ≈600-token classifier prompt is under it, so no saving is claimed.
+- `stop_reason: "refusal"` must be handled before reading content; the
+  transport throws on it after logging the (billed) call.
+
 ## 2026-09-20 · Understand-Anything — codebase knowledge graphs (operator tooling)
 
 Source: https://github.com/Egonex-AI/Understand-Anything (MIT, Egonex AI,

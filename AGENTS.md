@@ -23,7 +23,7 @@ Bank Albilad. The ingestion pipeline, media archive and cost guards came
 across; multi-customer setup, licensing, the ads-first surfaces and the
 weekly briefing are new.
 
-Stack: Next.js 14 (App Router) · TypeScript · Prisma + Postgres · a single
+Stack: Next.js 16 (App Router) · TypeScript · Prisma + Postgres · a single
 always-on Node service with in-process cron. No serverless.
 
 ---
@@ -82,7 +82,9 @@ npm run dev
 
 Job names: `ads-poll`, `x-poll`, `linkedin-poll`, `x-metrics-refresh`,
 `weekly-brief`, `daily-brief`, `brief-auto-publish`, `resolve-identities`,
-`media-migrate`.
+`media-migrate`, `mentions-poll`, `mentions-classify`, `mentions-retention`
+(the three `mentions-*` jobs are gated by `LICENSE_FEATURES=mentions`;
+`mentions-retention` runs regardless, as a duty).
 
 The automated unit tests cover the release-critical public-route boundary
 and authorization of the current admin mutations. They are deliberately
@@ -107,7 +109,10 @@ because the code-level gates pass.
 launch gates against a real Postgres + a real S3 server. `ingestion-checks.ts`
 runs the real `ads-poll` job with a **fixture ad provider** selected only by
 `ADS_FIXTURE=1` — verification-only, never set by the provisioning runbook,
-and loudly self-identifying (`FIXTURE-` ids, startup warning). See
+and loudly self-identifying (`FIXTURE-` ids, startup warning).
+`mentions-checks.ts` runs the real mentions jobs with a fixture provider and
+fixture classifier selected only by `MENTIONS_FIXTURE=1` /
+`MENTIONS_LLM=fixture` — verification-only, never set by the runbook. See
 `docs/VERIFICATION.md` for results and `verification/pilot.md` for the one
 remaining paid step.
 
@@ -195,6 +200,9 @@ preferred. Never edit a migration that has already shipped.
   revenue control and is deliberately not editable from inside the app.
 - Do not enable LinkedIn Ads ingestion; it is deliberately disabled
   because that library publishes no run dates (see `docs/IDEAS.md`).
+- Never add a topic or a label field that describes a person rather than a
+  product (see the X-terms entry in `docs/RESEARCH.md`); never edit
+  `prompts/mentions-classifier-v1.md` — add v2 and bump `PROMPT_VERSION`.
 
 ---
 

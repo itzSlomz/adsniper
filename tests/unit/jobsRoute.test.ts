@@ -2,7 +2,9 @@ jest.mock("@/lib/authorization", () => ({
   getAdminSession: jest.fn(),
 }));
 jest.mock("@/jobs/index", () => ({
-  jobs: { "known-job": jest.fn() },
+  // Only entitled jobs are visible to the route; a gated job on an
+  // un-entitled instance is simply absent from this map.
+  visibleJobs: () => ({ "known-job": { cron: null, run: jest.fn() } }),
   triggerJob: jest.fn(),
 }));
 jest.mock("@/lib/costs", () => ({
@@ -45,10 +47,13 @@ describe("POST /api/jobs/[job]", () => {
     }
   );
 
-  test("returns 404 for an admin requesting an unknown job", async () => {
+  test.each([
+    ["an unknown job", "not-a-job"],
+    ["a job hidden by entitlement", "mentions-poll"],
+  ])("returns 404 for an admin requesting %s", async (_label, job) => {
     getAdminSessionMock.mockResolvedValue({ user: { role: "admin" } });
 
-    const response = await post("not-a-job");
+    const response = await post(job);
 
     expect(response.status).toBe(404);
     await expect(response.json()).resolves.toEqual({ error: "unknown job" });

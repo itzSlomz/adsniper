@@ -102,3 +102,52 @@ export interface AdsProvider {
   platform: "meta" | "google" | "linkedin" | "tiktok";
   fetchAds(brand: AdsBrandQuery): Promise<ProviderResult<FetchedAd>>;
 }
+
+// --- Public mentions (Phase 2 audience conversation) ---
+
+export interface FetchedMentionAuthor {
+  handle?: string; // without "@"
+  externalAuthorId?: string;
+  followers?: number;
+  // displayName intentionally absent in v1 (data minimisation).
+}
+
+export interface FetchedMention {
+  externalId: string;
+  url: string; // provider form; the job stores the identifier-free form
+  postedAt: Date;
+  text: string;
+  isReply?: boolean;
+  isRetweet?: boolean;
+  // Absent = not disclosed by the provider, never 0.
+  publicMetrics: {
+    likes?: number;
+    reposts?: number;
+    replies?: number;
+    views?: number;
+    quotes?: number;
+    bookmarks?: number;
+  };
+  // Expanded URLs found in the post (t.co links resolved), for direct ad linking.
+  urls: string[];
+  // Identifiers stay separate from the post so they land in MentionAuthor only.
+  author: FetchedMentionAuthor | null;
+  raw?: unknown;
+}
+
+export interface MentionsSearch {
+  sinceTime: Date;
+  untilTime: Date;
+  maxItems: number;
+}
+
+export interface MentionsProvider {
+  name: string; // "mentions:<vendor>" — the ProviderCallLog group prefix
+  platform: "x";
+  // dropped = rows the adapter discarded as outside the requested window (defence
+  // against an actor ignoring since_time/until_time); the job reports it as an info line.
+  searchMentions(
+    query: string,
+    opts: MentionsSearch
+  ): Promise<ProviderResult<FetchedMention> & { dropped?: number }>;
+}

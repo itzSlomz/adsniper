@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
-import { getLicense } from "@/lib/license";
+import { getLicense, hasFeature } from "@/lib/license";
 import { getInstanceSettings } from "@/lib/settings";
+import { NAV_LABEL } from "@/lib/mentions/copy";
 
 export default async function DashLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -69,6 +70,9 @@ export default async function DashLayout({ children }: { children: React.ReactNo
         )}
         <Link href="/">Ads</Link>
         <Link href="/compare">Analytics</Link>
+        {/* Add-on entry: an instance the vendor did not sell it to never
+            shows the link, so the nav reads exactly as before (§7.6). */}
+        {hasFeature("mentions") && <Link href="/mentions">{NAV_LABEL}</Link>}
         {isAdmin && <Link href="/intel">Intel</Link>}
         {session?.user && (
           <form

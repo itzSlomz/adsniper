@@ -27,3 +27,20 @@ export function isPublicPath(pathname: string): boolean {
 export function isLicenseExemptPath(pathname: string): boolean {
   return matchesPath(pathname, LICENSE_EXEMPT_PATHS);
 }
+
+// Add-on surfaces gated by the vendor entitlement (LICENSE_FEATURES). The
+// feature key is re-declared here rather than imported from license.ts so
+// this module stays import-free for the Edge bundle; the two literal types
+// are structurally identical, so callers can pass the result to hasFeature().
+type Feature = "mentions";
+
+export const FEATURE_PATHS: Readonly<Record<Feature, readonly string[]>> = {
+  mentions: ["/mentions", "/intel/mentions"],
+};
+
+export function featureForPath(pathname: string): Feature | null {
+  for (const [feature, paths] of Object.entries(FEATURE_PATHS)) {
+    if (matchesPath(pathname, paths)) return feature as Feature;
+  }
+  return null;
+}

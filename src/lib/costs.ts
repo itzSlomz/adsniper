@@ -4,18 +4,40 @@ import { prisma } from "@/lib/db";
 // estimated unit cost; each group has a configurable monthly USD ceiling.
 // When a ceiling is hit the ingestion path stops (jobs call ensureBudget
 // before every provider call and abort on CostCeilingError).
+//
+// "ai" covers every Anthropic call (briefs and the mentions classifier);
+// "mentions" covers the public-post search adapters. Unset ceilings stay
+// Infinity, so an instance that never configured a ceiling for a group is
+// not affected by the group existing.
 
-export type CostGroup = "x" | "linkedin" | "ads";
+export type CostGroup = "x" | "linkedin" | "ads" | "mentions" | "ai";
+
+export const COST_GROUPS: readonly CostGroup[] = ["x", "linkedin", "ads", "mentions", "ai"] as const;
+
+// The three groups every instance had before the "mentions" add-on; the
+// Intel spend grid shows only these unless the instance is entitled, so an
+// un-entitled instance looks exactly as it did.
+export const COST_GROUPS_LEGACY: readonly CostGroup[] = ["x", "linkedin", "ads"] as const;
 
 const CEILING_ENV: Record<CostGroup, string> = {
   x: "MONTHLY_COST_CEILING_X_USD",
   linkedin: "MONTHLY_COST_CEILING_LINKEDIN_USD",
   ads: "MONTHLY_COST_CEILING_ADS_USD",
+  mentions: "MONTHLY_COST_CEILING_MENTIONS_USD",
+  ai: "MONTHLY_COST_CEILING_AI_USD",
 };
 
 // Providers are named "<group>:<vendor>" in ProviderCallLog, e.g. "x:apify-kaito".
+// A name outside the known groups throws rather than being logged, because a
+// call that no ceiling can see is spend nobody can stop.
 export function providerGroup(provider: string): CostGroup {
-  return provider.split(":")[0] as CostGroup;
+  const group = provider.split(":")[0];
+  if (!(COST_GROUPS as readonly string[]).includes(group)) {
+    throw new Error(
+      `Unknown cost group in provider name "${provider}" — providers are named "<group>:<vendor>" with group in ${COST_GROUPS.join("|")}`
+    );
+  }
+  return group as CostGroup;
 }
 
 export class CostCeilingError extends Error {
@@ -57,6 +79,9 @@ export async function logProviderCall(
   estCostUsd: number,
   jobRunId?: string
 ): Promise<void> {
+  // Validate the name before the row exists: a mis-named provider must fail
+  // loudly on its first call, never accrue spend outside every ceiling.
+  providerGroup(provider);
   await prisma.providerCallLog.create({
     data: { provider, units, estCostUsd, jobRunId },
   });
@@ -64,9 +89,8 @@ export async function logProviderCall(
 
 // For the admin ingestion-health panel: current spend vs ceiling per group.
 export async function budgetStatus() {
-  const groups: CostGroup[] = ["x", "linkedin", "ads"];
   return Promise.all(
-    groups.map(async (g) => ({
+    COST_GROUPS.map(async (g) => ({
       group: g,
       spentUsd: await monthlySpend(g),
       ceilingUsd: ceilingFor(g),

@@ -19,6 +19,9 @@ const ADMIN_ACTIONS: readonly ActionSpec[] = [
   { file: "brief/actions.ts", name: "regenerate" },
   { file: "brief/actions.ts", name: "save" },
   { file: "log-ad/actions.ts", name: "logAd" },
+  { file: "mentions/actions.ts", name: "pullNow" },
+  { file: "mentions/actions.ts", name: "removeMention" },
+  { file: "mentions/actions.ts", name: "saveMentionSettings" },
   { file: "quick-add-post/actions.ts", name: "addPost" },
   { file: "settings/actions.ts", name: "save" },
   { file: "settings/actions.ts", name: "saveInstance" },
@@ -240,7 +243,7 @@ describe("admin Server Action manifest", () => {
     ])
   );
 
-  test("accounts for exactly 19 exported actions and no inline actions", () => {
+  test("accounts for exactly 22 exported actions and no inline actions", () => {
     const discovered = [...parsed.entries()].flatMap(([file, sourceFile]) =>
       isUseServerModule(sourceFile)
         ? exportedAsyncFunctions(sourceFile).map((action) => ({
@@ -252,7 +255,7 @@ describe("admin Server Action manifest", () => {
     const inline = [...parsed.values()].flatMap(inlineServerActions);
 
     expect(discovered.map(key).sort()).toEqual(ADMIN_ACTIONS.map(key).sort());
-    expect(discovered).toHaveLength(19);
+    expect(discovered).toHaveLength(22);
     expect(inline).toEqual([]);
   });
 
